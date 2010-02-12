@@ -1,0 +1,80 @@
+#ifndef __ANIM_CONTROL_H__
+#define __ANIM_CONTROL_H__
+
+#include "gslib/Core/Types.h"
+#include "AnimTimeline.h"
+#include <vector>
+#include <map>
+
+// Key type used to index animation tracks from AnimControl
+typedef uint32 AnimTrackKey;
+
+namespace AnimEvent
+{
+	enum Type
+	{
+		AnimCycled,	// One animation cycle has just completed
+	};
+}
+
+//@TODO: Externalize AnimFrame...
+//typedef Texture AnimFrame;
+typedef int AnimFrame;
+const AnimFrame InvalidAnimFrame = -1;
+typedef std::vector<AnimFrame> AnimFrameList;
+
+// Container for a single animation track, which contains a timeline that indexes animation frames
+class AnimTrack
+{
+public:
+	friend class AnimControl;
+
+	AnimFrameList m_animFrameList;
+	AnimTimeline m_timeline;
+};
+
+// Maintains a set of animation tracks indexed by a user defined key value
+class AnimControl
+{
+public:
+	AnimControl();
+
+	// Adds a single animation track
+	void AddTrack(
+		AnimTrackKey animTrackKey, 
+		float secsPerFrame,
+		AnimCycle::Type animCycle, 
+		const AnimFrameList& animFrameList);
+
+	// Adds a single animation track (no asset list)
+	void AddTrack(
+		AnimTrackKey animTrackKey,
+		float secsPerFrame,
+		AnimCycle::Type animCycle,
+		int firstFrameIndex,
+		int numFrames);
+
+	// Call once per frame
+	void Update(float frameTimeMS, AnimTrackKey state);
+
+	// Returns the current animation frame asset
+	AnimFrame& GetCurrAnimFrame();
+
+	// Returns the current animation frame index (use if no asset list)
+	int GetCurrAnimFrameIndex();
+
+	AnimTrackKey GetAnimTrackKey() const			{ return m_currTrackKey; }
+
+	// Returns number of times animation has cycled
+	int GetNumCycled() const		{ return m_numCycled; }
+
+private:
+	typedef std::map<AnimTrackKey, AnimTrack> AnimTrackKeyToTrack;
+	AnimTrackKeyToTrack m_animTracks;
+	
+	AnimTrackKey m_currTrackKey;
+	int m_numCycled;
+};
+
+
+#endif // __ANIMATION_H__

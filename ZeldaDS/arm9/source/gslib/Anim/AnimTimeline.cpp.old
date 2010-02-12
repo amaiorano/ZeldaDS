@@ -1,0 +1,89 @@
+#include "AnimTimeline.h"
+#include <cassert>
+
+/*static*/ void AnimTimeline::Populate(AnimTimeline& animTimeline, int firstFrameIndex, int numFrames, float secsPerFrame, AnimCycle::Type animCycle)
+{
+	animTimeline.Reset();
+
+	const float msPerFrame = secsPerFrame * 1000.0f;
+
+	int currFrameIndex = firstFrameIndex;
+
+	for (int i=0; i<numFrames; ++i, ++currFrameIndex)
+	{
+		animTimeline.AddFrame( AnimTimeline::Frame(currFrameIndex, msPerFrame) );
+	}
+
+	// For ping-pong, add n-1 frames backwards
+	if (animCycle == AnimCycle::PingPong)
+	{
+		currFrameIndex -= 2;
+		for (int i=0; i<numFrames-2; ++i, --currFrameIndex)		
+		{
+			animTimeline.AddFrame( AnimTimeline::Frame(currFrameIndex, msPerFrame) );
+		}
+	}
+
+	animTimeline.SetLooping( animCycle != AnimCycle::Once );
+}
+
+void AnimTimeline::Reset()
+{
+	m_frames.clear();
+	m_bLooping = false;
+	m_elapsedMS = 0.0f;
+	m_currFrame = 0;
+}
+
+void AnimTimeline::AddFrame(const AnimTimeline::Frame& frame)
+{
+	m_frames.push_back(frame);
+}
+
+void AnimTimeline::SetLooping(bool bLooping)
+{
+	m_bLooping = bLooping;
+}
+
+void AnimTimeline::SetTimelineFrame(std::size_t timelineFrame)
+{
+	assert(timelineFrame >= 0 && timelineFrame < m_frames.size());
+	m_currFrame = timelineFrame;
+
+	m_elapsedMS = 0.0f;
+	for (std::size_t i = 0; i < timelineFrame; ++i)
+	{
+		m_elapsedMS += m_frames[i].frameDurationMS;
+	}
+}
+
+bool AnimTimeline::Update(float frameTimeMS)
+{
+	const float currFrameDurationMS = m_frames[m_currFrame].frameDurationMS;
+	
+	// Handle playback rate of 0
+	if (currFrameDurationMS == 0.0f)
+		return false;
+
+	bool bHasLooped = false;
+
+	// Track how much of the current frame has elapsed
+	m_elapsedMS += frameTimeMS;
+
+	float excessMS = m_elapsedMS - currFrameDurationMS;
+	if (excessMS > 0.0f)
+	{
+		// To keep things simple, we only advance one frame per Update() call
+		m_currFrame = (m_currFrame + 1) % m_frames.size();
+		m_elapsedMS = excessMS;
+
+		bHasLooped = (m_currFrame == 0);
+	}
+
+	return bHasLooped;
+}
+
+int AnimTimeline::GetCurrFrameIndex()
+{
+	return m_frames[m_currFrame].frameIndex;
+}

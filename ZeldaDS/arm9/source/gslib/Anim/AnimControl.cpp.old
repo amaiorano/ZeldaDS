@@ -1,0 +1,67 @@
+#include "AnimControl.h"
+
+// AnimControl implementation
+
+AnimControl::AnimControl()
+: m_currTrackKey(-1)
+, m_numCycled(0)
+{
+}
+
+void AnimControl::AddTrack(AnimTrackKey animTrackKey, float secsPerFrame, AnimCycle::Type animCycle, const AnimFrameList& animFrameList)
+{
+	AnimTrack& track = m_animTracks[animTrackKey];
+	AnimTimeline::Populate(track.m_timeline, 0, (int)animFrameList.size(), secsPerFrame, animCycle);
+	track.m_animFrameList = animFrameList;
+}
+
+void AnimControl::AddTrack(AnimTrackKey animTrackKey, float secsPerFrame, AnimCycle::Type animCycle, int firstFrameIndex, int numFrames)
+{
+	AnimTrack& track = m_animTracks[animTrackKey];
+	AnimTimeline::Populate(track.m_timeline, firstFrameIndex, numFrames, secsPerFrame, animCycle);
+}
+
+
+//TODO: Don't pass in AnimTrackKey, rather use a SetTargetAnimTrackKey function
+void AnimControl::Update(float frameTimeMS, AnimTrackKey animTrackKey)
+{
+	AnimTrack& track = m_animTracks[animTrackKey];
+
+	// Reset cycles on key change
+	if (m_currTrackKey != animTrackKey)
+	{
+		track.m_timeline.SetTimelineFrame(0);
+		m_numCycled = 0;
+	}
+
+	// Update animTrackKey
+	m_currTrackKey = animTrackKey;
+
+	if (frameTimeMS <= 0.0f)
+		return;
+
+	// Update timeline
+	bool bCycled = track.m_timeline.Update(frameTimeMS);
+
+	if (bCycled)
+	{
+		++m_numCycled;
+		//@TODO: Notify client of anim cycling
+	}
+}
+
+AnimFrame& AnimControl::GetCurrAnimFrame()
+{
+	AnimTrack& track = m_animTracks[m_currTrackKey];
+	int animIdx = track.m_timeline.GetCurrFrameIndex();
+#ifdef _DEBUG
+	return track.m_animFrameList.at(animIdx);
+#else
+	return track.m_animFrameList[animIdx];
+#endif
+}
+
+int AnimControl::GetCurrAnimFrameIndex()
+{
+	return m_animTracks[m_currTrackKey].m_timeline.GetCurrFrameIndex();
+}

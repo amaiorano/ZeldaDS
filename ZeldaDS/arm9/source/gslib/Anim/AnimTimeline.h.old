@@ -1,0 +1,69 @@
+#ifndef _ANIM_INDEXER_H_
+#define _ANIM_INDEXER_H_
+
+#include <vector>
+
+namespace AnimCycle
+{
+	enum Type
+	{
+		PingPong,	// 0,1,2,1,0,1,2,...
+		Loop,		// 0,1,2,0,1,2,0,...
+		Once,		// 0,1,2,2,2,2,2,...
+	};
+}
+
+
+// Represents the timeline for an animation, which is used to return which
+// animation frame to display (by index)
+class AnimTimeline
+{
+public:
+	AnimTimeline()
+	{
+		Reset();
+	}
+
+	//@TODO: Rename this to Key or KeyFrame, not Frame (a timeline is made up of key frames)
+	struct Frame
+	{
+		Frame(int in_frameIndex, float in_frameDurationMS) : frameIndex(in_frameIndex), frameDurationMS(in_frameDurationMS)
+		{
+		}
+
+		int frameIndex;
+		float frameDurationMS;
+	};
+
+	// Helper to automatically add frames for a simple animation. Can be called multiple times
+	// on the same animTimeline to repopulate it with new values.
+	static void Populate(AnimTimeline& animTimeline, int firstFrameIndex, int numFrames, float secsPerFrame, AnimCycle::Type animCycle);
+
+	// Resets internal state, clearing frames, etc.
+	void Reset();
+
+	// Can be used to manually populate timeline
+	void AddFrame(const AnimTimeline::Frame& frame);
+
+	// Set animation to looping (default is false)
+	void SetLooping(bool bLooping);
+
+	// Sets the active frame on the timeline
+	void SetTimelineFrame(std::size_t timelineFrame);
+
+	// Call once per frame. Returns true when a cycle completes.
+	bool Update(float frameTimeMS);
+
+	// Returns the active frame index
+	int GetCurrFrameIndex();
+
+private:
+	typedef std::vector<Frame> FrameList;
+	FrameList m_frames;
+	bool m_bLooping;
+
+	float m_elapsedMS;
+	std::size_t m_currFrame;
+};
+
+#endif // _ANIM_INDEXER_H_
