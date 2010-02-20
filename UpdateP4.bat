@@ -11,9 +11,9 @@ popd
 
 echo.
 echo Deleting temporary and generated files
+rem %DEL_FILES% *.suo
+rem %DEL_FILES% *.user
 %DEL_FILES% *.ncb
-%DEL_FILES% *.suo
-%DEL_FILES% *.user
 %DEL_FILES% *.wwdb
 %DEL_FOLDER% Debug
 %DEL_FOLDER% Release
@@ -21,4 +21,8 @@ echo Deleting temporary and generated files
 echo.
 echo Reconciling offline files...
 call util\p4_reconcile_offline_files.bat %CD%
-pause
+
+echo.
+echo Reverting some files I want to keep local
+dir /b /a-d *.suo | p4 -x - revert 
+dir /b /a-d *.user | p4 -x - revert
