@@ -8,6 +8,9 @@
 #include "Sword.h"
 #include "Boomerang.h"
 #include "SceneGraph.h"
+#include "ScrollingMgr.h"
+#include "Camera.h"
+#include "Enemy.h"
 
 #include "gslib/Hw/Constants.h"
 #include "gslib/Hw/InputManager.h"
@@ -23,7 +26,8 @@ struct PlayerStates
 		typedef ActorSharedStateData Base;
 
 		PlayerSharedStateData()
-			: mAttribDamageable(false)
+			: mScrollDir(ScrollDir::None)
+			, mAttribDamageable(false)
 		{
 		}
 
@@ -44,6 +48,7 @@ struct PlayerStates
 		// Data...
 		Sword mSword;
 		Boomerang mBoomerang;
+		ScrollDir::Type mScrollDir;
 
 		Attribute<bool> mAttribDamageable;
 	};
@@ -112,6 +117,21 @@ struct PlayerStates
 
 		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
 		{
+			ASSERT(Data().mScrollDir == ScrollDir::None);
+
+			const BoundingBox& worldBBox = Owner().GetBoundingBox();
+			BoundingBox screenBBox(Camera::Instance().WorldToScreen(worldBBox.pos), worldBBox.w, worldBBox.h);
+
+			if (screenBBox.Left() < 0)						Data().mScrollDir = ScrollDir::Left;
+			else if (screenBBox.Top() < 0)					Data().mScrollDir = ScrollDir::Up;
+			else if (screenBBox.Right() > HwScreenSizeX)	Data().mScrollDir = ScrollDir::Right;
+			else if (screenBBox.Bottom() > HwScreenSizeY)	Data().mScrollDir = ScrollDir::Down;
+
+			if (Data().mScrollDir != ScrollDir::None)
+			{
+				return SiblingTransition<Alive_Scrolling>();
+			}
+
 			return InnerEntryTransition<Alive_Locomotion>();
 		}
 
@@ -153,6 +173,49 @@ struct PlayerStates
 				Owner().mDamageInfo.Reset();
 				Owner().SetVelocity(InitZero);
 			}
+		}
+	};
+
+	struct Alive_Scrolling : PlayerStateBase
+	{
+		ScrollingMgr& mScrollingMgr;
+
+		Alive_Scrolling()
+			: mScrollingMgr(ScrollingMgr::Instance())
+		{
+		}
+
+		virtual void OnEnter()
+		{
+			ASSERT(Data().mScrollDir != ScrollDir::None);
+			ASSERT(!mScrollingMgr.IsScrolling());
+
+			mScrollingMgr.StartScrolling(Data().mScrollDir);
+
+			// Remove all enemies (not really the "right" place to do this)
+			EnemyList& enemies = SceneGraph::Instance().GetEnemyList();
+			for (EnemyList::iterator iter = enemies.begin(); iter != enemies.end(); ++iter)
+			{
+				SceneGraph::Instance().RemoveNodePostUpdate(**iter);
+			}
+
+			// Just play movement anim in current dir, but don't actually allow player movement
+			PlayAnim(BaseAnim::Move);
+		}
+
+		virtual void OnExit()
+		{
+			Data().mScrollDir = ScrollDir::None;
+		}
+
+		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
+		{
+			if ( !mScrollingMgr.IsScrolling() )
+			{
+				return SiblingTransition<Alive_Normal>();
+			}
+
+			return NoTransition();
 		}
 	};
 
@@ -425,6 +488,25 @@ void Player::Update(GameTimeType deltaTime)
 	}
 
 	Base::Update(deltaTime);
+}
+
+void Player::Render(GameTimeType deltaTime)
+{
+	// ScrollingMgr is updated just before Render(), potentially moving the camera, so
+	// we make sure to keep the player on screen if we're scrolling right here
+	if (ScrollingMgr::Instance().IsScrolling())
+	{
+		// This assert is valid except when we debug quick scroll
+		//ASSERT( mStateMachine.IsInState<PlayerStates::Alive_Scrolling>() );
+
+		const Vector2I& screenPos = GetScreenPosition();
+		Vector2I offset;
+		offset.x = screenPos.x < 0? -screenPos.x : (screenPos.x + GetWidth()) > HwScreenSizeX? HwScreenSizeX-(screenPos.x + GetWidth()) : 0;
+		offset.y = screenPos.y < 0? -screenPos.y : (screenPos.y + GetHeight()) > HwScreenSizeY? HwScreenSizeY-(screenPos.y + GetHeight()) : 0;
+		SetPosition( GetPosition() + offset );
+	}
+
+	Base::Render(deltaTime);
 }
 
 void Player::OnDamage(const DamageInfo& damageInfo)

@@ -34,6 +34,9 @@ public:
 	OamProperties& Properties() { return mProperties; }
 	const OamProperties& Properties() const { return mProperties; }
 
+	uint16 GetWidth() const		{ return mWidth; }
+	uint16 GetHeight() const	{ return mHeight; }
+
 	void SetAnimPose(const AnimPoseType& pose) { mTargetAnimPose = pose; }
 
 	void PreVBlankUpdate();

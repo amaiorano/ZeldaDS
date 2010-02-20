@@ -30,16 +30,7 @@ public:
 	uint16 GetNumTilesX() const		{ return mNumTilesX; }
 	uint16 GetNumTilesY() const		{ return mNumTilesY; }
 
-	const Vector2I& GetCurrScreen() { return mCurrScreen; }
-	void SetCurrScreen(const Vector2I& newScreen) { mCurrScreen = newScreen; }
-
 	Array2D& GetTileMapLayer(uint16 layer) { return mTileMap[layer]; }
-
-	// Screen/World transform helpers
-	Vector2I GetScreenToWorldOffset();
-	Vector2I ScreenToWorld(Vector2I screenSpacePos);
-	Vector2I WorldToScreen(Vector2I worldSpacePos);
-	bool IsWorldBBoxInScreenBounds(const BoundingBox& worldBBox);
 
 	// Copy a screen's tiles from the map to a screen quadrant on the target bg layers
 	void DrawScreenTiles(const Vector2I& srcScreen, const Vector2I& tgtScreen);
@@ -53,8 +44,6 @@ private:
 
 	uint16 mNumScreensX, mNumScreensY;
 	uint16 mNumTilesX, mNumTilesY;
-
-	Vector2I mCurrScreen;
 
 	static const int NumLayers = 2;
 	Array2D mTileMap[NumLayers];

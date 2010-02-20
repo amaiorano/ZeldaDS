@@ -87,11 +87,12 @@ public:
 		return *m_pSharedStateData;
 	}
 
-	State* FindState(StateTypeId stateType);
+	State* FindState(StateTypeId stateType) const;
 
-	bool IsInState(StateTypeId stateType)
+	template <typename ChildState>
+	bool IsInState() const
 	{
-		return FindState(stateType) != NULL;
+		return FindState(GetStateTypeId(ChildState)) != NULL;
 	}
 
 	// Visitor functions
@@ -141,7 +142,7 @@ inline ChildState* State::FindState()
 template <typename ChildState>
 inline bool State::IsInState()
 {
-	return GetStateMachine().IsInState( GetStateTypeId(ChildState) );
+	return GetStateMachine().IsInState<ChildState>();
 }
 
 

@@ -1,4 +1,5 @@
 #include "GameObject.h"
+#include "gslib/Game/Camera.h"
 
 GameObject::GameObject()
 {
@@ -32,5 +33,10 @@ void GameObject::Update(GameTimeType deltaTime)
 
 void GameObject::Render(GameTimeType deltaTime)
 {
-	IAnimatedRenderable::UpdateSpritePosition(GetPosition());
+	IAnimatedRenderable::UpdateSpritePosition(GetScreenPosition());
+}
+
+Vector2I GameObject::GetScreenPosition() const
+{
+	return Camera::Instance().WorldToScreen(GetPosition());
 }

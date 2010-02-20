@@ -19,6 +19,9 @@ public:
 	virtual void Update(GameTimeType deltaTime);
 	virtual void Render(GameTimeType deltaTime);
 
+	// Returns GameObject's screen position relative to the Camera
+	Vector2I GetScreenPosition() const;
+
 protected:
 	// IPhysical interface
 	virtual void SetPhysicalPosition(const Vector2I& pos) { ISceneNode::SetPosition(pos); }

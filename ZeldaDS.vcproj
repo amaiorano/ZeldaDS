@@ -169,19 +169,11 @@
 					Name="Game"
 					>
 					<File
-						RelativePath=".\ZeldaDS\arm9\source\gslib\Game\Character.cpp"
+						RelativePath=".\ZeldaDS\arm9\source\gslib\Game\Camera.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\ZeldaDS\arm9\source\gslib\Game\Character.h"
-						>
-					</File>
-					<File
-						RelativePath=".\ZeldaDS\arm9\source\gslib\Game\Enemy.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\ZeldaDS\arm9\source\gslib\Game\Enemy.h"
+						RelativePath=".\ZeldaDS\arm9\source\gslib\Game\Camera.h"
 						>
 					</File>
 					<File
@@ -225,14 +217,6 @@
 						>
 					</File>
 					<File
-						RelativePath=".\ZeldaDS\arm9\source\gslib\Game\Player.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\ZeldaDS\arm9\source\gslib\Game\Player.h"
-						>
-					</File>
-					<File
 						RelativePath=".\ZeldaDS\arm9\source\gslib\Game\SceneGraph.cpp"
 						>
 					</File>
@@ -241,7 +225,11 @@
 						>
 					</File>
 					<File
-						RelativePath=".\ZeldaDS\arm9\source\gslib\Core\Types.h"
+						RelativePath=".\ZeldaDS\arm9\source\gslib\Game\ScrollingMgr.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\ZeldaDS\arm9\source\gslib\Game\ScrollingMgr.h"
 						>
 					</File>
 					<File
@@ -340,6 +328,34 @@
 							>
 						</File>
 					</Filter>
+					<Filter
+						Name="Characters"
+						>
+						<File
+							RelativePath=".\ZeldaDS\arm9\source\gslib\Game\Character.cpp"
+							>
+						</File>
+						<File
+							RelativePath=".\ZeldaDS\arm9\source\gslib\Game\Character.h"
+							>
+						</File>
+						<File
+							RelativePath=".\ZeldaDS\arm9\source\gslib\Game\Enemy.cpp"
+							>
+						</File>
+						<File
+							RelativePath=".\ZeldaDS\arm9\source\gslib\Game\Enemy.h"
+							>
+						</File>
+						<File
+							RelativePath=".\ZeldaDS\arm9\source\gslib\Game\Player.cpp"
+							>
+						</File>
+						<File
+							RelativePath=".\ZeldaDS\arm9\source\gslib\Game\Player.h"
+							>
+						</File>
+					</Filter>
 				</Filter>
 				<Filter
 					Name="Core"
@@ -366,6 +382,10 @@
 					</File>
 					<File
 						RelativePath=".\ZeldaDS\arm9\source\gslib\Core\Singleton.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ZeldaDS\arm9\source\gslib\Core\Types.h"
 						>
 					</File>
 				</Filter>

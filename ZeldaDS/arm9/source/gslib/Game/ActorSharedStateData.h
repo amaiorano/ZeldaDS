@@ -8,7 +8,7 @@
 #include "gslib/Anim/AnimControl.h"
 #include "GameAnims.h"
 
-//@TODO: Rename this file and types - Actor is the base for any entity in the game. This file
+//@TODO: Rename this file and types - GameObject is the base for any entity in the game. This file
 // contains HSM stuff for characters (CharacterSharedStateData...)
 
 struct ActorSharedStateData : SharedStateData

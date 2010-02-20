@@ -3,6 +3,7 @@
 #include "gslib/Hw/BackgroundLayer.h"
 #include "gslib/Math/MathEx.h"
 #include "gslib/Physics/BoundingBox.h"
+#include "ScrollingMgr.h"
 #include <cstdlib>
 
 WorldMap::WorldMap()
@@ -10,7 +11,6 @@ WorldMap::WorldMap()
 	, mNumScreensY(0)
 	, mNumTilesX(0)
 	, mNumTilesY(0)
-	, mCurrScreen(InitZero)
 {
 }
 
@@ -66,39 +66,6 @@ void WorldMap::TEMP_LoadRandomMap()
 			}
 		}
 	}
-}
-
-Vector2I WorldMap::GetScreenToWorldOffset()
-{
-	return Vector2I(HwScreenSizeX * mCurrScreen.x, HwScreenSizeY * mCurrScreen.y);
-}
-
-Vector2I WorldMap::ScreenToWorld(Vector2I screenSpacePos)
-{
-	screenSpacePos += GetScreenToWorldOffset();
-	return screenSpacePos;
-}
-
-Vector2I WorldMap::WorldToScreen(Vector2I worldSpacePos)
-{
-	// Technically this function could be standalone if we
-	// just modulo by the screen size; however, that would
-	// not allow for negative values
-	//worldSpacePos.x %= HwScreenSizeX;
-	//worldSpacePos.y %= HwScreenSizeY;
-
-	worldSpacePos -= GetScreenToWorldOffset();
-	return worldSpacePos;
-}
-
-bool WorldMap::IsWorldBBoxInScreenBounds(const BoundingBox& worldBBox)
-{
-	BoundingBox screenBBox(WorldToScreen(worldBBox.pos), worldBBox.w, worldBBox.h);
-
-	return (screenBBox.Left() >= 0
-		&& screenBBox.Top() >= 0 
-		&& screenBBox.Right() < HwScreenSizeX 
-		&& screenBBox.Bottom() < HwScreenSizeY);
 }
 
 void WorldMap::DrawScreenTiles(const Vector2I& srcScreen, const Vector2I& tgtScreen)

@@ -19,6 +19,7 @@ public:
 	// ISceneNode interface
 	virtual void OnAddToScene();
 	virtual void Update(GameTimeType deltaTime);
+	virtual void Render(GameTimeType deltaTime);
 
 	// IDamageable interface
 	virtual void OnDamage(const DamageInfo& damageInfo);

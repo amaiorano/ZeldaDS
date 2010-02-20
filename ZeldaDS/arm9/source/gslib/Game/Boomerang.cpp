@@ -2,7 +2,7 @@
 #include "gslib/Hw/Constants.h"
 #include "gslib/Hw/GraphicsEngine.h"
 #include "gslib/Hw/Sprite.h"
-#include "gslib/Game/WorldMap.h"
+#include "gslib/Game/Camera.h"
 #include "gslib/Game/Player.h"
 #include "gslib/Game/Enemy.h"
 #include "gslib/Game/GameAnims.h"
@@ -44,7 +44,7 @@ void Boomerang::Update(GameTimeType deltaTime)
 	if (mIsLeaving)
 	{
 		// Have we hit the edge of the screen yet?
-		if ( !WorldMap::Instance().IsWorldBBoxInScreenBounds(GetBoundingBox()) )
+		if ( !Camera::Instance().IsWorldBBoxInScreenBounds(GetBoundingBox()) )
 		{
 			mIsLeaving = false;
 			mSpeed.Reset(0, 0); // Stop for one frame - we'll start returning to player next frame

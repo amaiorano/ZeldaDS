@@ -21,6 +21,12 @@ public:
 	template <typename U>
 	Vector2(const Vector2<U>& rhs)
 	{
+		Reset(rhs);
+	}
+
+	template <typename U>
+	void Reset(const Vector2<U>& rhs)
+	{
 		x = static_cast<T>(rhs.x);
 		y = static_cast<T>(rhs.y);
 	}
@@ -46,6 +52,12 @@ public:
 	{
 		*this /= Length();
 		return *this;
+	}
+
+	void ScaleComponents(const Vector2& rhs)
+	{
+		x *= rhs.x;
+		y *= rhs.y;
 	}
 
 	void operator+=(const Vector2& rhs)
@@ -125,6 +137,14 @@ inline Vector2<T> Normalized(const Vector2<T>& v)
 {
 	Vector2<T> temp = v;
 	return temp.Normalize();
+}
+
+template <typename T, typename U>
+inline Vector2<T> ScaleComponents(const Vector2<T>& lhs, const Vector2<U>& rhs)
+{
+	Vector2<T> result = lhs;
+	result.ScaleComponents(rhs);
+	return result;
 }
 
 #endif // VECTOR2_H

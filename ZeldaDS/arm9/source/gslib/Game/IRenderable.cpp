@@ -1,7 +1,6 @@
 #include "IRenderable.h"
 #include "gslib/Hw/Sprite.h"
 #include "gslib/Hw/GraphicsEngine.h"
-#include "gslib/Game/WorldMap.h"
 
 IRenderable::IRenderable()
 	: mpSprite(0)
@@ -23,8 +22,17 @@ void IRenderable::Deactivate()
 	GraphicsEngine::FreeSprite(mpSprite);
 }
 
-// Call once per frame from child
 void IRenderable::UpdateSpritePosition(const Vector2I& pos)
 {
-	mpSprite->Properties().pos = WorldMap::Instance().WorldToScreen(pos);
+	mpSprite->Properties().pos = pos;
+}
+
+uint16 IRenderable::GetWidth() const
+{
+	return mpSprite->GetWidth();
+}
+
+uint16 IRenderable::GetHeight() const
+{
+	return mpSprite->GetHeight();
 }

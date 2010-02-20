@@ -8,6 +8,8 @@
 #include "gslib/Hsm/HsmStateMachine.h"
 #include "gslib/Anim/AnimControl.h"
 
+#include "gslib/Game/ScrollingMgr.h"
+#include "gslib/Game/Camera.h"
 #include "gslib/Game/WorldMap.h"
 #include "gslib/Game/GameAnims.h"
 #include "gslib/Game/SceneGraph.h"
@@ -29,22 +31,10 @@
 Player* gpPlayer = 0;
 Enemy* gpEnemies[5] = {0};
 
-namespace ScrollDir
-{
-	enum Type { None, Right, Left, Up, Down };
-}
-
 struct GameStates
 {
 	struct GameSharedStateData : SharedStateData
 	{
-		GameSharedStateData()
-			: mScrollDir(ScrollDir::None)
-		{
-		}
-
-		//@TODO: Externalize scrolling management
-		ScrollDir::Type mScrollDir;
 	};
 
 	typedef ClientStateBase<GameSharedStateData> GameStateBase;
@@ -90,15 +80,15 @@ struct GameStates
 			WorldMap& worldMap = WorldMap::Instance();
 			worldMap.Init(6, 6);
 			worldMap.TEMP_LoadRandomMap();
-			worldMap.SetCurrScreen(Vector2I(2,1));
-			worldMap.DrawScreenTiles(worldMap.GetCurrScreen(), Vector2I(0,0));
-
 			SceneGraph::Instance().SetWorldMap(worldMap);
+
+			Vector2I startScreen(0, 0);
+			ScrollingMgr::Instance().Init(startScreen);
 
 			// Once map is loaded, position the player (normally the map should tell us where)
 			gpPlayer = new Player();
 			Vector2I initPos(MathEx::Rand(HwScreenSizeX - 16), MathEx::Rand(HwScreenSizeY - 16));
-			initPos = worldMap.ScreenToWorld(initPos);
+			initPos = Camera::Instance().ScreenToWorld(initPos);
 			gpPlayer->Init(initPos);
 			SceneGraph::Instance().AddNode(*gpPlayer);
 		}
@@ -111,39 +101,9 @@ struct GameStates
 
 	struct NormalPlay : GameStateBase
 	{
-		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
-		{
-			if (Data().mScrollDir != ScrollDir::None)
-			{
-				return SiblingTransition<Scrolling>();
-			}
-
-			return NoTransition();
-		}
-
 		virtual void PerformStateActions(HsmTimeType deltaTime)
 		{
-			//@TEMP: If no more enemies, respawn them all
-			{
-				const bool bAllEnemiesDead = SceneGraph::Instance().GetEnemyList().size() == 0;
-				if (bAllEnemiesDead)
-				{
-					printf("All enemies dead! Respawning...\n");
-
-					for (uint16 i=0; i<NUM_ARRAY_ELEMS(gpEnemies); ++i)
-					{
-						delete gpEnemies[i];
-
-						// Compute a random world position for the enemy
-						Vector2I initPos(MathEx::Rand(HwScreenSizeX - 16), MathEx::Rand(HwScreenSizeY - 16));
-						initPos = WorldMap::Instance().ScreenToWorld(initPos);
-
-						gpEnemies[i] = new Enemy();
-						gpEnemies[i]->Init(initPos);
-						SceneGraph::Instance().AddNode(*gpEnemies[i]);
-					}
-				}
-			}
+			TEMP_RespawnEnemiesIfAllDead();			
 
 			// Sim
 			SceneGraph::Instance().Update(deltaTime);
@@ -151,221 +111,64 @@ struct GameStates
 			// Physics
 			PhysicsSimulator::Instance().IntegrateAndApplyCollisions(deltaTime);
 
+			DEBUG_CheckForQuickScroll();
+
+			// Scrolling
+			ScrollingMgr::Instance().Update(deltaTime);
+
 			// Render
 			SceneGraph::Instance().Render(deltaTime);
+		}
 
-			// Check if we need to scroll the background
+	private:
+		void TEMP_RespawnEnemiesIfAllDead()
+		{
+			if (ScrollingMgr::Instance().IsScrolling())
+				return;
+
+			const bool bAllEnemiesDead = SceneGraph::Instance().GetEnemyList().size() == 0;
+			if (bAllEnemiesDead)
+			{
+				printf("All enemies dead! Respawning...\n");
+
+				for (uint16 i=0; i<NUM_ARRAY_ELEMS(gpEnemies); ++i)
+				{
+					delete gpEnemies[i];
+
+					// Compute a random world position for the enemy
+					Vector2I initPos(MathEx::Rand(HwScreenSizeX - 16), MathEx::Rand(HwScreenSizeY - 16));
+					initPos = Camera::Instance().ScreenToWorld(initPos);
+
+					gpEnemies[i] = new Enemy();
+					gpEnemies[i]->Init(initPos);
+					SceneGraph::Instance().AddNode(*gpEnemies[i]);
+				}
+			}
+		}
+
+		void DEBUG_CheckForQuickScroll()
+		{
 			const uint32& keysHeld = InputManager::GetKeysHeld();
 			const uint32& keysPressed = InputManager::GetKeysPressed();
 			WorldMap& worldMap = WorldMap::Instance();
 
 			ScrollDir::Type scrollDir = ScrollDir::None;
 
+			const Vector2I& currScreen = ScrollingMgr::Instance().GetCurrScreen();
 			if ( keysHeld & KEY_L )
 			{
-				if ( keysPressed & KEY_LEFT	&& worldMap.GetCurrScreen().x-1 >= 0 )							scrollDir = ScrollDir::Left;
-				if ( keysPressed & KEY_RIGHT && worldMap.GetCurrScreen().x+1 < worldMap.GetNumScreensX())	scrollDir = ScrollDir::Right;
-				if ( keysPressed & KEY_UP && worldMap.GetCurrScreen().y-1 >= 0 )							scrollDir = ScrollDir::Up;
-				if ( keysPressed & KEY_DOWN	&& worldMap.GetCurrScreen().y+1 < worldMap.GetNumScreensY())	scrollDir = ScrollDir::Down;
+				if ( keysPressed & KEY_LEFT	&& currScreen.x-1 >= 0 )							scrollDir = ScrollDir::Left;
+				if ( keysPressed & KEY_RIGHT && currScreen.x+1 < worldMap.GetNumScreensX())		scrollDir = ScrollDir::Right;
+				if ( keysPressed & KEY_UP && currScreen.y-1 >= 0 )								scrollDir = ScrollDir::Up;
+				if ( keysPressed & KEY_DOWN	&& currScreen.y+1 < worldMap.GetNumScreensY())		scrollDir = ScrollDir::Down;
 			}
 
-			Data().mScrollDir = scrollDir;
-		}
-	};
-
-	struct Scrolling : GameStateBase
-	{
-		uint16 mScrollX;
-		uint16 mScrollY;
-
-		Scrolling()
-			: mScrollX(0)
-			, mScrollY(0)
-		{		
-		}
-
-		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
-		{
-			if (IsInState<Scrolling_Done>())
+			ScrollingMgr& scrollingMgr = ScrollingMgr::Instance();
+			if (!scrollingMgr.IsScrolling() && scrollDir != ScrollDir::None)
 			{
-				return SiblingTransition<NormalPlay>();
-			}
-
-			return InnerEntryTransition<Scrolling_PreScroll>();
-		}
-
-		void UpdateScrollState()
-		{
-			GraphicsEngine::GetBgLayer(2).SetScroll(mScrollX, mScrollY);
-			GraphicsEngine::GetBgLayer(3).SetScroll(mScrollX, mScrollY);
-		}
-	};
-
-	struct Scrolling_PreScroll : GameStateBase
-	{
-		virtual void OnEnter()
-		{
-			Scrolling* pScrollingState = GetState<Scrolling>();
-			ASSERT(pScrollingState->mScrollX == 0 && pScrollingState->mScrollY == 0);
-			WorldMap& worldMap = WorldMap::Instance();
-			
-			switch (Data().mScrollDir)
-			{
-			case ScrollDir::Right:
-				worldMap.DrawScreenTiles(worldMap.GetCurrScreen() + Vector2I(1,0), Vector2I(1,0));
-				break;
-
-			case ScrollDir::Left:
-				worldMap.DrawScreenTiles(worldMap.GetCurrScreen(), Vector2I(1,0));
-				pScrollingState->mScrollX = HwScreenSizeX;
-				pScrollingState->UpdateScrollState();
-
-				//@HACK: To avoid tearing, wait until our scroll position has been updated before
-				// drawing over current screen
-				GraphicsEngine::WaitForVBlank();
-				GraphicsEngine::PostVBlankUpdate(); // Push bg values
-
-				worldMap.DrawScreenTiles(worldMap.GetCurrScreen() + Vector2I(-1,0), Vector2I(0,0));
-				break;
-
-			case ScrollDir::Up:
-				worldMap.DrawScreenTiles(worldMap.GetCurrScreen(), Vector2I(0,1));
-				pScrollingState->mScrollY = HwScreenSizeY;
-				pScrollingState->UpdateScrollState();
-				
-				//@HACK: Same as above
-				GraphicsEngine::WaitForVBlank();
-				GraphicsEngine::PostVBlankUpdate(); // Push bg values
-
-				worldMap.DrawScreenTiles(worldMap.GetCurrScreen() + Vector2I(0,-1), Vector2I(0,0));
-				break;
-
-			case ScrollDir::Down:
-				worldMap.DrawScreenTiles(worldMap.GetCurrScreen() + Vector2I(0,1), Vector2I(0,1));
-				break;
-
-			case ScrollDir::None:
-			default:
-				FAIL();
+				scrollingMgr.StartScrolling(scrollDir);
 			}
 		}
-
-		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
-		{
-			return SiblingTransition<Scrolling_Scroll>();
-		}
-	};
-
-	struct Scrolling_Scroll : GameStateBase
-	{
-		bool mIsDoneScrolling;
-
-		virtual void OnEnter()
-		{
-			mIsDoneScrolling = false;
-		}
-
-		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
-		{
-			if (mIsDoneScrolling)
-			{
-				return SiblingTransition<Scrolling_PostScroll>();
-			}
-			return NoTransition();
-		}
-		
-
-		virtual void PerformStateActions(HsmTimeType deltaTime)
-		{
-			Scrolling* pScrollingState = GetState<Scrolling>();
-			const uint16 scrollDelta = 8 * deltaTime;
-
-			switch (Data().mScrollDir)
-			{
-			case ScrollDir::Right:
-				pScrollingState->mScrollX += scrollDelta;
-				pScrollingState->mScrollX = MathEx::Clamp(pScrollingState->mScrollX, 0, HwScreenSizeX);
-				pScrollingState->UpdateScrollState();
-				mIsDoneScrolling = (pScrollingState->mScrollX >= HwScreenSizeX);
-				break;
-
-			case ScrollDir::Left:
-				pScrollingState->mScrollX -= scrollDelta;
-				pScrollingState->mScrollX = MathEx::Clamp(pScrollingState->mScrollX, 0, HwScreenSizeX);
-				pScrollingState->UpdateScrollState();
-				mIsDoneScrolling = (pScrollingState->mScrollX <= 0);
-				break;
-
-			case ScrollDir::Up:
-				pScrollingState->mScrollY -= scrollDelta;
-				pScrollingState->mScrollY = MathEx::Clamp(pScrollingState->mScrollY, 0, HwScreenSizeY);
-				pScrollingState->UpdateScrollState();
-				mIsDoneScrolling = (pScrollingState->mScrollY <= 0);
-				break;
-
-			case ScrollDir::Down:
-				pScrollingState->mScrollY += scrollDelta;
-				pScrollingState->mScrollY = MathEx::Clamp(pScrollingState->mScrollY, 0, HwScreenSizeY);
-				pScrollingState->UpdateScrollState();
-				mIsDoneScrolling = (pScrollingState->mScrollY >= HwScreenSizeY);
-				break;
-
-			case ScrollDir::None:
-			default:
-				FAIL();
-			}
-		}
-	};
-
-	struct Scrolling_PostScroll : GameStateBase
-	{
-		virtual void OnEnter()
-		{
-			Scrolling* pScrollingState = GetState<Scrolling>();
-			WorldMap& worldMap = WorldMap::Instance();
-			const Vector2I& currScreen = worldMap.GetCurrScreen();
-
-			switch (Data().mScrollDir)
-			{
-			case ScrollDir::Right:
-				
-				worldMap.SetCurrScreen(currScreen + Vector2I(1, 0));
-				break;
-
-			case ScrollDir::Left:
-				worldMap.SetCurrScreen(currScreen + Vector2I(-1, 0));
-				break;
-
-			case ScrollDir::Up:
-				worldMap.SetCurrScreen(currScreen + Vector2I(0, -1));
-				break;
-
-			case ScrollDir::Down:
-				worldMap.SetCurrScreen(currScreen + Vector2I(0, 1));
-				break;
-
-			case ScrollDir::None:
-			default:
-				FAIL();
-			}
-
-			// Copy new current screen to 0,0 and reset scroll vars
-			WorldMap::Instance().DrawScreenTiles(WorldMap::Instance().GetCurrScreen(), Vector2I(0,0));
-			pScrollingState->mScrollX = 0;
-			pScrollingState->mScrollY = 0;
-			pScrollingState->UpdateScrollState();
-
-			Data().mScrollDir = ScrollDir::None;
-		}
-
-		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
-		{
-			return SiblingTransition<Scrolling_Done>();
-		}
-	};
-
-	struct Scrolling_Done : GameStateBase
-	{
 	};
 };
 
@@ -379,7 +182,7 @@ int main(void)
 	LoadAllGameAnimAssets();
 
 	StateMachine gameStateMachine;
-	gameStateMachine.SetDebugLevel(1);
+	//gameStateMachine.SetDebugLevel(1);
 	gameStateMachine.SetSharedStateData(new GameStates::GameSharedStateData());
 	gameStateMachine.SetInitialState<GameStates::Root>();
 

@@ -69,13 +69,13 @@ void StateMachine::PerformStateActions(HsmTimeType deltaTime)
 	VisitStatesOuterToInner(gCallPerformStateActionsVisitor, &deltaTime);	
 }
 
-State* StateMachine::FindState(StateTypeId stateType)
+State* StateMachine::FindState(StateTypeId stateType) const
 {
-	StateVector::iterator iter = m_stateStack.begin();
-	const StateVector::iterator& iterEnd = m_stateStack.end();
+	StateVector::const_iterator iter = m_stateStack.begin();
+	const StateVector::const_iterator& iterEnd = m_stateStack.end();
 	for ( ; iter != iterEnd; ++iter)
 	{
-		State*& pState = *iter;
+		State*const& pState = *iter;
 		if (pState->GetStateType() == stateType)
 			return pState;
 	}
