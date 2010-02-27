@@ -18,6 +18,8 @@ namespace AnimAssetManager
 	void AddAnimAsset(AnimAssetKey key, AnimAsset* pAnimAsset);
 	AnimAsset* FindAnimAsset(AnimAssetKey key);
 	AnimAsset* GetAnimAsset(AnimAssetKey key);
+
+	//@TODO: Function to destroy all anim assets
 };
 
 #endif // ANIM_ASSET_MANAGER_H

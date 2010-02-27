@@ -109,6 +109,9 @@ namespace GraphicsEngine
 		// So with 4 bgs, that's 8k => 4 slots * 4 = 16 slots (out of 32), so tile gfx must start at slot 2
 		// Altogether, that means we need a total of 2 (maps) + 16 (gfx) 16k slots = 18 * 16k = 288k (3 128k ram banks)
 
+		// 4 slots * 16k = 64k for tile image data per map, and 16x16x2 = 512 bytes per tile image,
+		// so NumTilesPerMap = 64k / 512 bytes = 128
+
 		{
 			//const int tileMapBase = 0;
 			//const int tileGfxBase = 10;//2;
@@ -124,7 +127,7 @@ namespace GraphicsEngine
 
 		{
 			const int tileMapBase = 4;
-			const int tileGfxBase = 10;//6;
+			const int tileGfxBase = 6;
 			int bg1 = bgInit(1, BgType_Text8bpp, TextBgInitSize, tileMapBase, tileGfxBase);
 			ASSERT(bg1 >= 0);
 			gBgLayers[1].Init(bg1, metaTileSizeX, metaTileSizeY);

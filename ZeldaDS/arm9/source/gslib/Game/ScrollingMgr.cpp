@@ -28,6 +28,11 @@ struct ScrollingStates
 			{
 				return SiblingTransition<Scrolling>();
 			}
+			else
+			{
+				// Keep redrawing current screen
+				WorldMap::Instance().DrawScreenTiles(Owner().mCurrScreen, Vector2I(0,0));
+			}
 
 			return NoTransition();
 		}

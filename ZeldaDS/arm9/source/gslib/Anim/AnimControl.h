@@ -11,9 +11,10 @@ public:
 	AnimControl();
 
 	void PlayAnim(AnimAssetKey key, int playbackRate = 1);
+	void PlayAnim(AnimAsset* pCurrAnimAsset, int playbackRate = 1);
 	
 	void SetFrameIndex(int frameIndex);
-	int GetFrameIndex() const;
+	int GetFrameIndex() const; // Don't confuse this with GetCurrPoseIndex()
 
 	void Update(AnimTimeType deltaTime);
 
@@ -21,6 +22,7 @@ public:
 	bool HasAnimCycled() const;
 
 	const AnimPoseType& GetCurrPose() const;
+	const int GetCurrPoseIndex() const;
 
 private:
 	void Reset();

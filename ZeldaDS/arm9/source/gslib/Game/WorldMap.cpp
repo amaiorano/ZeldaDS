@@ -3,8 +3,26 @@
 #include "gslib/Hw/BackgroundLayer.h"
 #include "gslib/Math/MathEx.h"
 #include "gslib/Physics/BoundingBox.h"
+#include "gslib/Anim/AnimAssetManager.h"
+#include "gslib/Anim/AnimControl.h"
 #include "ScrollingMgr.h"
 #include <cstdlib>
+
+void TileSet::Init()
+{
+	for (uint16 i = 0; i < NUM_ARRAY_ELEMS(mTileData); ++i)
+	{
+		mTileData[i].Reset();
+	}
+}
+
+void TileLayer::Init(uint16 numTilesX, uint16 numTilesY)
+{
+	mTileSet.Init();
+	vector2<uint16>::resize(mTileMap, numTilesX, numTilesY);
+}
+
+
 
 WorldMap::WorldMap()
 	: mNumScreensX(0)
@@ -23,13 +41,7 @@ void WorldMap::Init(uint16 numScreensX, uint16 numScreensY)
 
 	for (uint16 layer=0; layer < NumLayers; ++layer)
 	{
-		Array2D& tileMapLayer = GetTileMapLayer(layer);
-
-		tileMapLayer.resize(mNumTilesX);
-		for (uint16 x=0; x < tileMapLayer.size(); ++x)
-		{
-			tileMapLayer[x].resize(mNumTilesY);
-		}
+		mTileLayers[layer].Init(mNumTilesX, mNumTilesY);
 	}
 
 	mCollisionMap.resize(mNumTilesX);
@@ -37,6 +49,18 @@ void WorldMap::Init(uint16 numScreensX, uint16 numScreensY)
 	{
 		mCollisionMap[x].resize(mNumTilesY);
 	}
+}
+
+void WorldMap::Shutdown()
+{
+	ASSERT(mAnimAssets.size() == mAnimControls.size());
+	for (std::size_t i = 0; i < mAnimAssets.size(); ++i)
+	{
+		delete mAnimAssets[i];
+		delete mAnimControls[i];
+	}
+	mAnimAssets.clear();
+	mAnimControls.clear();
 }
 
 void WorldMap::TEMP_LoadRandomMap()
@@ -66,6 +90,57 @@ void WorldMap::TEMP_LoadRandomMap()
 			}
 		}
 	}
+
+	const int TilesPerRow = 22;
+
+	TileMap& tileMap0 = GetTileMapLayer(0);
+	tileMap0[0][0] = TilesPerRow*2 + 6;
+	tileMap0[0][1] = TilesPerRow*3 + 6;
+	tileMap0[0][2] = TilesPerRow*4 + 6;
+
+	tileMap0[2][2] = 16;
+
+	//TEST
+	uint16 sharedClockIndex = AddAnimTileSharedClock(4, 45, AnimCycle::Loop);
+	//EnableAnimTile(0, 0, sharedClockIndex);
+	EnableAnimTile(0, TilesPerRow*2 + 6, sharedClockIndex);
+	EnableAnimTile(0, TilesPerRow*3 + 6, sharedClockIndex);
+	EnableAnimTile(0, TilesPerRow*4 + 6, sharedClockIndex);
+
+	sharedClockIndex = AddAnimTileSharedClock(4, 10, AnimCycle::Loop);
+	EnableAnimTile(0, 16, sharedClockIndex);
+
+}
+
+uint16 WorldMap::AddAnimTileSharedClock(int numFrames, AnimTimeType unitsPerFrame, AnimCycle::Type animCycle)
+{
+	//@TODO: Create and use a simplified AnimControl that internally stores an AnimTimeline
+	AnimAsset* pAnimAsset = new AnimAsset;
+	pAnimAsset->mAnimTimeline.Populate(0, numFrames, unitsPerFrame, animCycle);
+	mAnimAssets.push_back(pAnimAsset);
+
+	AnimControl* pAnimControl = new AnimControl;
+	pAnimControl->PlayAnim(pAnimAsset);
+	mAnimControls.push_back(pAnimControl);
+
+	return static_cast<uint16>(mAnimControls.size() - 1);
+}
+
+void WorldMap::EnableAnimTile(uint16 layer, uint16 tileIndex, uint16 sharedClockIndex)
+{
+	TileSet::TileData& data = mTileLayers[layer].mTileSet.mTileData[tileIndex];
+	ASSERT(!data.mIsAnimated);
+	data.mIsAnimated = true;
+	data.mAnimTimelineIndex = sharedClockIndex;
+}
+
+void WorldMap::Update(GameTimeType deltaTime)
+{
+	// Advance animated tile clocks
+	for (std::size_t i = 0; i < mAnimControls.size(); ++i)
+	{
+		mAnimControls[i]->Update(deltaTime);
+	}
 }
 
 void WorldMap::DrawScreenTiles(const Vector2I& srcScreen, const Vector2I& tgtScreen)
@@ -73,12 +148,11 @@ void WorldMap::DrawScreenTiles(const Vector2I& srcScreen, const Vector2I& tgtScr
 	BackgroundLayer& tgtBgLayer2 = GraphicsEngine::GetBgLayer(2);
 	BackgroundLayer& tgtBgLayer3 = GraphicsEngine::GetBgLayer(3);
 
-	Array2D& bgTileMap = GetTileMapLayer(0);
-	Array2D& fgTileMap = GetTileMapLayer(1);
-
+	// Get upper-left tile coords in world space
 	uint16 srcCurrTileX = srcScreen.x * GameNumScreenMetaTilesX;
 	uint16 srcCurrTileY = srcScreen.y * GameNumScreenMetaTilesY;
 
+	// Get upper-left tile coords in screen space
 	uint16 tgtCurrTileX = tgtScreen.x * GameNumScreenMetaTilesX;
 	uint16 tgtCurrTileY = tgtScreen.y * GameNumScreenMetaTilesY;
 
@@ -86,10 +160,10 @@ void WorldMap::DrawScreenTiles(const Vector2I& srcScreen, const Vector2I& tgtScr
 	{
 		for (uint16 x = 0; x < GameNumScreenMetaTilesX; ++x)
 		{
-			uint16 srcTile = bgTileMap[srcCurrTileX + x][srcCurrTileY + y];
+			uint16 srcTile = GetTileIndexToDraw(0, srcCurrTileX + x, srcCurrTileY + y);
 			tgtBgLayer3.DrawTile(srcTile, tgtCurrTileX + x, tgtCurrTileY + y);
 
-			srcTile = fgTileMap[srcCurrTileX + x][srcCurrTileY + y];
+			srcTile = GetTileIndexToDraw(1, srcCurrTileX + x, srcCurrTileY + y);
 			tgtBgLayer2.DrawTile(srcTile, tgtCurrTileX + x, tgtCurrTileY + y);
 		}
 	}
@@ -105,4 +179,19 @@ bool WorldMap::GetTileBoundingBoxIfCollision(const Vector2I& worldPos, BoundingB
 	//@NOTE: height is halved so we get the fake 3D feel from Zelda
 	bbox.Reset(tilePos.x * GameMetaTileSizeX, tilePos.y * GameMetaTileSizeY, GameMetaTileSizeX, GameMetaTileSizeY / 2);
 	return true;
+}
+
+uint16 WorldMap::GetTileIndexToDraw(uint16 layer, uint16 x, uint16 y) const
+{
+	const TileLayer& tileLayer = mTileLayers[layer];
+
+	uint16 tileIdx = tileLayer.mTileMap[x][y];
+
+	const TileSet::TileData& data = tileLayer.mTileSet.mTileData[tileIdx];
+	if (data.mIsAnimated)
+	{
+		tileIdx += mAnimControls[data.mAnimTimelineIndex]->GetCurrPoseIndex();
+	}
+
+	return tileIdx;
 }

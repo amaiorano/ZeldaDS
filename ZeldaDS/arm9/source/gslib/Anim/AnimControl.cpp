@@ -18,9 +18,14 @@ void AnimControl::Reset()
 
 void AnimControl::PlayAnim(AnimAssetKey key, int playbackRate)
 {
+	PlayAnim(AnimAssetManager::GetAnimAsset(key));
+}
+
+void AnimControl::PlayAnim(AnimAsset* pCurrAnimAsset, int playbackRate)
+{
 	Reset();
-	mpCurrAnimAsset = AnimAssetManager::GetAnimAsset(key);
-	mPlaybackRate = 1;
+	mpCurrAnimAsset = pCurrAnimAsset;
+	mPlaybackRate = playbackRate;
 }
 
 void AnimControl::SetFrameIndex(int frameIndex)
@@ -73,7 +78,12 @@ bool AnimControl::HasAnimCycled() const
 
 const AnimPoseType& AnimControl::GetCurrPose() const
 {
-	const AnimPoseType& pose = mpCurrAnimAsset->mAnimPoses.GetPose( mpCurrAnimAsset->mAnimTimeline.GetKeyFrame(mCurrKeyFrameIndex).frameIndex );
+	const AnimPoseType& pose = mpCurrAnimAsset->mAnimPoses.GetPose( GetCurrPoseIndex() );
 	ASSERT_MSG(pose.pFrameGfx, "Retrieving invalid pose! Make sure to call PlayAnim() before GetCurrPose()");
 	return pose;
+}
+
+const int AnimControl::GetCurrPoseIndex() const
+{
+	return mpCurrAnimAsset->mAnimTimeline.GetKeyFrame(mCurrKeyFrameIndex).frameIndex;
 }

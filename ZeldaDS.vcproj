@@ -244,14 +244,6 @@
 						Name="Unsure"
 						>
 						<File
-							RelativePath=".\ZeldaDS\arm9\source\gslib\Game\Actor.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\ZeldaDS\arm9\source\gslib\Game\Actor.h"
-							>
-						</File>
-						<File
 							RelativePath=".\ZeldaDS\arm9\source\gslib\Game\ActorSharedStateData.h"
 							>
 						</File>

@@ -107,6 +107,7 @@ struct GameStates
 
 			// Sim
 			SceneGraph::Instance().Update(deltaTime);
+			WorldMap::Instance().Update(deltaTime);
 
 			// Physics
 			PhysicsSimulator::Instance().IntegrateAndApplyCollisions(deltaTime);

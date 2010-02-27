@@ -8,8 +8,13 @@
 #include <cstdio>
 #include <malloc.h>
 
+#define PLATFORM_NDS
+
 typedef uint16 GameTimeType; // Elapsed frames
 const uint16 TargetFramesPerSecond = 60;
+
+// Convert seconds to frames; i.e. if you want an anim frame to last 2 seconds, it will last 2 * 60 = 120 frames
+#define SEC_TO_FRAMES(seconds)	static_cast<GameTimeType>(seconds * TargetFramesPerSecond)
 
 // Disable this when compiling for actual hardware (otherwise printf calls will crash)
 #define PRINT_TO_EMULATOR_CONSOLE 1
@@ -22,8 +27,6 @@ const uint16 TargetFramesPerSecond = 60;
 	#define printf EmuConsolePrintF
 #endif
 
-// Convert seconds to frames; i.e. if you want an anim frame to last 2 seconds, it will last 2 * 60 = 120 frames
-#define SEC_TO_FRAMES(seconds)	static_cast<GameTimeType>(seconds * TargetFramesPerSecond)
 
 #define PRINT_VECTOR2I(vec) printf("%s: (%d, %d)\n", #vec, vec.x, vec.y)
 
