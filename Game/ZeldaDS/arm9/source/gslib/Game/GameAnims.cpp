@@ -2,7 +2,6 @@
 #include "gslib/Core/Core.h"
 
 #include "data/characters.h"
-#include "data/rhino.h"
 #include "data/items.h"
 
 namespace
@@ -164,26 +163,7 @@ void LoadAllGameAnimAssets()
 	//TEMP TEMP TEMP: Tests for enemies as player
 	CreateAndAddAnimAssets(Snake,    Idle,   pFrameGfx, FrameSize, (2 * NumTilesPerRow)+1, 3, 0.0f, AnimCycle::PingPong);
 	CreateAndAddAnimAssets(Snake,    Attack, pFrameGfx, FrameSize, 2 * NumTilesPerRow, 3, 0.15f, AnimCycle::PingPong);
-
-	pFrameGfx = (uint8*)rhinoTiles;
-	FrameSize = 32*32;
-	//CreateAndAddAnimAssets(Rhino,    Idle,   pFrameGfx, FrameSize, 0, 3, 0.0f, AnimCycle::PingPong);
-	{
-		builder.CreateAndAdd(MakeAnimAssetKey(Rhino, Idle, Right)).InitPoses(pFrameGfx, FrameSize).BuildTimeline().Looping(true)(0, 0.0f);
-		builder.CreateAndAdd(MakeAnimAssetKey(Rhino, Idle, Left )).InitPoses(pFrameGfx, FrameSize).BuildTimeline().Looping(true)(3, 0.0f);
-		builder.CreateAndAdd(MakeAnimAssetKey(Rhino, Idle, Down )).InitPoses(pFrameGfx, FrameSize).BuildTimeline().Looping(true)(7, 0.0f);
-		builder.CreateAndAdd(MakeAnimAssetKey(Rhino, Idle, Up   )).InitPoses(pFrameGfx, FrameSize).BuildTimeline().Looping(true)(10, 0.0f);
-	}
-	CreateAndAddAnimAssets(Rhino,    Move,   pFrameGfx, FrameSize, 0, 3, 0.25f, AnimCycle::PingPong);
-	//CreateAndAddAnimAssets(Rhino,    Attack, pFrameGfx, FrameSize, 0, 3, 0.10f, AnimCycle::PingPong);	
-	{
-		builder.CreateAndAdd(MakeAnimAssetKey(Rhino, Attack, Right)).InitPoses(pFrameGfx, FrameSize).BuildTimeline()(1, 0.25f);
-		builder.CreateAndAdd(MakeAnimAssetKey(Rhino, Attack, Left )).InitPoses(pFrameGfx, FrameSize).BuildTimeline()(4, 0.25f);
-		builder.CreateAndAdd(MakeAnimAssetKey(Rhino, Attack, Down )).InitPoses(pFrameGfx, FrameSize).BuildTimeline()(8, 0.25f);
-		builder.CreateAndAdd(MakeAnimAssetKey(Rhino, Attack, Up   )).InitPoses(pFrameGfx, FrameSize).BuildTimeline()(11, 0.25f);
-	}
 */
-
 
 	// Item animations
 	pFrameGfx = (uint8*)itemsTiles;
