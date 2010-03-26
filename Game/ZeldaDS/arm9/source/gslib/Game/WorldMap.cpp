@@ -5,8 +5,10 @@
 #include "gslib/Physics/BoundingBox.h"
 #include "gslib/Anim/AnimAssetManager.h"
 #include "gslib/Anim/AnimControl.h"
+#include "gslib/Stream/BinaryFileStream.h"
 #include "ScrollingMgr.h"
 #include <cstdlib>
+#include <limits>
 
 void TileSet::Init()
 {
@@ -30,6 +32,8 @@ WorldMap::WorldMap()
 	, mNumTilesX(0)
 	, mNumTilesY(0)
 {
+	// Would have preferred a compile-time assert, but max() is a function
+	ASSERT_MSG(TileSet::MaxNumTiles < std::numeric_limits<TileIndexType>::max(), "TileIndexType not large enough to index tiles in TileSet");
 }
 
 void WorldMap::Init(uint16 numScreensX, uint16 numScreensY)
@@ -109,7 +113,52 @@ void WorldMap::TEMP_LoadRandomMap()
 
 	sharedClockIndex = AddAnimTileSharedClock(4, 10, AnimCycle::Loop);
 	EnableAnimTile(0, 16, sharedClockIndex);
+}
 
+void WorldMap::LoadMap(const char* mapFile)
+{
+	//@TODO: Optimize map size by:
+	// 1) Using uint8 to store tile indices
+	// 2) RLE-compressing data
+
+	BinaryFileStream bfs;
+	bfs.Open(mapFile, "r");
+
+	uint16 numLayers = bfs.ReadInt<uint16>();
+	
+	ASSERT(numLayers == NumLayers + 1); // Tile layers + collision layer
+	
+	for (uint16 layer=0; layer < numLayers; ++layer)
+	{
+		uint16 numTilesX = bfs.ReadInt<uint16>();
+		uint16 numTilesY = bfs.ReadInt<uint16>();
+		ASSERT(numTilesX == mNumTilesX);
+		ASSERT(numTilesY == mNumTilesY);
+
+		for (int x = 0; x < numTilesX; ++x)
+		{
+			for (int y = 0; y < numTilesY; ++y)
+			{
+				uint16 tileIndex = bfs.ReadInt<uint16>();
+				
+				if (layer < 2)
+				{
+					GetTileMapLayer(layer)[x][y] = tileIndex;
+				}
+				else if (layer == 2)
+				{
+					mCollisionMap[x][y] = tileIndex;
+				}
+				else
+				{
+					FAIL();
+				}
+			}
+		}
+
+		uint16 marker = bfs.ReadInt<uint16>();
+		ASSERT(marker == 0xFFFF);
+	}
 }
 
 uint16 WorldMap::AddAnimTileSharedClock(int numFrames, AnimTimeType unitsPerFrame, AnimCycle::Type animCycle)

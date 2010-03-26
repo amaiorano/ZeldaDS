@@ -59,8 +59,8 @@ struct TileSet
 	TileData mTileData[MaxNumTiles];
 };
 
-
-typedef vector2<uint16>::type TileMap;
+typedef uint16 TileIndexType;
+typedef vector2<TileIndexType>::type TileMap;
 
 // TileLayer represents a single layer of tiles. WorldMap aggregates one TileLayer
 // per background layer.
@@ -82,6 +82,7 @@ public:
 	void Shutdown();
 
 	void TEMP_LoadRandomMap();
+	void LoadMap(const char* mapFile);
 
 	// Adds a shared clock for animated tiles and returns its index (pass index to EnableAnimTile())
 	uint16 AddAnimTileSharedClock(int numFrames, AnimTimeType unitsPerFrame, AnimCycle::Type animCycle);

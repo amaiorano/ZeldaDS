@@ -30,8 +30,6 @@ ifneq ("$(wildcard source)", "")
 endif	
 
 
-
-
 BUILD		:=	build
 SOURCES		:=	$(RECURSIVE_SOURCES_DIRS)
 INCLUDES	:=	include source
@@ -58,9 +56,9 @@ ASFLAGS	:=	-g $(ARCH) -march=armv5te -mtune=arm946e-s
 LDFLAGS	=	-specs=ds_arm9.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
 
 #---------------------------------------------------------------------------------
-# any extra libraries we wish to link with the project
+# any extra libraries we wish to link with the project (order is important)
 #---------------------------------------------------------------------------------
-LIBS	:=	-lnds9
+LIBS	:=	-lfilesystem -lfat -lnds9
  
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
@@ -81,11 +79,12 @@ export DEPSDIR := $(CURDIR)/$(BUILD)
 
 export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
 					$(foreach dir,$(DATA),$(CURDIR)/$(dir))
- 
+
 CFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
 CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
 SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
 BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
+
  
 #---------------------------------------------------------------------------------
 # use CXX for linking C++ projects, CC for standard C

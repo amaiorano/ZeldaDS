@@ -1,6 +1,10 @@
 #include "ExceptionHandler.h"
 #include <nds/ndstypes.h>
+
+extern "C"
+{
 #include <nds/arm9/exceptions.h> //@TODO: submit patch with the extern "C" change I made to this header
+}
 
 namespace
 {

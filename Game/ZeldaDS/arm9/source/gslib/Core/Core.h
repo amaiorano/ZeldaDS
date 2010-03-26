@@ -1,6 +1,7 @@
 #ifndef CORE_CORE_H
 #define CORE_CORE_H
 
+#include "Config.h"
 #include "Types.h"
 #include <nds/arm9/sassert.h>
 
@@ -8,16 +9,12 @@
 #include <cstdio>
 #include <malloc.h>
 
-#define PLATFORM_NDS
-
 typedef uint16 GameTimeType; // Elapsed frames
 const uint16 TargetFramesPerSecond = 60;
 
 // Convert seconds to frames; i.e. if you want an anim frame to last 2 seconds, it will last 2 * 60 = 120 frames
 #define SEC_TO_FRAMES(seconds)	static_cast<GameTimeType>(seconds * TargetFramesPerSecond)
 
-// Disable this when compiling for actual hardware (otherwise printf calls will crash)
-#define PRINT_TO_EMULATOR_CONSOLE 1
 #if PRINT_TO_EMULATOR_CONSOLE == 1
 	// Prints to console within certain emulators (iDeaS and deSmuME)
 	extern void EmuConsolePrintF(const char* format, ...);

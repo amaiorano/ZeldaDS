@@ -1,6 +1,7 @@
 #include "gslib/Core/Core.h"
 #include "gslib/Math/MathEx.h"
 #include "gslib/Hw/ExceptionHandler.h"
+#include "gslib/Hw/FileSystem.h"
 #include "gslib/Hw/GraphicsEngine.h"
 #include "gslib/Hw/BackgroundLayer.h"
 #include "gslib/Hw/InputManager.h"
@@ -78,8 +79,9 @@ struct GameStates
 		virtual void OnEnter()
 		{
 			WorldMap& worldMap = WorldMap::Instance();
-			worldMap.Init(6, 6);
-			worldMap.TEMP_LoadRandomMap();
+			worldMap.Init(20, 10);
+			//worldMap.TEMP_LoadRandomMap();
+			worldMap.LoadMap("Maps/TestMap.map");
 			SceneGraph::Instance().SetWorldMap(worldMap);
 
 			Vector2I startScreen(0, 0);
@@ -177,8 +179,8 @@ struct GameStates
 int main(void) 
 {
 	ExceptionHandler::EnableDefaultHandler();
-
 	GraphicsEngine::Init(GameMetaTileSizeX, GameMetaTileSizeY);
+	FileSystem::Init();
 
 	LoadAllGameAnimAssets();
 

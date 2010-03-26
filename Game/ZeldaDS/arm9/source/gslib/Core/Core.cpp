@@ -19,14 +19,16 @@ void EmuConsolePrintF(const char* format, ...)
 	va_start(args, format);
 	idx += vsprintf(&buff[idx], format, args);
 
+	ideasPrint(buff);
+
 	//@NOTE: Buffering up strings until last character is newline, then output
 	// without the newline. I do this because desmume's implementation of the
 	// ideas console print adds its own newline, unfortunately.
-	if (idx > 0 && buff[idx-1] == '\n')
-	{
-		buff[idx-1] = '\0';
-		ideasPrint(buff);
-		idx = 0;
-	}
+	//if (idx > 0 && buff[idx-1] == '\n')
+	//{
+	//	buff[idx-1] = '\0';
+	//	ideasPrint(buff);
+	//	idx = 0;
+	//}
 }
 #endif

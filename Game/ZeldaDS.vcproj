@@ -73,20 +73,12 @@
 					RelativePath=".\ZeldaDS\arm9\source\main_arm9.cpp"
 					>
 				</File>
-				<File
-					RelativePath=".\ZeldaDS\arm9\Makefile"
-					>
-				</File>
 			</Filter>
 			<Filter
 				Name="arm7"
 				>
 				<File
 					RelativePath=".\ZeldaDS\arm7\source\main_arm7.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\ZeldaDS\arm7\Makefile"
 					>
 				</File>
 			</Filter>
@@ -138,6 +130,14 @@
 					</File>
 					<File
 						RelativePath=".\ZeldaDS\arm9\source\gslib\Hw\ExceptionHandler.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ZeldaDS\arm9\source\gslib\Hw\FileSystem.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\ZeldaDS\arm9\source\gslib\Hw\FileSystem.h"
 						>
 					</File>
 					<File
@@ -353,6 +353,10 @@
 					Name="Core"
 					>
 					<File
+						RelativePath=".\ZeldaDS\arm9\source\gslib\Core\Config.h"
+						>
+					</File>
+					<File
 						RelativePath=".\ZeldaDS\arm9\source\gslib\Core\Core.cpp"
 						>
 					</File>
@@ -437,6 +441,18 @@
 						>
 					</File>
 				</Filter>
+				<Filter
+					Name="Stream"
+					>
+					<File
+						RelativePath=".\ZeldaDS\arm9\source\gslib\Stream\BinaryFileStream.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\ZeldaDS\arm9\source\gslib\Stream\BinaryFileStream.h"
+						>
+					</File>
+				</Filter>
 			</Filter>
 		</Filter>
 		<Filter
@@ -444,6 +460,34 @@
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
+		</Filter>
+		<Filter
+			Name="Build Files"
+			>
+			<File
+				RelativePath=".\ZeldaDS\build.bat"
+				>
+			</File>
+			<File
+				RelativePath=".\ZeldaDS\Makefile"
+				>
+			</File>
+			<Filter
+				Name="arm7"
+				>
+				<File
+					RelativePath=".\ZeldaDS\arm7\Makefile"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="arm9"
+				>
+				<File
+					RelativePath=".\ZeldaDS\arm9\Makefile"
+					>
+				</File>
+			</Filter>
 		</Filter>
 	</Files>
 	<Globals>
