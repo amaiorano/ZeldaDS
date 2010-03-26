@@ -1,0 +1,20 @@
+== todo ==
+
+- Saving map file
+
+- Tile Set Views
+	- Multi-select tiles (click & drag selection box over tiles) and paste
+	- Show selected tile(s)
+	
+- Undo tile pasting (including multi-paste)
+
+- World Map View toolbar similar to Photoshop
+	- Pencil: tile draw
+	- Paint bucket: tile fill
+	- Dropper: copy tile (Ctrl+ copies all layers)
+	- Hand: move view like acrobat (Alt always shows hand in any mode?)
+
+
+== done ==
+
+- Solid tile view
