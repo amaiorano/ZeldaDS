@@ -17,7 +17,7 @@ echo Deleting temporary and generated files
 
 echo.
 echo Reconciling offline files...
-call %P4_RECONCILE_CMD% %CD%..
+call %P4_RECONCILE_CMD% %CD%
 
 cd Game
 echo.
@@ -27,5 +27,8 @@ dir /b /a-d *.user | p4 -x - revert
 dir /b /a-d *.wwdb | p4 -x - revert 
 dir /b /a-d *.ncb | p4 -x - revert
 
-echo Done!
-pause
+
+if "%1" neq "nopause" (
+	echo Done!
+	pause
+)
