@@ -6,10 +6,14 @@
 	>
 	<UserMacro
 		Name="NDSEMUPATH"
-		Value="c:\DATA\Programming\Projects\NOW\DS\Emus\desmume\DeSmuME_VS2005_release.exe"
+		Value="$(NDSGAMEROOT)\Tools\desmume\desmume_dev.exe"
 	/>
 	<UserMacro
 		Name="NDSEMUARGS"
+		Value="$(TargetPath)"
+	/>
+	<UserMacro
+		Name="NDSEMUARGS_FORNEWEMU"
 		Value="--gbaslot-rom=$(TargetPath) $(TargetPath)"
 	/>
 </VisualStudioPropertySheet>

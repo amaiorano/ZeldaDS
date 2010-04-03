@@ -1,5 +1,6 @@
 @echo off
 setlocal
+set P4_RECONCILE_CMD=%NDSGAMEROOT%\Tools\bin\p4_reconcile_offline_files.bat
 set DEL_FILES=rm -f
 set DEL_FOLDER=rm -rf
 
@@ -11,18 +12,20 @@ popd
 
 echo.
 echo Deleting temporary and generated files
-rem %DEL_FILES% *.suo
-rem %DEL_FILES% *.user
-%DEL_FILES% *.ncb
-%DEL_FILES% *.wwdb
 %DEL_FOLDER% Debug
 %DEL_FOLDER% Release
 
 echo.
 echo Reconciling offline files...
-call util\p4_reconcile_offline_files.bat %CD%
+call %P4_RECONCILE_CMD% %CD%..
 
+cd Game
 echo.
 echo Reverting some files I want to keep local
 dir /b /a-d *.suo | p4 -x - revert 
 dir /b /a-d *.user | p4 -x - revert
+dir /b /a-d *.wwdb | p4 -x - revert 
+dir /b /a-d *.ncb | p4 -x - revert
+
+echo Done!
+pause

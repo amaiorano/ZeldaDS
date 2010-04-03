@@ -1,0 +1,20 @@
+== Steps to setup your environment to develop ZeldaDS ==
+
+* Install the latest version of devkitPro using the windows installer (http://www.devkitpro.org/)
+
+* Add an environment variable named NDSGAMEROOT set to the root folder containing ZeldaDS
+** For example: NDSGAMEROOT=C:\Code\NDS\ZeldaDS
+
+* Open %NDSGAMEROOT%\Game\ZeldaDS.sln in Visual Studio, open project properties, select "All Configurations", then go to Configuration Properties -> Debugging, and set:
+** Command: $(NDSEMUPATH)
+** Command Arguments: $(NDSEMUARGS)
+
+* Compile the game by building the solution (build Debug configuration)
+
+* Run by pressing F5, which should launch the game through desmume
+** If you get the "Failed to init file system..." error, in desmume, go to Emulation -> GBA Slot, then Browse and select ZeldaDS.nds (you'll have to put a '*' in the File name field to show all files, otherwise you can only select *.gba files). This only has to be done once. Note that a future release of desmume will allow me to pass this in by commandline, and you won't have to worry about this step anymore.
+
+
+=== Notes ===
+
+* If compiling to run on actual hardware (i.e. flashcart), make sure that in gslib/Core/Config.h, PRINT_TO_EMULATOR_CONSOLE is set to 0, otherwise the game will crash on the first call to printf().

@@ -1,5 +1,5 @@
 setlocal
-set GRIT=C:\DATA\Programming\Projects\NOW\DS\grit\grit.exe
+set GRIT=%NDSGAMEROOT%\Tools\grit\grit.exe
 
 ls *.bmp | xargs -ixxx %GRIT% xxx -ff tiles16x16.grit
 

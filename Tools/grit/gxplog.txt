@@ -1,0 +1,21 @@
+STATUS: Validatating gr.
+WARNING:   No explicit src path.
+STATUS: Validation succeeded.
+STATUS: Started run at: 2009-10-18, 23:13:43
+STATUS: Validatating gr.
+STATUS: Validation succeeded.
+STATUS: Preparing data.
+STATUS: Work-DIB creation.
+STATUS:   Palette transparency: pal[250].
+STATUS: Work-DIB creation complete: 320x160@8.
+STATUS: Tile preparation.
+STATUS:   tiling to 16x16 tiles.
+STATUS:   tiling to 8x8 tiles.
+STATUS: Tile preparation complete.
+STATUS: Graphics preparation.
+STATUS: Graphics preparation complete.
+STATUS: Palette preparation.
+STATUS: Palette preparation complete.
+STATUS: Data preparation complete.
+STATUS: Export to GNU asm: overworld_bg into C:\DATA\Programming\Projects\NOW\DS\Projects\EngineTest\Assets\overworld_bg.s .
+STATUS: Run completed :).
