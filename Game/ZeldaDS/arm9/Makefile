@@ -1,4 +1,8 @@
 #---------------------------------------------------------------------------------
+# ARM9 MAKEFILE
+#---------------------------------------------------------------------------------
+
+#---------------------------------------------------------------------------------
 .SUFFIXES:
 #---------------------------------------------------------------------------------
 ifeq ($(strip $(DEVKITARM)),)
@@ -8,20 +12,25 @@ endif
 include $(DEVKITARM)/ds_rules
 
 #---------------------------------------------------------------------------------
+# CONFIG-specific values
+#---------------------------------------------------------------------------------
+BUILD_DIR := build_r
+
+CONFIG := RELEASE
+ifeq ($(CONFIG), DEBUG)
+	BUILD_DIR := build_d
+else
+	OPTFLAGS := -O2 -fomit-frame-pointer -ffast-math
+	PREPRO_DEFS := -DNDEBUG
+endif
+
+#---------------------------------------------------------------------------------
 # BUILD is the directory where object files & intermediate files will be placed
 # SOURCES is a list of directories containing source code
 # INCLUDES is a list of directories containing extra header files
 # DATA is a list of directories containing binary files
 # all directories are relative to this makefile
 #---------------------------------------------------------------------------------
-
-
-# If user passes in anything but CONFIG=DEBUG, we build RELEASE
-CONFIG := RELEASE
-ifneq ($(CONFIG), DEBUG)
-	OPTFLAGS := -O2 -fomit-frame-pointer -ffast-math
-	PREPRO_DEFS := -DNDEBUG
-endif
 
 # Since make is called for different folders, we check if the current folder has a "source" folder,
 # and if so, we grab it and all its subfolders
@@ -30,7 +39,7 @@ ifneq ("$(wildcard source)", "")
 endif	
 
 
-BUILD		:=	build
+BUILD		:=	$(BUILD_DIR)
 SOURCES		:=	$(RECURSIVE_SOURCES_DIRS)
 INCLUDES	:=	include source
 DATA		:=	bin

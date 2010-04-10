@@ -1,4 +1,8 @@
 #---------------------------------------------------------------------------------
+# ARM7 MAKEFILE
+#---------------------------------------------------------------------------------
+
+#---------------------------------------------------------------------------------
 .SUFFIXES:
 #---------------------------------------------------------------------------------
 ifeq ($(strip $(DEVKITARM)),)
@@ -8,15 +12,28 @@ endif
 include $(DEVKITARM)/ds_rules
 
 #---------------------------------------------------------------------------------
+# CONFIG-specific values
+#---------------------------------------------------------------------------------
+BUILD_DIR := build_r
+
+CONFIG := RELEASE
+ifeq ($(CONFIG), DEBUG)
+	BUILD_DIR := build_d
+else
+	OPTFLAGS := -O2 -fomit-frame-pointer -ffast-math
+	PREPRO_DEFS := -DNDEBUG
+endif
+
+#---------------------------------------------------------------------------------
 # BUILD is the directory where object files & intermediate files will be placed
 # SOURCES is a list of directories containing source code
 # INCLUDES is a list of directories containing extra header files
 # DATA is a list of directories containing binary files
 # all directories are relative to this makefile
 #---------------------------------------------------------------------------------
-BUILD		:=	build
-SOURCES		:=	source  
-INCLUDES	:=	include build
+BUILD		:=	$(BUILD_DIR)
+SOURCES		:=	source
+INCLUDES	:=	include $(BUILD)
 DATA		:=
  
 #---------------------------------------------------------------------------------
@@ -24,13 +41,15 @@ DATA		:=
 #---------------------------------------------------------------------------------
 ARCH	:=	-mthumb-interwork
 
-CFLAGS	:=	-g -Wall -O2\
-		-mcpu=arm7tdmi -mtune=arm7tdmi -fomit-frame-pointer\
-		-ffast-math \
+CFLAGS	:=	-g -Wall $(OPTFLAGS) \
+		-mcpu=arm7tdmi -mtune=arm7tdmi \
 		$(ARCH)
 
 CFLAGS	+=	$(INCLUDE) -DARM7
-CXXFLAGS	:=	$(CFLAGS) -fno-rtti -fno-exceptions -fno-rtti
+CFLAGS  +=	$(PREPRO_DEFS)
+
+#CXXFLAGS	:=	$(CFLAGS) -fno-rtti -fno-exceptions
+CXXFLAGS	:=	$(CFLAGS) -fno-exceptions
 
 
 ASFLAGS	:=	-g $(ARCH)

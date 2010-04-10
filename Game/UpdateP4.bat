@@ -8,6 +8,7 @@ echo.
 echo Cleaning...
 pushd ZeldaDS
 call build.bat clean
+call build.bat clean DEBUG
 popd
 
 echo.

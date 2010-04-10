@@ -1,4 +1,8 @@
 #---------------------------------------------------------------------------------
+# ROOT MAKEFILE
+#---------------------------------------------------------------------------------
+
+#---------------------------------------------------------------------------------
 .SUFFIXES:
 #---------------------------------------------------------------------------------
 ifeq ($(strip $(DEVKITARM)),)
@@ -17,8 +21,26 @@ _ADDFILES	:=	-d $(CURDIR)/$(NITRODATA)
 
 include $(DEVKITARM)/ds_rules
 
-export TARGET		:=	$(shell basename $(CURDIR))
+#---------------------------------------------------------------------------------
+# CONFIG-specific values
+#---------------------------------------------------------------------------------
+TARGET_NAME := $(shell basename $(CURDIR))
+
+# If user passes in anything but CONFIG=DEBUG, we build RELEASE
+# NOTE: Even though we set CONFIG here, if CONFIG=<value> is passed in to make, it overrides this assignment
+CONFIG := RELEASE
+
+ifeq ($(CONFIG), DEBUG)
+	TARGET_NAME := $(TARGET_NAME)_d
+endif
+
+
+#---------------------------------------------------------------------------------
+# export vars for other makefiles
+#---------------------------------------------------------------------------------
+export TARGET		:=	$(TARGET_NAME)
 export TOPDIR		:=	$(CURDIR)
+
 
 
 .PHONY: $(TARGET).arm7 $(TARGET).arm9

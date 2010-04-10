@@ -8,6 +8,9 @@ echo.
 echo Reconciling offline files for:
 
 echo Assets...
+pushd %NDSGAMEROOT%\Assets
+rm -f *.h *.s
+popd
 call %P4_RECONCILE_CMD% %NDSGAMEROOT%\Assets
 
 echo Docs...
@@ -15,6 +18,9 @@ call %P4_RECONCILE_CMD% %NDSGAMEROOT%\Docs
 
 echo Tools...
 call %P4_RECONCILE_CMD% %NDSGAMEROOT%\Tools
+pushd %NDSGAMEROOT%\Tools\desmume
+p4 revert desmume.ini
+popd
 
 echo Game...
 pushd %NDSGAMEROOT%\Game

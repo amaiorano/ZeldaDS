@@ -17,11 +17,11 @@ make CONFIG=%CONFIG% 2>&1 | %GNU_TO_MSDEV_CMD%
 goto :END
 
 :CLEAN
-make clean
+make clean CONFIG=%CONFIG%
 goto :END
 
 :REBUILD
-make clean
+make clean CONFIG=%CONFIG%
 make CONFIG=%CONFIG% 2>&1 | %GNU_TO_MSDEV_CMD%
 
 
