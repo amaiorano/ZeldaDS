@@ -41,18 +41,24 @@ public:
 
 	// Reads sizeof(T) * numElems bytes into buffer, doesn't endian swap
 	template <typename T>
-	void ReadBytes(T& buffer, int numElems = 1)
+	void ReadElems(T* pBuffer, int numElems)
 	{
-		ReadBytes(reinterpret_cast<uint8*>(&buffer), sizeof(T) * numElems, false);
+		ReadBytes(reinterpret_cast<uint8*>(pBuffer), sizeof(T) * numElems, false);
 	}
 
 private:
+	size_t ReadPrefetchedData(uint8* pBuffer, uint32 numBytes);
 	void ReadBytes(uint8* pBuffer, uint32 numBytes, bool isIntegralType);
 
 	FILE* mpFile;
 	Endian::Type mFileEndian;
 	long mSizeBytes;
 	bool mAtEof;
+
+	// This stream buffers input
+	static const uint PREFETCH_BUFFER_SIZE = 20 * 1024;
+	uint8* mPrefetchBuffer;
+	size_t mPrefetchCurr, mPrefetchEnd;
 };
 
 

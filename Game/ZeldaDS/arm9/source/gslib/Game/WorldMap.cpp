@@ -9,6 +9,25 @@
 #include "ScrollingMgr.h"
 #include <cstdlib>
 #include <limits>
+#include <string.h>
+
+namespace
+{
+	void RotateColors(std::vector<uint16>& paletteIndices)
+	{
+		uint16* pBgPalette = GraphicsEngine::GetBgPalette();
+
+		uint16 tmp = pBgPalette[paletteIndices[0]];
+		std::size_t i = 1;
+
+		for ( ; i < paletteIndices.size(); ++i)
+		{
+			pBgPalette[paletteIndices[i-1]] = pBgPalette[paletteIndices[i]];
+		}
+		pBgPalette[paletteIndices[i-1]] = tmp;
+	}
+} // anonymous namespace
+
 
 void TileSet::Init()
 {
@@ -21,7 +40,7 @@ void TileSet::Init()
 void TileLayer::Init(uint16 numTilesX, uint16 numTilesY)
 {
 	mTileSet.Init();
-	vector2<uint16>::resize(mTileMap, numTilesX, numTilesY);
+	mTileMap.Reset(numTilesX, numTilesY);
 }
 
 
@@ -48,11 +67,7 @@ void WorldMap::Init(uint16 numScreensX, uint16 numScreensY)
 		mTileLayers[layer].Init(mNumTilesX, mNumTilesY);
 	}
 
-	mCollisionMap.resize(mNumTilesX);
-	for (uint16 x=0; x < mCollisionMap.size(); ++x)
-	{
-		mCollisionMap[x].resize(mNumTilesY);
-	}
+	mCollisionMap.Reset(mNumTilesX, mNumTilesY);
 }
 
 void WorldMap::Shutdown()
@@ -67,54 +82,6 @@ void WorldMap::Shutdown()
 	mAnimControls.clear();
 }
 
-void WorldMap::TEMP_LoadRandomMap()
-{
-	for (uint16 y = 0; y < mNumTilesY; ++y)
-	{
-		for (uint16 x = 0; x < mNumTilesX; ++x)
-		{
-			GetTileMapLayer(0)[x][y] = 0;
-			GetTileMapLayer(1)[x][y] = 0;
-			mCollisionMap[x][y] = 0;
-
-			// randomly place a bush or rock tile
-			if (MathEx::Rand(10) == 5)
-			{
-				int tile = 0;
-				switch (MathEx::Rand(2))
-				{
-				case 0: tile = 20; break;
-				case 1: tile = 23; break;
-				case 2: tile = 40; break;
-				}
-
-				GetTileMapLayer(1)[x][y] = tile;
-
-				mCollisionMap[x][y] = 1;
-			}
-		}
-	}
-
-	const int TilesPerRow = 22;
-
-	TileMap& tileMap0 = GetTileMapLayer(0);
-	tileMap0[0][0] = TilesPerRow*2 + 6;
-	tileMap0[0][1] = TilesPerRow*3 + 6;
-	tileMap0[0][2] = TilesPerRow*4 + 6;
-
-	tileMap0[2][2] = 16;
-
-	//TEST
-	uint16 sharedClockIndex = AddAnimTileSharedClock(4, 45, AnimCycle::Loop);
-	//EnableAnimTile(0, 0, sharedClockIndex);
-	EnableAnimTile(0, TilesPerRow*2 + 6, sharedClockIndex);
-	EnableAnimTile(0, TilesPerRow*3 + 6, sharedClockIndex);
-	EnableAnimTile(0, TilesPerRow*4 + 6, sharedClockIndex);
-
-	sharedClockIndex = AddAnimTileSharedClock(4, 10, AnimCycle::Loop);
-	EnableAnimTile(0, 16, sharedClockIndex);
-}
-
 void WorldMap::LoadMap(const char* mapFile)
 {
 	//@TODO: Optimize map size by:
@@ -124,40 +91,53 @@ void WorldMap::LoadMap(const char* mapFile)
 	BinaryFileStream bfs;
 	bfs.Open(mapFile, "r");
 
-	uint16 numLayers = bfs.ReadInt<uint16>();
-	
+	const uint16 numLayers = bfs.ReadInt<uint16>();	
 	ASSERT(numLayers == NumLayers + 1); // Tile layers + collision layer
 	
 	for (uint16 layer=0; layer < numLayers; ++layer)
 	{
-		uint16 numTilesX = bfs.ReadInt<uint16>();
-		uint16 numTilesY = bfs.ReadInt<uint16>();
+		const uint16 numTilesX = bfs.ReadInt<uint16>();
+		const uint16 numTilesY = bfs.ReadInt<uint16>();
+		const int numElemsToRead = numTilesX * numTilesY;
 		ASSERT(numTilesX == mNumTilesX);
 		ASSERT(numTilesY == mNumTilesY);
-
-		for (int x = 0; x < numTilesX; ++x)
+		
+		if (layer < 2)
 		{
-			for (int y = 0; y < numTilesY; ++y)
-			{
-				uint16 tileIndex = bfs.ReadInt<uint16>();
-				
-				if (layer < 2)
-				{
-					GetTileMapLayer(layer)[x][y] = tileIndex;
-				}
-				else if (layer == 2)
-				{
-					mCollisionMap[x][y] = tileIndex;
-				}
-				else
-				{
-					FAIL();
-				}
-			}
+			ASSERT(numElemsToRead == GetTileMapLayer(layer).Size());
+			bfs.ReadElems<uint16>(GetTileMapLayer(layer).RawPtr(), numElemsToRead);
+		}
+		else
+		{
+			ASSERT(numElemsToRead == mCollisionMap.Size());
+			bfs.ReadElems<uint16>(mCollisionMap.RawPtr(), numElemsToRead);
 		}
 
 		uint16 marker = bfs.ReadInt<uint16>();
+		(void)marker;
 		ASSERT(marker == 0xFFFF);
+	}
+
+	//@TODO: Read anim tile info from file
+	{
+		const int TilesPerRow = 16;
+
+		// Ocean shore tiles
+		uint16 sharedClockIndex = AddAnimTileSharedClock(4, 45, AnimCycle::Loop);
+		for (int i = 0; i < 12; ++i)
+		{
+			EnableAnimTile(0, 5 * TilesPerRow + (i * 4), sharedClockIndex);
+		}
+
+		// Waterfall
+		sharedClockIndex = AddAnimTileSharedClock(4, 10, AnimCycle::Loop);
+		EnableAnimTile(0, 2 * TilesPerRow + 9, sharedClockIndex);
+	}
+
+	//@TODO: Read color rotation info from file
+	{
+		uint16 paletteIndices[] = {10, 11, 13, 14};
+		EnableColorRotation(paletteIndices, NUM_ARRAY_ELEMS(paletteIndices), SEC_TO_FRAMES(0.2f));
 	}
 }
 
@@ -177,18 +157,47 @@ uint16 WorldMap::AddAnimTileSharedClock(int numFrames, AnimTimeType unitsPerFram
 
 void WorldMap::EnableAnimTile(uint16 layer, uint16 tileIndex, uint16 sharedClockIndex)
 {
-	TileSet::TileData& data = mTileLayers[layer].mTileSet.mTileData[tileIndex];
+	TileSet::TileData& data = mTileLayers[layer].mTileSet.GetTileData(tileIndex);
 	ASSERT(!data.mIsAnimated);
 	data.mIsAnimated = true;
 	data.mAnimTimelineIndex = sharedClockIndex;
 }
 
+void WorldMap::EnableColorRotation(uint16* paletteIndices, uint16 numPaletteIndices, GameTimeType intervalTime)
+{
+	mColorRotElems.push_back(ColorRotElem());
+	ColorRotElem& elem = mColorRotElems.back();
+	
+	for (int i = 0; i < numPaletteIndices; ++i)
+	{
+		elem.mPaletteIndices.push_back(paletteIndices[i]);
+	}
+
+	elem.mIntervalTime = intervalTime;
+}
+
 void WorldMap::Update(GameTimeType deltaTime)
 {
-	// Advance animated tile clocks
-	for (std::size_t i = 0; i < mAnimControls.size(); ++i)
+	// Don't animate stuff on map while scrolling
+	if (!ScrollingMgr::Instance().IsScrolling()) 
 	{
-		mAnimControls[i]->Update(deltaTime);
+		// Advance animated tile clocks
+		for (std::size_t i = 0; i < mAnimControls.size(); ++i)
+		{
+			mAnimControls[i]->Update(deltaTime);
+		}
+
+		// Do color rotation
+		for (std::size_t i = 0; i < mColorRotElems.size(); ++i)
+		{
+			ColorRotElem& elem = mColorRotElems[i];
+			elem.mElapsedTime += deltaTime;
+			if (elem.mElapsedTime >= elem.mIntervalTime)
+			{
+				elem.mElapsedTime = 0;
+				RotateColors(elem.mPaletteIndices);
+			}
+		}
 	}
 }
 
@@ -222,7 +231,7 @@ bool WorldMap::GetTileBoundingBoxIfCollision(const Vector2I& worldPos, BoundingB
 {
 	Vector2I tilePos(worldPos.x / GameMetaTileSizeX, worldPos.y / GameMetaTileSizeY);
 
-	if ( !mCollisionMap[tilePos.x][tilePos.y] )
+	if ( !mCollisionMap(tilePos.x, tilePos.y) )
 		return false;
 
 	//@NOTE: height is halved so we get the fake 3D feel from Zelda
@@ -234,9 +243,9 @@ uint16 WorldMap::GetTileIndexToDraw(uint16 layer, uint16 x, uint16 y) const
 {
 	const TileLayer& tileLayer = mTileLayers[layer];
 
-	uint16 tileIdx = tileLayer.mTileMap[x][y];
+	uint16 tileIdx = tileLayer.mTileMap(x, y);
 
-	const TileSet::TileData& data = tileLayer.mTileSet.mTileData[tileIdx];
+	const TileSet::TileData& data = tileLayer.mTileSet.GetTileData(tileIdx);
 	if (data.mIsAnimated)
 	{
 		tileIdx += mAnimControls[data.mAnimTimelineIndex]->GetCurrPoseIndex();

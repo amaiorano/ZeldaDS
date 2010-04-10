@@ -125,6 +125,14 @@
 						>
 					</File>
 					<File
+						RelativePath=".\ZeldaDS\arm9\source\gslib\Hw\CpuClock.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\ZeldaDS\arm9\source\gslib\Hw\CpuClock.h"
+						>
+					</File>
+					<File
 						RelativePath=".\ZeldaDS\arm9\source\gslib\Hw\ExceptionHandler.cpp"
 						>
 					</File>
@@ -450,6 +458,14 @@
 					</File>
 					<File
 						RelativePath=".\ZeldaDS\arm9\source\gslib\Stream\BinaryFileStream.h"
+						>
+					</File>
+				</Filter>
+				<Filter
+					Name="Util"
+					>
+					<File
+						RelativePath=".\ZeldaDS\arm9\source\gslib\Util\Array2d.h"
 						>
 					</File>
 				</Filter>

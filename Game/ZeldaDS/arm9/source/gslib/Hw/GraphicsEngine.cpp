@@ -200,6 +200,16 @@ namespace GraphicsEngine
 		BG_PALETTE_SUB[255] = color;
 	}
 
+	uint16* GetBgPalette()
+	{
+		return BG_PALETTE;
+	}
+
+	uint16* GetSubBgPalette()
+	{
+		return BG_PALETTE_SUB;
+	}
+
 	BackgroundLayer& GetBgLayer(uint8 layer)
 	{
 		ASSERT(layer >= 0 && layer <= 3);

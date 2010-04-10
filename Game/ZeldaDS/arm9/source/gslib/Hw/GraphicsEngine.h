@@ -20,6 +20,9 @@ namespace GraphicsEngine
 	void SetBgFontColor(uint16 color);
 	void SetSubBgFontColor(uint16 color);
 
+	uint16* GetBgPalette();
+	uint16* GetSubBgPalette();
+
 	BackgroundLayer& GetBgLayer(uint8 layer);
 	BackgroundLayer& GetSubBgLayer(uint8 layer);
 

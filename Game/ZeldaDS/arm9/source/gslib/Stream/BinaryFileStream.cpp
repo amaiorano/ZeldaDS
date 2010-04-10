@@ -1,5 +1,9 @@
 #include "BinaryFileStream.h"
 #include <stdio.h>
+#include <string.h>
+
+//@TODO: Prefetch doesn't work when reading more bytes than the prefetch buffer size
+//#define ENABLE_PREFETCH
 
 namespace
 {
@@ -16,19 +20,28 @@ BinaryFileStream::BinaryFileStream()
 : mpFile(0)
 , mFileEndian(FileDefaultEndian)
 , mSizeBytes(0)
-, mAtEof(0)
+, mAtEof(false)
+, mPrefetchBuffer(0)
+, mPrefetchCurr(0)
+, mPrefetchEnd(0)
 {
+#if defined(ENABLE_PREFETCH)
+	mPrefetchBuffer = new uint8[PREFETCH_BUFFER_SIZE];
+#endif
 }
 
 BinaryFileStream::~BinaryFileStream()
 {
+#if defined(ENABLE_PREFETCH)
+	delete [] mPrefetchBuffer;
+#endif
+
 	Close();
 }
 
 void BinaryFileStream::Open(const char* filePath, const char* mode, Endian::Type fileEndian)
 {
-	if (mpFile)
-		Close();
+	Close();
 
 	mpFile = fopen(filePath, mode);
 	ASSERT(mpFile);
@@ -55,9 +68,46 @@ bool BinaryFileStream::AtEof() const
 	return mAtEof;
 }
 
+size_t BinaryFileStream::ReadPrefetchedData(uint8* pBuffer, uint32 numBytes)
+{
+	size_t bytesRead = 0;
+
+	const size_t numPrefetchedBytes = mPrefetchEnd - mPrefetchCurr;
+	if (numBytes > numPrefetchedBytes)
+	{
+		// Copy what we've got left in the buffer, then fetch another chunk
+		if (numPrefetchedBytes > 0)
+		{
+			memcpy(pBuffer, &mPrefetchBuffer[mPrefetchCurr], numPrefetchedBytes);
+			numBytes -= numPrefetchedBytes;
+			bytesRead += numPrefetchedBytes;
+		}
+
+		const size_t prefetchBytesRead = fread(mPrefetchBuffer, 1, PREFETCH_BUFFER_SIZE, mpFile);
+		mPrefetchCurr = 0;
+		mPrefetchEnd = prefetchBytesRead; // Might be 0
+	}
+
+	if (numBytes > 0)
+	{
+		// Copy from the prefetch buffer
+		memcpy(pBuffer, &mPrefetchBuffer[mPrefetchCurr], numBytes);
+		mPrefetchCurr += numBytes;
+		bytesRead += numBytes;
+		ASSERT(mPrefetchCurr <= mPrefetchEnd);
+	}
+
+	return bytesRead;
+}
+
 void BinaryFileStream::ReadBytes(uint8* pBuffer, uint32 numBytes, bool isIntegralType)
 {
+#if defined(ENABLE_PREFETCH)
+	size_t bytesRead = ReadPrefetchedData(pBuffer, numBytes);
+#else
 	size_t bytesRead = fread(pBuffer, 1, numBytes, mpFile);
+#endif
+	(void)bytesRead;
 	ASSERT(bytesRead == numBytes); // Hit EOF sooner than expected
 	
 	mAtEof = ftell(mpFile) == mSizeBytes;

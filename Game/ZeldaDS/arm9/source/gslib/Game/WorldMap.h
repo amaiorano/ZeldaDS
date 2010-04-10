@@ -6,6 +6,7 @@
 #include "gslib/Hw/Constants.h"
 #include "gslib/Math/Vector2.h"
 #include "gslib/Anim/AnimTimeline.h"
+#include "gslib/Util/Array2d.h"
 #include <vector>
 
 // Game-specific constants
@@ -17,21 +18,6 @@ const uint16 GameNumScreenMetaTilesX		= (HwScreenSizeX / GameMetaTileSizeX);
 const uint16 GameNumScreenMetaTilesY		= (HwScreenSizeY / GameMetaTileSizeY);
 
 class BoundingBox;
-
-// Define a useful vector2 type: a vector of vectors
-template <typename T>
-struct vector2
-{
-	typedef std::vector< std::vector<T> > type;
-
-	static void resize(type& vec2, std::size_t sizeX, std::size_t sizeY)
-	{
-		vec2.resize(sizeX);
-		typename type::iterator iter = vec2.begin();
-		for ( ; iter != vec2.end(); ++iter)
-			(*iter).resize(sizeY);
-	}
-};
 
 
 // WorldMap contains an array of TileLayer, which contains a TileMap and a TileSet.
@@ -56,11 +42,23 @@ struct TileSet
 		uint8 mAnimTimelineIndex; // Shared AnimTimeline index
 	};
 
+	TileData& GetTileData(uint16 tileIndex)
+	{
+		return const_cast<TileData&>( const_cast<const TileSet*>(this)->GetTileData(tileIndex) );
+	}
+
+	const TileData& GetTileData(uint16 tileIndex) const
+	{
+		ASSERT_MSG(tileIndex < MaxNumTiles, "TileSet::GetTileData() index out of range");
+		return mTileData[tileIndex];
+	}
+
+private:
 	TileData mTileData[MaxNumTiles];
 };
 
 typedef uint16 TileIndexType;
-typedef vector2<TileIndexType>::type TileMap;
+typedef Array2d<TileIndexType, uint16> TileMap;
 
 // TileLayer represents a single layer of tiles. WorldMap aggregates one TileLayer
 // per background layer.
@@ -73,7 +71,6 @@ struct TileLayer
 };
 
 
-
 // The world map (should this be a singleton?)
 class WorldMap : public Singleton<WorldMap>
 {
@@ -81,7 +78,6 @@ public:
 	void Init(uint16 numScreensX, uint16 numScreensY);
 	void Shutdown();
 
-	void TEMP_LoadRandomMap();
 	void LoadMap(const char* mapFile);
 
 	// Adds a shared clock for animated tiles and returns its index (pass index to EnableAnimTile())
@@ -89,6 +85,9 @@ public:
 
 	// Turns on tile animation for the input tile
 	void EnableAnimTile(uint16 layer, uint16 tileIndex, uint16 sharedClockIndex);
+
+	// Turns on the rotation of colors at the input palette indices at every intervalTime
+	void EnableColorRotation(uint16* paletteIndices, uint16 numPaletteIndices, GameTimeType intervalTime);
 
 	void Update(GameTimeType deltaTime);
 
@@ -119,8 +118,17 @@ private:
 	std::vector<class AnimAsset*> mAnimAssets;
 	std::vector<class AnimControl*> mAnimControls;
 
+	struct ColorRotElem
+	{
+		ColorRotElem() : mIntervalTime(0), mElapsedTime(0) { }
+		std::vector<uint16> mPaletteIndices;
+		GameTimeType mIntervalTime;
+		GameTimeType mElapsedTime;
+	};
+	std::vector<ColorRotElem> mColorRotElems;
+
 	TileLayer mTileLayers[NumLayers];
-	vector2<int>::type mCollisionMap; //@TODO: store 2d array of DataTile
+	Array2d<uint16, uint16> mCollisionMap; //@TODO: store 2d array of DataTile
 };
 
 #endif // WORLD_MAP_H

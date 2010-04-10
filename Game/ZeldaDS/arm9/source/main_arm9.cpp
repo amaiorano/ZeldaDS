@@ -6,6 +6,7 @@
 #include "gslib/Hw/BackgroundLayer.h"
 #include "gslib/Hw/InputManager.h"
 #include "gslib/Hw/Sprite.h"
+#include "gslib/Hw/CpuClock.h"
 #include "gslib/Hsm/HsmStateMachine.h"
 #include "gslib/Anim/AnimControl.h"
 
@@ -80,8 +81,8 @@ struct GameStates
 		{
 			WorldMap& worldMap = WorldMap::Instance();
 			worldMap.Init(20, 10);
-			//worldMap.TEMP_LoadRandomMap();
 			worldMap.LoadMap("Maps/TestMap.map");
+
 			SceneGraph::Instance().SetWorldMap(worldMap);
 
 			Vector2I startScreen(0, 0);
@@ -105,7 +106,7 @@ struct GameStates
 	{
 		virtual void PerformStateActions(HsmTimeType deltaTime)
 		{
-			TEMP_RespawnEnemiesIfAllDead();			
+			TEMP_RespawnEnemiesIfAllDead();
 
 			// Sim
 			SceneGraph::Instance().Update(deltaTime);
@@ -191,6 +192,7 @@ int main(void)
 
 	while (true)
 	{
+		CpuClock::Update();
 		InputManager::Update();
 
 		if ( !InputManager::IsPaused() )
