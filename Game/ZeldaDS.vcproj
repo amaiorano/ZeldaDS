@@ -27,7 +27,7 @@
 				BuildCommandLine="cd $(ProjectName)&#x0D;&#x0A;call build.bat build DEBUG"
 				ReBuildCommandLine="cd $(ProjectName)&#x0D;&#x0A;call build.bat rebuild DEBUG"
 				CleanCommandLine="cd $(ProjectName)&#x0D;&#x0A;call build.bat clean&#x0D;&#x0A;"
-				Output="$(ProjectName)\$(ProjectName).nds"
+				Output="$(ProjectName)\$(ProjectName)_d.nds"
 				PreprocessorDefinitions="WIN32;_DEBUG"
 				IncludeSearchPath=""
 				ForcedIncludes=""
