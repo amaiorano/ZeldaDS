@@ -348,6 +348,14 @@
 							>
 						</File>
 						<File
+							RelativePath=".\ZeldaDS\arm9\source\gslib\Game\MovementModel.cpp"
+							>
+						</File>
+						<File
+							RelativePath=".\ZeldaDS\arm9\source\gslib\Game\MovementModel.h"
+							>
+						</File>
+						<File
 							RelativePath=".\ZeldaDS\arm9\source\gslib\Game\Player.cpp"
 							>
 						</File>

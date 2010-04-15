@@ -2,8 +2,9 @@
 #include "gslib/Core/Core.h"
 #include "gslib/Hsm/HsmStateMachine.h"
 #include "gslib/Math/Vector2.h"
+#include "gslib/Hw/Constants.h"
+#include "gslib/Hw/InputManager.h"
 #include "GameItems.h"
-#include "GameHelpers.h"
 #include "ActorSharedStateData.h"
 #include "Sword.h"
 #include "Boomerang.h"
@@ -11,11 +12,7 @@
 #include "ScrollingMgr.h"
 #include "Camera.h"
 #include "Enemy.h"
-
-#include "gslib/Hw/Constants.h"
-#include "gslib/Hw/InputManager.h"
-#include "WorldMap.h"
-
+#include "MovementModel.h"
 
 // Player HSM
 
@@ -41,7 +38,7 @@ struct PlayerStates
 			{
 				SceneGraph::Instance().RemoveNodePostUpdate(mBoomerang);
 			}
-			
+
 			Base::PostHsmUpdate(deltaTime);
 		}
 
@@ -192,7 +189,8 @@ struct PlayerStates
 
 			mScrollingMgr.StartScrolling(Data().mScrollDir);
 
-			// Remove all enemies (not really the "right" place to do this)
+			// Remove all enemies
+			//@TODO: Should defer to an EnemyManager
 			EnemyList& enemies = SceneGraph::Instance().GetEnemyList();
 			for (EnemyList::iterator iter = enemies.begin(); iter != enemies.end(); ++iter)
 			{
@@ -269,12 +267,12 @@ struct PlayerStates
 		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
 		{
 			const uint32 currKeysHeld = InputManager::GetKeysHeld();
-			const bool shouldMove = currKeysHeld & (KEY_LEFT | KEY_RIGHT | KEY_UP | KEY_DOWN);
+			const bool shouldMove = currKeysHeld & KEYS_DIRECTION;
 			if (shouldMove)
 			{
 				return SiblingTransition<Alive_Locomotion_Move>();
 			}
-			
+
 			return NoTransition();
 		}
 
@@ -298,7 +296,7 @@ struct PlayerStates
 		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
 		{
 			const uint32 currKeysHeld = InputManager::GetKeysHeld();
-			const bool shouldMove = currKeysHeld & (KEY_LEFT | KEY_RIGHT | KEY_UP | KEY_DOWN);
+			const bool shouldMove = currKeysHeld & KEYS_DIRECTION;
 			if (!shouldMove)
 			{
 				return SiblingTransition<Alive_Locomotion_Idle>();
@@ -309,12 +307,18 @@ struct PlayerStates
 
 		virtual void PerformStateActions(HsmTimeType deltaTime)
 		{
-			const int16 moveSpeed = 1; // pixels/frame
-			
-			const Vector2I& dirVec = GameHelpers::SpriteDirToUnitVector(Owner().GetSpriteDir());
-			Owner().SetVelocity(dirVec * moveSpeed);
+			const uint16 moveSpeed = 1; // pixels/frame
 
-			// If our direction changes while moving, play the new directional anim
+			Vector2I newVelocity(InitZero);
+			SpriteDir::Type newDir = SpriteDir::None;
+
+			//MovementModel::MoveDefault(Owner().GetPosition(), Owner().GetSpriteDir(), moveSpeed, newVelocity, newDir);
+			MovementModel::MoveGrid8x8(Owner().GetPosition(), Owner().GetSpriteDir(), moveSpeed, newVelocity, newDir);
+
+			Owner().SetVelocity(newVelocity);
+			Owner().SetSpriteDir(newDir);
+
+			//@HACK: If our direction changed while moving, replay the move anim to see the new directional one
 			if (mLastDir != Owner().GetSpriteDir())
 			{
 				mLastDir = Owner().GetSpriteDir();
@@ -322,7 +326,6 @@ struct PlayerStates
 			}
 		}
 	};
-
 
 	struct Alive_Attack : PlayerStateBase
 	{
@@ -374,9 +377,6 @@ struct PlayerStates
 	private:
 		void UpdateSwordPos(int16 offset)
 		{
-			//const Vector2I& swordPos = Owner().GetPosition() + GameHelpers::SpriteDirToUnitVector(Owner().GetSpriteDir()) * (offset - 2);
-			//Data().mSword.Teleport(swordPos);
-
 			const Vector2I& swordLocalPos = GameHelpers::SpriteDirToUnitVector(Owner().GetSpriteDir()) * (offset - 2);
 			Data().mSword.SetLocalPosition(swordLocalPos);
 
@@ -474,7 +474,7 @@ void Player::OnAddToScene()
 void Player::Update(GameTimeType deltaTime)
 {
 	mStateMachine.Update(deltaTime);
-	
+
 	//@TODO: Maybe state machine should provide some kind of hook for pre/post update?
 	ActorSharedStateData& sharedData = static_cast<ActorSharedStateData&>(*mpSharedStateData);
 	sharedData.PostHsmUpdate(deltaTime);
@@ -496,7 +496,7 @@ void Player::Render(GameTimeType deltaTime)
 	// we make sure to keep the player on screen if we're scrolling right here
 	if (ScrollingMgr::Instance().IsScrolling())
 	{
-		// This assert is valid except when we debug quick scroll
+		// This assert is valid except when we use debug quick scroll
 		//ASSERT( mStateMachine.IsInState<PlayerStates::Alive_Scrolling>() );
 
 		const Vector2I& screenPos = GetScreenPosition();

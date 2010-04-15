@@ -4,6 +4,9 @@
 #include <nds/ndstypes.h> //@NOTE: required include before <nds/arm9/input.h> (should let libnds authors know)
 #include <nds/arm9/input.h> // Include here for key constants
 
+// Useful key constant combinations
+#define KEYS_DIRECTION (KEY_LEFT | KEY_RIGHT | KEY_UP | KEY_DOWN)
+
 namespace InputManager
 {
 	void Update();
