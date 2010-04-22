@@ -30,8 +30,8 @@ struct ScrollingStates
 			}
 			else
 			{
-				// Keep redrawing current screen
-				WorldMap::Instance().DrawScreenTiles(Owner().mCurrScreen, Vector2I(0,0));
+				// Keep redrawing current screen's animated tiles
+				WorldMap::Instance().DrawScreenTiles(Owner().mCurrScreen, Vector2I(0,0), DrawScreenTilesMode::AnimatedOnly);
 			}
 
 			return NoTransition();

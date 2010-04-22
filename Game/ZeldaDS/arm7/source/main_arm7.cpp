@@ -57,9 +57,9 @@ int main() {
 	SetYtrigger(80);
 
 	//installWifiFIFO();
-	//installSoundFIFO();
 
-	//mmInstall(FIFO_MAXMOD);
+	installSoundFIFO();
+	mmInstall(FIFO_MAXMOD);
 
 	installSystemFIFO();
 	

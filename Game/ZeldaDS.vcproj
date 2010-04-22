@@ -113,6 +113,14 @@
 					Name="Hw"
 					>
 					<File
+						RelativePath=".\ZeldaDS\arm9\source\gslib\Hw\AudioEngine.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\ZeldaDS\arm9\source\gslib\Hw\AudioEngine.h"
+						>
+					</File>
+					<File
 						RelativePath=".\ZeldaDS\arm9\source\gslib\Hw\BackgroundLayer.cpp"
 						>
 					</File>

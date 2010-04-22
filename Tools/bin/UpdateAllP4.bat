@@ -8,9 +8,10 @@ echo.
 echo Reconciling offline files for:
 
 echo Assets...
-pushd %NDSGAMEROOT%\Assets
+cd /d %NDSGAMEROOT%\Assets\Graphics
 rm -f *.h *.s
-popd
+cd /d %NDSGAMEROOT%\Assets\Audio
+rm -f *.h *.bin
 call %P4_RECONCILE_CMD% %NDSGAMEROOT%\Assets
 
 echo Docs...
@@ -18,20 +19,17 @@ call %P4_RECONCILE_CMD% %NDSGAMEROOT%\Docs
 
 echo Tools...
 call %P4_RECONCILE_CMD% %NDSGAMEROOT%\Tools
-pushd %NDSGAMEROOT%\Tools\desmume
+cd /d %NDSGAMEROOT%\Tools\desmume
 p4 revert desmume.ini
-popd
 
 echo Game...
-pushd %NDSGAMEROOT%\Game
+cd /d %NDSGAMEROOT%\Game
 call UpdateP4.bat nopause
-popd
 
 echo Editor...
-pushd %NDSGAMEROOT%\Editor\Zelous
+cd /d %NDSGAMEROOT%\Editor\Zelous
 rem TODO: Add UpdateP4.bat for Zelous
 rem call UpdateP4.bat nopause
-popd
 
 echo Done!
 pause

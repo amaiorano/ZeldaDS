@@ -201,7 +201,7 @@ void WorldMap::Update(GameTimeType deltaTime)
 	}
 }
 
-void WorldMap::DrawScreenTiles(const Vector2I& srcScreen, const Vector2I& tgtScreen)
+void WorldMap::DrawScreenTiles(const Vector2I& srcScreen, const Vector2I& tgtScreen, DrawScreenTilesMode::Type mode)
 {
 	BackgroundLayer& tgtBgLayer2 = GraphicsEngine::GetBgLayer(2);
 	BackgroundLayer& tgtBgLayer3 = GraphicsEngine::GetBgLayer(3);
@@ -214,15 +214,21 @@ void WorldMap::DrawScreenTiles(const Vector2I& srcScreen, const Vector2I& tgtScr
 	uint16 tgtCurrTileX = tgtScreen.x * GameNumScreenMetaTilesX;
 	uint16 tgtCurrTileY = tgtScreen.y * GameNumScreenMetaTilesY;
 
+	const bool drawOnlyAnimTiles = (mode == DrawScreenTilesMode::AnimatedOnly);
+	bool tileIsAnimated = false;
+	uint16 srcTile = 0;
+
 	for (uint16 y = 0; y < GameNumScreenMetaTilesY; ++y)
 	{
 		for (uint16 x = 0; x < GameNumScreenMetaTilesX; ++x)
 		{
-			uint16 srcTile = GetTileIndexToDraw(0, srcCurrTileX + x, srcCurrTileY + y);
-			tgtBgLayer3.DrawTile(srcTile, tgtCurrTileX + x, tgtCurrTileY + y);
+			srcTile = GetTileIndexToDraw(0, srcCurrTileX + x, srcCurrTileY + y, tileIsAnimated);
+			if (!drawOnlyAnimTiles || tileIsAnimated)
+				tgtBgLayer3.DrawTile(srcTile, tgtCurrTileX + x, tgtCurrTileY + y);
 
-			srcTile = GetTileIndexToDraw(1, srcCurrTileX + x, srcCurrTileY + y);
-			tgtBgLayer2.DrawTile(srcTile, tgtCurrTileX + x, tgtCurrTileY + y);
+			srcTile = GetTileIndexToDraw(1, srcCurrTileX + x, srcCurrTileY + y, tileIsAnimated);
+			if (!drawOnlyAnimTiles || tileIsAnimated)
+				tgtBgLayer2.DrawTile(srcTile, tgtCurrTileX + x, tgtCurrTileY + y);
 		}
 	}
 }
@@ -239,7 +245,7 @@ bool WorldMap::GetTileBoundingBoxIfCollision(const Vector2I& worldPos, BoundingB
 	return true;
 }
 
-uint16 WorldMap::GetTileIndexToDraw(uint16 layer, uint16 x, uint16 y) const
+uint16 WorldMap::GetTileIndexToDraw(uint16 layer, uint16 x, uint16 y, bool& tileIsAnimated) const
 {
 	const TileLayer& tileLayer = mTileLayers[layer];
 
@@ -251,5 +257,6 @@ uint16 WorldMap::GetTileIndexToDraw(uint16 layer, uint16 x, uint16 y) const
 		tileIdx += mAnimControls[data.mAnimTimelineIndex]->GetCurrPoseIndex();
 	}
 
+	tileIsAnimated = data.mIsAnimated;
 	return tileIdx;
 }

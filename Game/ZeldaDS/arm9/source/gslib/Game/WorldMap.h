@@ -70,6 +70,14 @@ struct TileLayer
 	TileMap mTileMap;
 };
 
+namespace DrawScreenTilesMode
+{
+	enum Type
+	{
+		All,
+		AnimatedOnly
+	};
+}
 
 // The world map (should this be a singleton?)
 class WorldMap : public Singleton<WorldMap>
@@ -97,7 +105,7 @@ public:
 	uint16 GetNumTilesY() const		{ return mNumTilesY; }
 
 	// Copy a screen's tiles from the map to a screen quadrant on the target bg layers
-	void DrawScreenTiles(const Vector2I& srcScreen, const Vector2I& tgtScreen);
+	void DrawScreenTiles(const Vector2I& srcScreen, const Vector2I& tgtScreen, DrawScreenTilesMode::Type mode = DrawScreenTilesMode::All);
 
 	// Returns true and sets bbox if a collision tile is set at input world pos
 	bool GetTileBoundingBoxIfCollision(const Vector2I& worldPos, BoundingBox& bbox);
@@ -107,7 +115,7 @@ private:
 	WorldMap();
 
 	TileMap& GetTileMapLayer(uint16 layer) { return mTileLayers[layer].mTileMap; }
-	uint16 GetTileIndexToDraw(uint16 layer, uint16 x, uint16 y) const;
+	uint16 GetTileIndexToDraw(uint16 layer, uint16 x, uint16 y, bool& tileIsAnimated) const;
 
 	uint16 mNumScreensX, mNumScreensY;
 	uint16 mNumTilesX, mNumTilesY;

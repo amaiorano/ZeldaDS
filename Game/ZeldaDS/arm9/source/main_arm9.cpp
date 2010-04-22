@@ -7,6 +7,7 @@
 #include "gslib/Hw/InputManager.h"
 #include "gslib/Hw/Sprite.h"
 #include "gslib/Hw/CpuClock.h"
+#include "gslib/Hw/AudioEngine.h"
 #include "gslib/Hsm/HsmStateMachine.h"
 #include "gslib/Anim/AnimControl.h"
 
@@ -23,7 +24,7 @@
 #include "data/overworld_bg.h"
 #include "data/overworld_fg.h"
 #include "data/characters.h"
-#include "data/items.h"
+#include "data/soundbank.h"
 
 //@TODO: MEMORY MANAGEMENT:
 // 4 MB ram on DS
@@ -82,8 +83,10 @@ struct GameStates
 			WorldMap& worldMap = WorldMap::Instance();
 			worldMap.Init(20, 10);
 			worldMap.LoadMap("Maps/TestMap.map");
-
 			SceneGraph::Instance().SetWorldMap(worldMap);
+
+			AudioEngine::LoadBank("Audio/soundbank.bin");
+			AudioEngine::PlayMusic(MOD_OVERWORLD3);
 
 			Vector2I startScreen(0, 0);
 			ScrollingMgr::Instance().Init(startScreen);
@@ -190,6 +193,8 @@ int main(void)
 	gameStateMachine.SetSharedStateData(new GameStates::GameSharedStateData());
 	gameStateMachine.SetInitialState<GameStates::Root>();
 
+	bool paused = false;
+
 	while (true)
 	{
 		CpuClock::Update();
@@ -197,12 +202,23 @@ int main(void)
 
 		if ( !InputManager::IsPaused() )
 		{
+			if (paused)
+			{
+				paused = false;
+				AudioEngine::SetPaused(false);
+			}
+
 			// Logic update
 
 			// NDS refresh rate is 60 Hz, so as long as we don't take too long in one frame, we can just pass in 1 (frame)
 			const GameTimeType deltaTime = 1;
 
 			gameStateMachine.Update(deltaTime);
+		}
+		else if (!paused)
+		{
+			paused = true;
+			AudioEngine::SetPaused(true);
 		}
 
 		GraphicsEngine::PreVBlankUpdate();

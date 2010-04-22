@@ -4,6 +4,8 @@
 #include "gslib/Math/Vector2.h"
 #include "gslib/Hw/Constants.h"
 #include "gslib/Hw/InputManager.h"
+#include "gslib/Hw/AudioEngine.h"
+#include "data/soundbank.h"
 #include "GameItems.h"
 #include "ActorSharedStateData.h"
 #include "Sword.h"
@@ -332,6 +334,7 @@ struct PlayerStates
 		virtual void OnEnter()
 		{
 			PlayAnim(BaseAnim::Attack);
+			AudioEngine::PlaySound(SFX_SWORD);
 
 			Data().mSword.Init(Owner().GetSpriteDir());
 			SceneGraph::Instance().AddNode(Data().mSword);
