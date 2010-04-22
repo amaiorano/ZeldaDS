@@ -12,7 +12,7 @@
 * Compile the game by building the solution (build Debug configuration)
 
 * Run by pressing F5, which should launch the game through desmume
-** If you get the "Failed to init file system..." error, in desmume, go to Emulation -> GBA Slot, then Browse and select ZeldaDS.nds (you'll have to put a '*' in the File name field to show all files, otherwise you can only select *.gba files). This only has to be done once. Note that a future release of desmume will allow me to pass this in by commandline, and you won't have to worry about this step anymore.
+** If you get the "Failed to init file system..." error, in desmume, go to Emulation -> GBA Slot, then Browse and select ZeldaDS_d.nds (you'll have to put a '*' in the File name field and press Enter to show all files, otherwise you can only select *.gba files). This only has to be done once. Note that a future release of desmume will allow me to pass this in by commandline, and you won't have to worry about this step anymore.
 
 
 === Notes ===
