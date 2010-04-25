@@ -1,4 +1,6 @@
-== Steps to setup your environment to develop ZeldaDS ==
+== Environment Setup ==
+
+== Zelda DS ==
 
 * Install the latest version of devkitPro using the windows installer (http://www.devkitpro.org/)
 
@@ -14,7 +16,18 @@
 * Run by pressing F5, which should launch the game through desmume
 ** If you get the "Failed to init file system..." error, in desmume, go to Emulation -> GBA Slot, then Browse and select ZeldaDS_d.nds (you'll have to put a '*' in the File name field and press Enter to show all files, otherwise you can only select *.gba files). This only has to be done once. Note that a future release of desmume will allow me to pass this in by commandline, and you won't have to worry about this step anymore.
 
+* NOTE: If compiling to run on actual hardware (i.e. flashcart), make sure that in gslib/Core/Config.h, PRINT_TO_EMULATOR_CONSOLE is set to 0, otherwise the game will crash on the first call to printf().
 
-=== Notes ===
 
-* If compiling to run on actual hardware (i.e. flashcart), make sure that in gslib/Core/Config.h, PRINT_TO_EMULATOR_CONSOLE is set to 0, otherwise the game will crash on the first call to printf().
+== Zelous ==
+
+* Before starting with this setup, make sure you've got Zelda DS up and running (section above)
+
+* Open %NDSGAMEROOT%\Editor\Zelous\Zelous.csproj in Visual Studio, open project properties...
+** Debug tab, set Working Directory to "%NDSGAMEROOT%\Editor\Zelous\out\Zelous" by browsing to this folder. Unfortunately, this field cannot contain environment variables, so you'll have to put the full path.
+
+* When building, there is a post-build step that copies the executable to "out/Zelous/". This file is checked into P4, so you'll have to open it for edit for the copy step to succeed (otherwise the file will be read only). So make sure to check out:
+//depot/NDS/ZeldaDS/Editor/Zelous/out/Zelous/Zelous.exe
+When checking in changes to Zelous, you'll want to submit the latest version of this exe as well (for now we just check in the Debug build).
+
+* You should now be able to build the project and debug it (F5).
