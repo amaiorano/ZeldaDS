@@ -29,22 +29,23 @@ namespace Zelous
         private void InitializeComponent()
         {
             this.mSplitContainer = new System.Windows.Forms.SplitContainer();
+            this.mWorldMapView = new Zelous.TileMapView();
             this.mMenuStrip = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openMapToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveMapToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveMapAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutZelousToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mTabControl = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.tabPage3 = new System.Windows.Forms.TabPage();
-            this.saveMapToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.saveMapAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.mWorldMapView = new Zelous.TileMapView();
             this.mTileSetView1 = new Zelous.TileMapView();
+            this.tabPage2 = new System.Windows.Forms.TabPage();
             this.mTileSetView2 = new Zelous.TileMapView();
+            this.tabPage3 = new System.Windows.Forms.TabPage();
             this.mCollisionView = new Zelous.TileMapView();
+            this.buildAndTestMapToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mSplitContainer.Panel1.SuspendLayout();
             this.mSplitContainer.Panel2.SuspendLayout();
             this.mSplitContainer.SuspendLayout();
@@ -74,6 +75,18 @@ namespace Zelous
             this.mSplitContainer.SplitterDistance = 300;
             this.mSplitContainer.TabIndex = 1;
             // 
+            // mWorldMapView
+            // 
+            this.mWorldMapView.ActiveLayer = 0;
+            this.mWorldMapView.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.mWorldMapView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.mWorldMapView.Location = new System.Drawing.Point(0, 24);
+            this.mWorldMapView.Name = "mWorldMapView";
+            this.mWorldMapView.RenderScale = 1;
+            this.mWorldMapView.Size = new System.Drawing.Size(681, 276);
+            this.mWorldMapView.TabIndex = 0;
+            this.mWorldMapView.Title = "TileMapView Title";
+            // 
             // mMenuStrip
             // 
             this.mMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -91,7 +104,8 @@ namespace Zelous
             this.newToolStripMenuItem,
             this.openMapToolStripMenuItem,
             this.saveMapToolStripMenuItem,
-            this.saveMapAsToolStripMenuItem});
+            this.saveMapAsToolStripMenuItem,
+            this.buildAndTestMapToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem.Text = "File";
@@ -99,15 +113,29 @@ namespace Zelous
             // newToolStripMenuItem
             // 
             this.newToolStripMenuItem.Name = "newToolStripMenuItem";
-            this.newToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.newToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
             this.newToolStripMenuItem.Text = "New Map";
             // 
             // openMapToolStripMenuItem
             // 
             this.openMapToolStripMenuItem.Name = "openMapToolStripMenuItem";
-            this.openMapToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.openMapToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
             this.openMapToolStripMenuItem.Text = "Open Map";
             this.openMapToolStripMenuItem.Click += new System.EventHandler(this.openMapToolStripMenuItem_Click);
+            // 
+            // saveMapToolStripMenuItem
+            // 
+            this.saveMapToolStripMenuItem.Name = "saveMapToolStripMenuItem";
+            this.saveMapToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.saveMapToolStripMenuItem.Text = "Save Map";
+            this.saveMapToolStripMenuItem.Click += new System.EventHandler(this.saveMapToolStripMenuItem_Click);
+            // 
+            // saveMapAsToolStripMenuItem
+            // 
+            this.saveMapAsToolStripMenuItem.Name = "saveMapAsToolStripMenuItem";
+            this.saveMapAsToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.saveMapAsToolStripMenuItem.Text = "Save Map As...";
+            this.saveMapAsToolStripMenuItem.Click += new System.EventHandler(this.saveMapAsToolStripMenuItem_Click);
             // 
             // helpToolStripMenuItem
             // 
@@ -146,52 +174,6 @@ namespace Zelous
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "TileSet 1";
             // 
-            // tabPage2
-            // 
-            this.tabPage2.Controls.Add(this.mTileSetView2);
-            this.tabPage2.Location = new System.Drawing.Point(4, 22);
-            this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(673, 174);
-            this.tabPage2.TabIndex = 1;
-            this.tabPage2.Text = "TileSet 2";
-            // 
-            // tabPage3
-            // 
-            this.tabPage3.Controls.Add(this.mCollisionView);
-            this.tabPage3.Location = new System.Drawing.Point(4, 22);
-            this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage3.Size = new System.Drawing.Size(673, 174);
-            this.tabPage3.TabIndex = 2;
-            this.tabPage3.Text = "Collision";
-            this.tabPage3.UseVisualStyleBackColor = true;
-            // 
-            // saveMapToolStripMenuItem
-            // 
-            this.saveMapToolStripMenuItem.Name = "saveMapToolStripMenuItem";
-            this.saveMapToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.saveMapToolStripMenuItem.Text = "Save Map";
-            this.saveMapToolStripMenuItem.Click += new System.EventHandler(this.saveMapToolStripMenuItem_Click);
-            // 
-            // saveMapAsToolStripMenuItem
-            // 
-            this.saveMapAsToolStripMenuItem.Name = "saveMapAsToolStripMenuItem";
-            this.saveMapAsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.saveMapAsToolStripMenuItem.Text = "Save Map As...";
-            // 
-            // mWorldMapView
-            // 
-            this.mWorldMapView.ActiveLayer = 0;
-            this.mWorldMapView.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.mWorldMapView.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.mWorldMapView.Location = new System.Drawing.Point(0, 24);
-            this.mWorldMapView.Name = "mWorldMapView";
-            this.mWorldMapView.RenderScale = 1;
-            this.mWorldMapView.Size = new System.Drawing.Size(681, 276);
-            this.mWorldMapView.TabIndex = 0;
-            this.mWorldMapView.Title = "TileMapView Title";
-            // 
             // mTileSetView1
             // 
             this.mTileSetView1.ActiveLayer = 0;
@@ -203,6 +185,16 @@ namespace Zelous
             this.mTileSetView1.Size = new System.Drawing.Size(667, 168);
             this.mTileSetView1.TabIndex = 0;
             this.mTileSetView1.Title = "TileMapView Title";
+            // 
+            // tabPage2
+            // 
+            this.tabPage2.Controls.Add(this.mTileSetView2);
+            this.tabPage2.Location = new System.Drawing.Point(4, 22);
+            this.tabPage2.Name = "tabPage2";
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage2.Size = new System.Drawing.Size(673, 174);
+            this.tabPage2.TabIndex = 1;
+            this.tabPage2.Text = "TileSet 2";
             // 
             // mTileSetView2
             // 
@@ -216,6 +208,17 @@ namespace Zelous
             this.mTileSetView2.TabIndex = 2;
             this.mTileSetView2.Title = "TileMapView Title";
             // 
+            // tabPage3
+            // 
+            this.tabPage3.Controls.Add(this.mCollisionView);
+            this.tabPage3.Location = new System.Drawing.Point(4, 22);
+            this.tabPage3.Name = "tabPage3";
+            this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage3.Size = new System.Drawing.Size(673, 174);
+            this.tabPage3.TabIndex = 2;
+            this.tabPage3.Text = "Collision";
+            this.tabPage3.UseVisualStyleBackColor = true;
+            // 
             // mCollisionView
             // 
             this.mCollisionView.ActiveLayer = 0;
@@ -227,6 +230,13 @@ namespace Zelous
             this.mCollisionView.Size = new System.Drawing.Size(667, 168);
             this.mCollisionView.TabIndex = 3;
             this.mCollisionView.Title = "TileMapView Title";
+            // 
+            // buildAndTestMapToolStripMenuItem
+            // 
+            this.buildAndTestMapToolStripMenuItem.Name = "buildAndTestMapToolStripMenuItem";
+            this.buildAndTestMapToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
+            this.buildAndTestMapToolStripMenuItem.Text = "Build and Test Map";
+            this.buildAndTestMapToolStripMenuItem.Click += new System.EventHandler(this.buildAndTestMapToolStripMenuItem_Click);
             // 
             // MainForm
             // 
@@ -271,6 +281,7 @@ namespace Zelous
         private TileMapView mCollisionView;
         private System.Windows.Forms.ToolStripMenuItem saveMapToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem saveMapAsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem buildAndTestMapToolStripMenuItem;
 
     }
 }

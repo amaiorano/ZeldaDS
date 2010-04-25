@@ -163,9 +163,9 @@ namespace Zelous
                     w.Write((UInt16)mNumTilesX);
                     w.Write((UInt16)mNumTilesY);
 
-                    for (int x = 0; x < mNumTilesX; ++x)
+                    for (int y = 0; y < mNumTilesY; ++y)
                     {
-                        for (int y = 0; y < mNumTilesY; ++y)
+                        for (int x = 0; x < mNumTilesX; ++x)
                         {
                             int tileIndex = tileLayer.TileMap[x, y];
                             w.Write((UInt16)tileIndex);
@@ -192,15 +192,12 @@ namespace Zelous
                     UInt16 numTilesY = r.ReadUInt16();
                     Debug.Assert(numTilesX == mNumTilesX && numTilesY == mNumTilesY);
 
-                    for (int x = 0; x < numTilesX; ++x)
+                    for (int y = 0; y < numTilesY; ++y)
                     {
-                        for (int y = 0; y < numTilesY; ++y)
+                        for (int x = 0; x < numTilesX; ++x)
                         {
                             UInt16 tileIndex = r.ReadUInt16();
                             tileLayer.TileMap[x, y] = tileIndex;
-
-                            //int tileIndex = tileLayer.TileMap[x, y];
-                            //w.Write((UInt16)tileIndex);
                         }
                     }
 

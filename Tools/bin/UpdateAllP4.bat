@@ -30,6 +30,7 @@ echo Editor...
 cd /d %NDSGAMEROOT%\Editor\Zelous
 rem TODO: Add UpdateP4.bat for Zelous
 rem call UpdateP4.bat nopause
+call %P4_RECONCILE_CMD% %NDSGAMEROOT%\Editor\Zelous
 
 echo Done!
 pause

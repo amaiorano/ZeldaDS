@@ -127,6 +127,13 @@ namespace Zelous
 
         private void saveMapToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            // For now, just do the same as Save As...
+            //@TODO: Store the current map path and save to it
+            saveMapAsToolStripMenuItem_Click(sender, e);
+        }
+
+        private void saveMapAsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
             using (SaveFileDialog fileDlg = new SaveFileDialog())
             {
                 fileDlg.Filter = "map files (*.map)|*.map";
@@ -137,7 +144,7 @@ namespace Zelous
                 {
                     mWorldMap.Serialize(SerializationType.Saving, fileDlg.FileName);
                 }
-            }            
+            }
         }
 
         private void openMapToolStripMenuItem_Click(object sender, EventArgs e)
@@ -154,7 +161,23 @@ namespace Zelous
                     mWorldMapView.RedrawTileMap();
                 }
             }
+        }
 
+        private void buildAndTestMapToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //@TODO: Make these paths configurable
+
+            // This build script will rebuild the NDS file with the updates files in nitrofiles
+            // directory (which includes the map files, for example)
+            string buildCmd = @"%NDSGAMEROOT%\Game\ZeldaDS\build.bat";
+            string buildArgs = @"build DEBUG";
+
+            // Run the emulator
+            string runCmd = @"%NDSGAMEROOT%\Tools\desmume\desmume_dev.exe";
+            string runArgs = @"%NDSGAMEROOT%\Game\ZeldaDS\ZeldaDS_d.nds";
+
+            ProcessHelpers.RunCommand(buildCmd, buildArgs, true);
+            ProcessHelpers.RunCommand(runCmd, runArgs, false);
         }
     }
 
@@ -167,6 +190,33 @@ namespace Zelous
             gfx.SmoothingMode = SmoothingMode.None;
             gfx.PixelOffsetMode = PixelOffsetMode.Half; // Required for scaling to work
             gfx.PageUnit = GraphicsUnit.Pixel;
+        }
+    }
+
+    //@TODO: Move into own file
+    public class ProcessHelpers
+    {
+        public static void RunCommand(string cmd, string args, bool useShellExecute)
+        {
+            cmd = Environment.ExpandEnvironmentVariables(cmd);
+            args = Environment.ExpandEnvironmentVariables(args);
+
+            ProcessStartInfo psi = new ProcessStartInfo(cmd);
+            psi.Arguments = args;
+            psi.WindowStyle = ProcessWindowStyle.Hidden;
+            psi.UseShellExecute = useShellExecute;
+            psi.WorkingDirectory = System.IO.Path.GetDirectoryName(cmd);
+
+            Process listFiles = Process.Start(psi);
+            listFiles.WaitForExit();
+
+            //@NOTE: If using shell execute, we can't get the output apparently
+            //System.IO.StreamReader myOutput = listFiles.StandardOutput;
+            //if (listFiles.HasExited)
+            //{
+            //    string output = myOutput.ReadToEnd();
+            //    this.processResults.Text = output;
+            //}
         }
     }
 }

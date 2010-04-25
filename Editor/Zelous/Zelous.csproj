@@ -94,6 +94,6 @@
   </Target>
   -->
   <PropertyGroup>
-    <PostBuildEvent>copy $(TargetPath) $(ProjectDir)\out\Zealous\</PostBuildEvent>
+    <PostBuildEvent>copy $(TargetPath) $(ProjectDir)\out\Zelous\</PostBuildEvent>
   </PropertyGroup>
 </Project>
