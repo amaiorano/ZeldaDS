@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="9.00"
 	Name="ZeldaDS"
 	ProjectGUID="{6C9BB541-5FFF-4CCD-8B87-8F68F58AF150}"
 	RootNamespace="ZeldaDS"
 	Keyword="MakeFileProj"
+	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
 		<Platform
@@ -26,7 +27,7 @@
 				Name="VCNMakeTool"
 				BuildCommandLine="cd $(ProjectName)&#x0D;&#x0A;call build.bat build DEBUG"
 				ReBuildCommandLine="cd $(ProjectName)&#x0D;&#x0A;call build.bat rebuild DEBUG"
-				CleanCommandLine="cd $(ProjectName)&#x0D;&#x0A;call build.bat clean&#x0D;&#x0A;"
+				CleanCommandLine="cd $(ProjectName)&#x0D;&#x0A;call build.bat clean DEBUG&#x0D;&#x0A;"
 				Output="$(ProjectName)\$(ProjectName)_d.nds"
 				PreprocessorDefinitions="WIN32;_DEBUG"
 				IncludeSearchPath=""
