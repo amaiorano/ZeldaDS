@@ -26,8 +26,7 @@ namespace Zelous
         private WorldMap mWorldMap;
         private int[] mActiveTileIndex = new int[WorldMap.NumLayers];
 
-        private Stack<Command> mUndoCommands = new Stack<Command>();
-        private Stack<Command> mRedoCommands = new Stack<Command>();
+        CommandManager mCommandManager = new CommandManager();
        
         public MainForm()
         {
@@ -102,82 +101,30 @@ namespace Zelous
         {
             if (sender == mWorldMapView) // Paste tile
             {
-                DoCommand( new SetTileCommand(e.TileLayer, e.TileMapPos, mActiveTileIndex[ActiveLayer], e.TileIndex) );
+                mCommandManager.DoCommand(new SetTileCommand(e.TileLayer, e.TileMapPos, mActiveTileIndex[ActiveLayer], e.TileIndex));
+                UpdateUndoRedoToolStripItems();
             }
             else // Copy tile
             {
                 Debug.Assert(sender.Parent is TabPage);
                 mActiveTileIndex[ActiveLayer] = e.TileIndex;
-                
-                sender.LastTileSelectedPosition = e.TileMapPos; 
+
+                sender.LastTileSelectedPosition = e.TileMapPos;
             }
             sender.Refresh();
         }
 
-        //Command Functions for Do/Undo/Redo
-        private void DoCommand(Command newCommand)
-        {
-            mUndoCommands.Push(newCommand);
-            newCommand.Do();
-
-            if (!undoToolStripMenuItem.Enabled) //enable the button
-                undoToolStripMenuItem.Enabled = true;
-
-            //Clear the redo stack
-            if (mRedoCommands.Count > 0)
-                mRedoCommands.Clear();
-
-            UpdateUndoRedoToolStripItems();
-        }
-
-        private void UndoCommand() //on the last command
-        {
-            //Technically, the button will be disabled if the stack is empty,
-            //but we check just to be safe
-            if (mUndoCommands.Count > 0)
-            {
-                Command lastCommand = mUndoCommands.Pop();
-                lastCommand.Undo();
-                mRedoCommands.Push(lastCommand);
-
-                mWorldMapView.Refresh();
-
-                UpdateUndoRedoToolStripItems();
-            }
-        }
-
-        private void RedoCommand()
-        {
-            if (mRedoCommands.Count > 0)
-            {
-                Command lastCommand = mRedoCommands.Pop();
-                lastCommand.Do();
-                mUndoCommands.Push(lastCommand);
-
-                mWorldMapView.Refresh();
-
-                UpdateUndoRedoToolStripItems();
-            }
-        }
-
         private void UpdateUndoRedoToolStripItems()
         {
-            if (mUndoCommands.Count == 0)
+            if (mCommandManager.NumUndoCommands == 0)
                 undoToolStripMenuItem.Enabled = false;
             else
                 undoToolStripMenuItem.Enabled = true;
 
-            if (mRedoCommands.Count == 0)
+            if (mCommandManager.NumRedoCommands == 0)
                 redoToolStripMenuItem.Enabled = false;
             else
                 redoToolStripMenuItem.Enabled = true;
-        }
-
-        private void ClearCommandStacks()
-        {
-            mUndoCommands.Clear();
-            mRedoCommands.Clear();
-            UpdateUndoRedoToolStripItems();
         }
 
         //end Command functions
@@ -232,7 +179,9 @@ namespace Zelous
                 {
                     mWorldMap.Serialize(SerializationType.Loading, fileDlg.FileName);
                     mWorldMapView.RedrawTileMap();
-                    ClearCommandStacks();
+
+                    mCommandManager.ClearCommandStacks();
+                    UpdateUndoRedoToolStripItems();
                 }
             }
         }
@@ -256,12 +205,16 @@ namespace Zelous
 
         private void undoToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            UndoCommand();
+            mCommandManager.UndoCommand();
+            UpdateUndoRedoToolStripItems();
+            mWorldMapView.Refresh();
         }
 
         private void redoToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            RedoCommand();
+            mCommandManager.RedoCommand();
+            UpdateUndoRedoToolStripItems();
+            mWorldMapView.Refresh();
         }
     }
 
