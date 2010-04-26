@@ -25,6 +25,9 @@ namespace Zelous
 
         private WorldMap mWorldMap;
         private int[] mActiveTileIndex = new int[WorldMap.NumLayers];
+
+        private Stack<Command> mUndoCommands = new Stack<Command>();
+        private Stack<Command> mRedoCommands = new Stack<Command>();
        
         public MainForm()
         {
@@ -99,7 +102,7 @@ namespace Zelous
         {
             if (sender == mWorldMapView) // Paste tile
             {
-                e.TileIndex = mActiveTileIndex[ActiveLayer];
+                DoCommand( new SetTileCommand(e.TileLayer, e.TileMapPos, mActiveTileIndex[ActiveLayer], e.TileIndex) );
             }
             else // Copy tile
             {
@@ -110,6 +113,74 @@ namespace Zelous
             }
             sender.Refresh();
         }
+
+        //Command Functions for Do/Undo/Redo
+        private void DoCommand(Command newCommand)
+        {
+            mUndoCommands.Push(newCommand);
+            newCommand.Do();
+
+            if (!undoToolStripMenuItem.Enabled) //enable the button
+                undoToolStripMenuItem.Enabled = true;
+
+            //Clear the redo stack
+            if (mRedoCommands.Count > 0)
+                mRedoCommands.Clear();
+
+            UpdateUndoRedoToolStripItems();
+        }
+
+        private void UndoCommand() //on the last command
+        {
+            //Technically, the button will be disabled if the stack is empty,
+            //but we check just to be safe
+            if (mUndoCommands.Count > 0)
+            {
+                Command lastCommand = mUndoCommands.Pop();
+                lastCommand.Undo();
+                mRedoCommands.Push(lastCommand);
+
+                mWorldMapView.Refresh();
+
+                UpdateUndoRedoToolStripItems();
+            }
+        }
+
+        private void RedoCommand()
+        {
+            if (mRedoCommands.Count > 0)
+            {
+                Command lastCommand = mRedoCommands.Pop();
+                lastCommand.Do();
+                mUndoCommands.Push(lastCommand);
+
+                mWorldMapView.Refresh();
+
+                UpdateUndoRedoToolStripItems();
+            }
+        }
+
+        private void UpdateUndoRedoToolStripItems()
+        {
+            if (mUndoCommands.Count == 0)
+                undoToolStripMenuItem.Enabled = false;
+            else
+                undoToolStripMenuItem.Enabled = true;
+
+            if (mRedoCommands.Count == 0)
+                redoToolStripMenuItem.Enabled = false;
+            else
+                redoToolStripMenuItem.Enabled = true;
+        }
+
+        private void ClearCommandStacks()
+        {
+            mUndoCommands.Clear();
+            mRedoCommands.Clear();
+            UpdateUndoRedoToolStripItems();
+        }
+
+        //end Command functions
 
         private void mTabControl_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -161,6 +232,7 @@ namespace Zelous
                 {
                     mWorldMap.Serialize(SerializationType.Loading, fileDlg.FileName);
                     mWorldMapView.RedrawTileMap();
+                    ClearCommandStacks();
                 }
             }
         }
@@ -180,6 +252,16 @@ namespace Zelous
 
             ProcessHelpers.RunCommand(buildCmd, buildArgs, true);
             ProcessHelpers.RunCommand(runCmd, runArgs, false);
+        }
+
+        private void undoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            UndoCommand();
+        }
+
+        private void redoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            RedoCommand();
         }
     }
 

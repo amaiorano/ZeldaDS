@@ -4,9 +4,8 @@
 
 - Tile Set Views
 	- Multi-select tiles (click & drag selection box over tiles) and paste
-	- Show selected tile(s)
 	
-- Undo tile pasting (including multi-paste)
+- Undo including multi-tile pasting
 
 - World Map View toolbar similar to Photoshop
 	- Pencil: tile draw
@@ -18,3 +17,5 @@
 == done ==
 
 - Solid tile view
+- Show selected tile(s)
+- Undo tile pasting

@@ -29,23 +29,26 @@ namespace Zelous
         private void InitializeComponent()
         {
             this.mSplitContainer = new System.Windows.Forms.SplitContainer();
-            this.mWorldMapView = new Zelous.TileMapView();
             this.mMenuStrip = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openMapToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveMapToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveMapAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.buildAndTestMapToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.undoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.redoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutZelousToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mTabControl = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.mTileSetView1 = new Zelous.TileMapView();
             this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.mTileSetView2 = new Zelous.TileMapView();
             this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.mWorldMapView = new Zelous.TileMapView();
+            this.mTileSetView1 = new Zelous.TileMapView();
+            this.mTileSetView2 = new Zelous.TileMapView();
             this.mCollisionView = new Zelous.TileMapView();
-            this.buildAndTestMapToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mSplitContainer.Panel1.SuspendLayout();
             this.mSplitContainer.Panel2.SuspendLayout();
             this.mSplitContainer.SuspendLayout();
@@ -75,22 +78,11 @@ namespace Zelous
             this.mSplitContainer.SplitterDistance = 300;
             this.mSplitContainer.TabIndex = 1;
             // 
-            // mWorldMapView
-            // 
-            this.mWorldMapView.ActiveLayer = 0;
-            this.mWorldMapView.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.mWorldMapView.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.mWorldMapView.Location = new System.Drawing.Point(0, 24);
-            this.mWorldMapView.Name = "mWorldMapView";
-            this.mWorldMapView.RenderScale = 1;
-            this.mWorldMapView.Size = new System.Drawing.Size(681, 276);
-            this.mWorldMapView.TabIndex = 0;
-            this.mWorldMapView.Title = "TileMapView Title";
-            // 
             // mMenuStrip
             // 
             this.mMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
+            this.editToolStripMenuItem,
             this.helpToolStripMenuItem});
             this.mMenuStrip.Location = new System.Drawing.Point(0, 0);
             this.mMenuStrip.Name = "mMenuStrip";
@@ -108,34 +100,74 @@ namespace Zelous
             this.buildAndTestMapToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
-            this.fileToolStripMenuItem.Text = "File";
+            this.fileToolStripMenuItem.Text = "&File";
             // 
             // newToolStripMenuItem
             // 
             this.newToolStripMenuItem.Name = "newToolStripMenuItem";
-            this.newToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
-            this.newToolStripMenuItem.Text = "New Map";
+            this.newToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.N)));
+            this.newToolStripMenuItem.Size = new System.Drawing.Size(222, 22);
+            this.newToolStripMenuItem.Text = "&New Map";
             // 
             // openMapToolStripMenuItem
             // 
             this.openMapToolStripMenuItem.Name = "openMapToolStripMenuItem";
-            this.openMapToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
-            this.openMapToolStripMenuItem.Text = "Open Map";
+            this.openMapToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
+            this.openMapToolStripMenuItem.Size = new System.Drawing.Size(222, 22);
+            this.openMapToolStripMenuItem.Text = "&Open Map";
             this.openMapToolStripMenuItem.Click += new System.EventHandler(this.openMapToolStripMenuItem_Click);
             // 
             // saveMapToolStripMenuItem
             // 
             this.saveMapToolStripMenuItem.Name = "saveMapToolStripMenuItem";
-            this.saveMapToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
-            this.saveMapToolStripMenuItem.Text = "Save Map";
+            this.saveMapToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
+            this.saveMapToolStripMenuItem.Size = new System.Drawing.Size(222, 22);
+            this.saveMapToolStripMenuItem.Text = "&Save Map";
             this.saveMapToolStripMenuItem.Click += new System.EventHandler(this.saveMapToolStripMenuItem_Click);
             // 
             // saveMapAsToolStripMenuItem
             // 
             this.saveMapAsToolStripMenuItem.Name = "saveMapAsToolStripMenuItem";
-            this.saveMapAsToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
-            this.saveMapAsToolStripMenuItem.Text = "Save Map As...";
+            this.saveMapAsToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift)
+                        | System.Windows.Forms.Keys.S)));
+            this.saveMapAsToolStripMenuItem.Size = new System.Drawing.Size(222, 22);
+            this.saveMapAsToolStripMenuItem.Text = "Save Map &As...";
             this.saveMapAsToolStripMenuItem.Click += new System.EventHandler(this.saveMapAsToolStripMenuItem_Click);
+            // 
+            // buildAndTestMapToolStripMenuItem
+            // 
+            this.buildAndTestMapToolStripMenuItem.Name = "buildAndTestMapToolStripMenuItem";
+            this.buildAndTestMapToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F5;
+            this.buildAndTestMapToolStripMenuItem.Size = new System.Drawing.Size(222, 22);
+            this.buildAndTestMapToolStripMenuItem.Text = "Build and Test Map";
+            this.buildAndTestMapToolStripMenuItem.Click += new System.EventHandler(this.buildAndTestMapToolStripMenuItem_Click);
+            // 
+            // editToolStripMenuItem
+            // 
+            this.editToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.undoToolStripMenuItem,
+            this.redoToolStripMenuItem});
+            this.editToolStripMenuItem.Name = "editToolStripMenuItem";
+            this.editToolStripMenuItem.Size = new System.Drawing.Size(39, 20);
+            this.editToolStripMenuItem.Text = "&Edit";
+            // 
+            // undoToolStripMenuItem
+            // 
+            this.undoToolStripMenuItem.Enabled = false;
+            this.undoToolStripMenuItem.Name = "undoToolStripMenuItem";
+            this.undoToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Z)));
+            this.undoToolStripMenuItem.Size = new System.Drawing.Size(144, 22);
+            this.undoToolStripMenuItem.Text = "&Undo";
+            this.undoToolStripMenuItem.Click += new System.EventHandler(this.undoToolStripMenuItem_Click);
+            // 
+            // redoToolStripMenuItem
+            // 
+            this.redoToolStripMenuItem.Enabled = false;
+            this.redoToolStripMenuItem.Name = "redoToolStripMenuItem";
+            this.redoToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Y)));
+            this.redoToolStripMenuItem.Size = new System.Drawing.Size(144, 22);
+            this.redoToolStripMenuItem.Text = "&Redo";
+            this.redoToolStripMenuItem.Click += new System.EventHandler(this.redoToolStripMenuItem_Click);
             // 
             // helpToolStripMenuItem
             // 
@@ -143,7 +175,7 @@ namespace Zelous
             this.aboutZelousToolStripMenuItem});
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
             this.helpToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
-            this.helpToolStripMenuItem.Text = "Help";
+            this.helpToolStripMenuItem.Text = "&Help";
             // 
             // aboutZelousToolStripMenuItem
             // 
@@ -174,18 +206,6 @@ namespace Zelous
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "TileSet 1";
             // 
-            // mTileSetView1
-            // 
-            this.mTileSetView1.ActiveLayer = 0;
-            this.mTileSetView1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.mTileSetView1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.mTileSetView1.Location = new System.Drawing.Point(3, 3);
-            this.mTileSetView1.Name = "mTileSetView1";
-            this.mTileSetView1.RenderScale = 1;
-            this.mTileSetView1.Size = new System.Drawing.Size(667, 168);
-            this.mTileSetView1.TabIndex = 0;
-            this.mTileSetView1.Title = "TileMapView Title";
-            // 
             // tabPage2
             // 
             this.tabPage2.Controls.Add(this.mTileSetView2);
@@ -195,18 +215,6 @@ namespace Zelous
             this.tabPage2.Size = new System.Drawing.Size(673, 174);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "TileSet 2";
-            // 
-            // mTileSetView2
-            // 
-            this.mTileSetView2.ActiveLayer = 0;
-            this.mTileSetView2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.mTileSetView2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.mTileSetView2.Location = new System.Drawing.Point(3, 3);
-            this.mTileSetView2.Name = "mTileSetView2";
-            this.mTileSetView2.RenderScale = 1;
-            this.mTileSetView2.Size = new System.Drawing.Size(667, 168);
-            this.mTileSetView2.TabIndex = 2;
-            this.mTileSetView2.Title = "TileMapView Title";
             // 
             // tabPage3
             // 
@@ -219,24 +227,57 @@ namespace Zelous
             this.tabPage3.Text = "Collision";
             this.tabPage3.UseVisualStyleBackColor = true;
             // 
+            // mWorldMapView
+            // 
+            this.mWorldMapView.ActiveLayer = 0;
+            this.mWorldMapView.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.mWorldMapView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.mWorldMapView.LastTileSelectedPosition = new System.Drawing.Point(-1, -1);
+            this.mWorldMapView.Location = new System.Drawing.Point(0, 24);
+            this.mWorldMapView.Name = "mWorldMapView";
+            this.mWorldMapView.RenderScale = 1;
+            this.mWorldMapView.Size = new System.Drawing.Size(681, 276);
+            this.mWorldMapView.TabIndex = 0;
+            this.mWorldMapView.Title = "TileMapView Title";
+            // 
+            // mTileSetView1
+            // 
+            this.mTileSetView1.ActiveLayer = 0;
+            this.mTileSetView1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.mTileSetView1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.mTileSetView1.LastTileSelectedPosition = new System.Drawing.Point(-1, -1);
+            this.mTileSetView1.Location = new System.Drawing.Point(3, 3);
+            this.mTileSetView1.Name = "mTileSetView1";
+            this.mTileSetView1.RenderScale = 1;
+            this.mTileSetView1.Size = new System.Drawing.Size(667, 168);
+            this.mTileSetView1.TabIndex = 0;
+            this.mTileSetView1.Title = "TileMapView Title";
+            // 
+            // mTileSetView2
+            // 
+            this.mTileSetView2.ActiveLayer = 0;
+            this.mTileSetView2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.mTileSetView2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.mTileSetView2.LastTileSelectedPosition = new System.Drawing.Point(-1, -1);
+            this.mTileSetView2.Location = new System.Drawing.Point(3, 3);
+            this.mTileSetView2.Name = "mTileSetView2";
+            this.mTileSetView2.RenderScale = 1;
+            this.mTileSetView2.Size = new System.Drawing.Size(667, 168);
+            this.mTileSetView2.TabIndex = 2;
+            this.mTileSetView2.Title = "TileMapView Title";
+            // 
             // mCollisionView
             // 
             this.mCollisionView.ActiveLayer = 0;
             this.mCollisionView.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.mCollisionView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.mCollisionView.LastTileSelectedPosition = new System.Drawing.Point(-1, -1);
             this.mCollisionView.Location = new System.Drawing.Point(3, 3);
             this.mCollisionView.Name = "mCollisionView";
             this.mCollisionView.RenderScale = 1;
             this.mCollisionView.Size = new System.Drawing.Size(667, 168);
             this.mCollisionView.TabIndex = 3;
             this.mCollisionView.Title = "TileMapView Title";
-            // 
-            // buildAndTestMapToolStripMenuItem
-            // 
-            this.buildAndTestMapToolStripMenuItem.Name = "buildAndTestMapToolStripMenuItem";
-            this.buildAndTestMapToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
-            this.buildAndTestMapToolStripMenuItem.Text = "Build and Test Map";
-            this.buildAndTestMapToolStripMenuItem.Click += new System.EventHandler(this.buildAndTestMapToolStripMenuItem_Click);
             // 
             // MainForm
             // 
@@ -282,6 +323,9 @@ namespace Zelous
         private System.Windows.Forms.ToolStripMenuItem saveMapToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem saveMapAsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem buildAndTestMapToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem editToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem undoToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem redoToolStripMenuItem;
 
     }
 }

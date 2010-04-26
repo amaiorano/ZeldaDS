@@ -58,6 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="src\Settings\Settings.cs" />
+    <Compile Include="src\Source\Command.cs" />
     <Compile Include="src\UI\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>

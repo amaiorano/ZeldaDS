@@ -105,7 +105,6 @@ namespace Zelous
             public int TileIndex
             {
                 get { return TileLayer.TileMap[TileMapPos.X, TileMapPos.Y]; }
-                set { TileLayer.TileMap[TileMapPos.X, TileMapPos.Y] = value; }
             }
         }
 
