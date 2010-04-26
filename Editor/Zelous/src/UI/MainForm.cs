@@ -25,7 +25,7 @@ namespace Zelous
 
         private WorldMap mWorldMap;
         private int[] mActiveTileIndex = new int[WorldMap.NumLayers];
-
+       
         public MainForm()
         {
             Instance = this;
@@ -100,13 +100,15 @@ namespace Zelous
             if (sender == mWorldMapView) // Paste tile
             {
                 e.TileIndex = mActiveTileIndex[ActiveLayer];
-                mWorldMapView.Refresh();
             }
             else // Copy tile
             {
                 Debug.Assert(sender.Parent is TabPage);
                 mActiveTileIndex[ActiveLayer] = e.TileIndex;
+                
+                sender.LastTileSelectedPosition = e.TileMapPos; 
             }
+            sender.Refresh();
         }
 
         private void mTabControl_SelectedIndexChanged(object sender, EventArgs e)

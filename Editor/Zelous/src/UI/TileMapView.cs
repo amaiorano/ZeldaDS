@@ -21,6 +21,8 @@ namespace Zelous
         private bool mShowTileGrid = false;
         private bool mShowScreenGrid = false;
 
+        private Point mLastTileSelectedPos = new Point(-1, -1);
+
         public TileMapView()
         {
             InitializeComponent();
@@ -71,6 +73,12 @@ namespace Zelous
         public bool ShowScreenGridOption
         {
             set { mCheckBoxScreenGrid.Visible = value; }
+        }
+
+        public Point LastTileSelectedPosition
+        {
+            set { mLastTileSelectedPos = value; }
+            get { return mLastTileSelectedPos; }
         }
 
         public void SetLayerRenderable(int layer, bool render)
@@ -189,6 +197,8 @@ namespace Zelous
 
             Rectangle dstRect = new Rectangle();
             Rectangle srcRect = new Rectangle();
+            Rectangle selectedRect = new Rectangle();
+
             Graphics tgtGfx = e.Graphics;
             GraphicsHelpers.PrepareGraphics(tgtGfx);
 
@@ -236,6 +246,13 @@ namespace Zelous
                         dstRect.Y = startPos.Y + (y * dstRect.Size.Height);
 
                         tgtGfx.DrawImage(tileSet.Image, dstRect, srcRect, GraphicsUnit.Pixel);
+
+                        //If we're currently in the active layer, and drawing the last selected tile
+                        if (layerIndex == mActiveLayer && 
+                            (mLastTileSelectedPos.X == (firstTile.X + x) && mLastTileSelectedPos.Y == (firstTile.Y + y)) )
+                        {
+                            selectedRect = dstRect;
+                        }
                     }
                 }
             } // for each layer
@@ -294,6 +311,15 @@ namespace Zelous
                 tileGridPen.Dispose();
                 screenGridPen.Dispose();
             } // end draw grids
+
+            //Draw box around currently selected tile
+            if (mLastTileSelectedPos.X > -1 && mLastTileSelectedPos.Y > -1)
+            {
+                Pen tileGridPen = new Pen(Color.Red, 1);
+                tgtGfx.DrawRectangle(tileGridPen, selectedRect);
+                tileGridPen.Dispose();
+            }
+            
         }
 
         private void mScaleCtrl_ValueChanged(object sender, EventArgs e)
@@ -321,7 +347,7 @@ namespace Zelous
         }
 
         private int mLastTileSelectedIndex = -1;
-
+        
         private void mViewPanel_MouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
