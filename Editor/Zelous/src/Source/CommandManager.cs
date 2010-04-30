@@ -39,7 +39,7 @@ namespace Zelous
             if (mRedoCommands.Count > 0)
             {
                 Command lastCommand = mRedoCommands.Pop();
-                lastCommand.Do();
+                lastCommand.Redo();
                 mUndoCommands.Push(lastCommand);
             }
         }

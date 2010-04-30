@@ -101,7 +101,8 @@ namespace Zelous
         {
             if (sender == mWorldMapView) // Paste tile
             {
-                mCommandManager.DoCommand(new SetTileCommand(e.TileLayer, e.TileMapPos, mActiveTileIndex[ActiveLayer], e.TileIndex));
+                mCommandManager.DoCommand(new SetTileCommand(ActiveLayer, e.TileLayer, e.TileMapPos, 
+                                            mActiveTileIndex[ActiveLayer], e.TileIndex, mTabControl));
                 UpdateUndoRedoToolStripItems();
             }
             else // Copy tile
@@ -127,14 +128,12 @@ namespace Zelous
                 redoToolStripMenuItem.Enabled = true;
         }
 
-        //end Command functions
-
         private void mTabControl_SelectedIndexChanged(object sender, EventArgs e)
         {
             ActiveLayer = mTabControl.SelectedIndex;
 
-            bool showCollisionTiles = mTabControl.SelectedIndex == (int)LayerType.Collision;
-            Debug.Assert(showCollisionTiles ? mTabControl.SelectedTab.Contains(mCollisionView) : true);            
+            bool showCollisionTiles = ActiveLayer == (int)LayerType.Collision;
+            Debug.Assert(showCollisionTiles ? mTabControl.SelectedTab.Contains(mCollisionView) : true);
             mWorldMapView.SetLayerRenderable((int)LayerType.Collision, showCollisionTiles);
         }
 
