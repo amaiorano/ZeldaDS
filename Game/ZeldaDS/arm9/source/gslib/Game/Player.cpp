@@ -472,22 +472,26 @@ void Player::OnAddToScene()
 
 	SetPosition(mInitPos);
 	mDamageInfo.Reset();
+	PlayAnim(BaseAnim::Idle); // Set initial pose
 }
 
 void Player::Update(GameTimeType deltaTime)
 {
-	mStateMachine.Update(deltaTime);
-
-	//@TODO: Maybe state machine should provide some kind of hook for pre/post update?
-	ActorSharedStateData& sharedData = static_cast<ActorSharedStateData&>(*mpSharedStateData);
-	sharedData.PostHsmUpdate(deltaTime);
-
-	//@HACK: I do this because the velocity is potentially crushed by the Moving state
-	// while being hurt. Need some way for an outer state to set the velocity, and for
-	// inner state velocity changes to be ignored.
-	if (mInvincible)
+	if (deltaTime > 0) // Total cop out, we don't handle deltaTime == 0 very well
 	{
-		SetVelocity(Normalized(mDamageInfo.mPushVector) * 3);		
+		mStateMachine.Update(deltaTime);
+
+		//@TODO: Maybe state machine should provide some kind of hook for pre/post update?
+		ActorSharedStateData& sharedData = static_cast<ActorSharedStateData&>(*mpSharedStateData);
+		sharedData.PostHsmUpdate(deltaTime);
+
+		//@HACK: I do this because the velocity is potentially crushed by the Moving state
+		// while being hurt. Need some way for an outer state to set the velocity, and for
+		// inner state velocity changes to be ignored.
+		if (mInvincible)
+		{
+			SetVelocity(Normalized(mDamageInfo.mPushVector) * 3);		
+		}
 	}
 
 	Base::Update(deltaTime);

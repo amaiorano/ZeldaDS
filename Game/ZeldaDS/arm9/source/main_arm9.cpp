@@ -20,6 +20,7 @@
 #include "gslib/Game/Player.h"
 #include "gslib/Game/Enemy.h"
 #include "gslib/Game/GameHelpers.h"
+#include "gslib/Game/DebugVars.h"
 
 #include "data/overworld_bg.h"
 #include "data/overworld_fg.h"
@@ -54,6 +55,8 @@ struct GameStates
 	{
 		virtual void OnEnter()
 		{
+			LoadAllGameAnimAssets();
+
 			// Palettes for both bg2 and bg3 should be the same...
 			GraphicsEngine::LoadBgPalette(overworld_bgPal, sizeof(overworld_bgPal)); //@TODO: look into grit palette sharing
 			
@@ -72,7 +75,32 @@ struct GameStates
 		
 		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
 		{
-			return SiblingTransition<LoadMap>();
+			return SiblingTransition<EnableRendering>();
+		}
+	};
+
+	struct EnableRendering : GameStateBase
+	{
+		uint16 mNumElapsedFrames;
+
+		EnableRendering() : mNumElapsedFrames(0)
+		{
+			// Before enabling backgrounds, start faded out
+			GraphicsEngine::FadeScreen(FadeScreenDir::Out, 0);
+		}
+
+		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
+		{
+			// Wait one frame for the faded out black screen to render once
+			// before showing the backgrounds (sucks that we have to do this)
+			if (mNumElapsedFrames >= 1)
+			{
+				GraphicsEngine::SetAllBgsEnabled(true);
+				return SiblingTransition<LoadMap>();
+			}
+
+			++mNumElapsedFrames;
+			return NoTransition();
 		}
 	};
 
@@ -101,12 +129,19 @@ struct GameStates
 
 		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
 		{
-			return SiblingTransition<NormalPlay>();
+			return SiblingTransition<PlayingMap>();
 		}
 	};
 
-	struct NormalPlay : GameStateBase
+	struct PlayingMap : GameStateBase
 	{
+		virtual void OnEnter()
+		{
+			// Fade in screen
+			printf("fade in!\n");
+			GraphicsEngine::FadeScreen(FadeScreenDir::In, SEC_TO_FRAMES(0.5f));
+		}
+
 		virtual void PerformStateActions(HsmTimeType deltaTime)
 		{
 			TEMP_RespawnEnemiesIfAllDead();
@@ -186,44 +221,54 @@ int main(void)
 	GraphicsEngine::Init(GameMetaTileSizeX, GameMetaTileSizeY);
 	FileSystem::Init();
 
-	LoadAllGameAnimAssets();
-
 	StateMachine gameStateMachine;
 	//gameStateMachine.SetDebugLevel(1);
 	gameStateMachine.SetSharedStateData(new GameStates::GameSharedStateData());
 	gameStateMachine.SetInitialState<GameStates::Root>();
 
-	bool paused = false;
+	bool pausedLastFrame = false;
 
 	while (true)
 	{
 		CpuClock::Update();
 		InputManager::Update();
 
-		if ( !InputManager::IsPaused() )
+		const bool pausedThisFrame = InputManager::IsPaused();
+
+		// Handle pause transitions
+		//@TODO: Hook up callbacks for OnPaused/OnResumed, this is confusing
+		if ( !pausedThisFrame )
 		{
-			if (paused)
+			if (pausedLastFrame)
 			{
-				paused = false;
+				pausedLastFrame = false;
 				AudioEngine::SetPaused(false);
 			}
-
-			// Logic update
-
-			// NDS refresh rate is 60 Hz, so as long as we don't take too long in one frame, we can just pass in 1 (frame)
-			const GameTimeType deltaTime = 1;
-
-			gameStateMachine.Update(deltaTime);
 		}
-		else if (!paused)
+		else if (!pausedLastFrame)
 		{
-			paused = true;
+			pausedLastFrame = true;
 			AudioEngine::SetPaused(true);
 		}
 
-		GraphicsEngine::PreVBlankUpdate();
-		GraphicsEngine::WaitForVBlank();
-		GraphicsEngine::PostVBlankUpdate();
+#if DEBUG_VARS_ENABLED
+		const uint32& keysPressed = InputManager::GetRawKeysPressed();
+
+		// Debug combo: L + button
+		if (InputManager::GetKeysHeld() & KEY_L)
+		{
+			if (keysPressed & KEY_A)
+				DEBUG_VAR_TOGGLE(DrawCollisionBounds);
+		}
+#endif // DEBUG_VARS_ENABLED
+
+		// NDS refresh rate is 60 Hz, so as long as we don't take too long in one frame, we can just pass in 1 (frame)
+		GameTimeType deltaTime = pausedThisFrame? 0 : 1;
+
+		gameStateMachine.Update(deltaTime);
+
+		GraphicsEngine::Update(deltaTime);
+		GraphicsEngine::Render(deltaTime);
 	}
 
 	return 0;

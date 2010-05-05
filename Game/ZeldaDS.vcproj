@@ -194,6 +194,14 @@
 						>
 					</File>
 					<File
+						RelativePath=".\ZeldaDS\arm9\source\gslib\Game\DebugVars.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\ZeldaDS\arm9\source\gslib\Game\DebugVars.h"
+						>
+					</File>
+					<File
 						RelativePath=".\ZeldaDS\arm9\source\gslib\Game\GameAnims.cpp"
 						>
 					</File>
@@ -445,6 +453,10 @@
 				<Filter
 					Name="Math"
 					>
+					<File
+						RelativePath=".\ZeldaDS\arm9\source\gslib\Math\Lerper.h"
+						>
+					</File>
 					<File
 						RelativePath=".\ZeldaDS\arm9\source\gslib\Math\MathEx.h"
 						>

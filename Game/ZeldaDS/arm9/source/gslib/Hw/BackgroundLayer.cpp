@@ -49,8 +49,9 @@ BackgroundLayer::~BackgroundLayer()
 	delete mpConsole;
 }
 
-void BackgroundLayer::Init(int bgId, uint8 metaTileSizeX, uint8 metaTileSizeY)
+void BackgroundLayer::InitTiled(int bgId, uint8 metaTileSizeX, uint8 metaTileSizeY)
 {
+	ASSERT(mBgId == -1);
 	mBgId = bgId;
 
 	mpTileMap = (uint8*)bgGetMapPtr(mBgId);
@@ -113,11 +114,12 @@ void BackgroundLayer::DrawTile(uint16 metaTileIndex, uint16 metaTileMapX, uint16
 	}
 }
 
-void BackgroundLayer::Init(PrintConsole* pConsole)
+void BackgroundLayer::InitConsole(PrintConsole* pConsole)
 {
+	ASSERT(mBgId == -1);
 	ASSERT(pConsole);
 	mpConsole = pConsole;
-	Init(mpConsole->bgId, 8, 8);
+	InitTiled(mpConsole->bgId, 8, 8);
 }
 
 bool BackgroundLayer::IsTextLayer() const
@@ -143,8 +145,22 @@ void BackgroundLayer::ClearText()
 	consoleSelect(gpCurrConsole);
 }
 
+void BackgroundLayer::Init3d(int bgId)
+{
+	ASSERT(mBgId == -1);
+	mBgId = bgId;
+	// Nothing to do for now...
+}
+
+void BackgroundLayer::SetEnabled(bool enabled)
+{
+	ASSERT(mBgId != -1);
+	enabled? bgShow(mBgId) : bgHide(mBgId);
+}
+
 void BackgroundLayer::SetPriority(int priority)
 {
+	ASSERT(mBgId != -1);
 	ASSERT(priority >= 0 && priority <= 3);
 	bgSetPriority(mBgId, priority);
 }

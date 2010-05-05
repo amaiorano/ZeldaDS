@@ -105,8 +105,7 @@ struct ScrollingStates
 
 				//@HACK: To avoid tearing, wait until our scroll position has been updated before
 				// drawing over current screen
-				GraphicsEngine::WaitForVBlank();
-				GraphicsEngine::PostVBlankUpdate(); // Push bg values
+				GraphicsEngine::WaitForVBlankAndPostVBlankUpdate();
 
 				worldMap.DrawScreenTiles(currScreen + Vector2I(-1,0), Vector2I(0,0));
 				break;
@@ -117,8 +116,7 @@ struct ScrollingStates
 				pScrollingState->UpdateScrollState();
 				
 				//@HACK: Same as above
-				GraphicsEngine::WaitForVBlank();
-				GraphicsEngine::PostVBlankUpdate(); // Push bg values
+				GraphicsEngine::WaitForVBlankAndPostVBlankUpdate();
 
 				worldMap.DrawScreenTiles(currScreen + Vector2I(0,-1), Vector2I(0,0));
 				break;

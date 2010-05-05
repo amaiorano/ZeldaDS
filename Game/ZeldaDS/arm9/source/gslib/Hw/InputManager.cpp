@@ -38,7 +38,7 @@ namespace InputManager
 		// held keys as pressed keys
 		if (gIsPaused)
 		{
-			gKeysPressed |= (gKeysHeld);// & ~PauseKey);
+			gKeysPressed |= gKeysHeld;
 		}
 	}
 
@@ -65,5 +65,10 @@ namespace InputManager
 	void ClearKeysHeld(uint32 keysToClear)
 	{
 		gKeysHeld &= ~keysToClear;
+	}
+
+	uint32 GetRawKeysPressed()
+	{
+		return keysDown();
 	}
 }

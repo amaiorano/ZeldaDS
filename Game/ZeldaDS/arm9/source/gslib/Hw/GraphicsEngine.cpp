@@ -1,5 +1,6 @@
 #include "GraphicsEngine.h"
 #include "gslib/Core/Core.h"
+#include "gslib/Math/Lerper.h"
 #include "Constants.h"
 #include "BackgroundLayer.h"
 #include "Sprite.h"
@@ -11,11 +12,39 @@
 #include <algorithm>
 #include <string.h>
 
+//@TODO: Tuck all this code away behind some 3d renderer class
+#include <nds/arm9/videoGl.h>
+//@NOTE: Using these macros generates very slow code. Unfortunately,
+// not sure how to improve this as each vertex is a 4.12 fixed point
+// value, so range is [0,15] for mantissa (can't use screen coords
+// as orthographic dimenions)
+const float OrthoWidth = 3.0f;
+const float OrthoHeight = 2.0f;
+#define VERTX(v) ((v) * OrthoWidth / HwScreenSizeX)
+#define VERTY(v) ((v) * OrthoHeight / HwScreenSizeY)
+#define VERTEX2(x, y) glVertex3f(VERTX(x), VERTY(y), -1)
+
+void DrawQuad(uint16 x, uint16 y, uint16 w, uint16 h, uint16 color, uint16 alpha = 31)
+{
+	glEnable(GL_BLEND);
+	glPolyFmt(POLY_ALPHA(alpha) | POLY_CULL_BACK);
+
+	// Draw slightly larger quad to deal with imprecision issues on DS
+	glBegin(GL_QUAD);
+		glColor(color);
+		VERTEX2(x, y);
+		VERTEX2(x, y+h);
+		VERTEX2(x+w, y+h);
+		VERTEX2(x+w, y);
+	glEnd();
+}
+
 namespace
 {
 	BackgroundLayer gBgLayers[4];
 	BackgroundLayer gSubBgLayers[1];
-
+	bool gEnabled3d = false;
+	Lerper<float, GameTimeType> gFadeLerper; // out (black) = 0, in = 1
 
 	class SpriteManager
 	{
@@ -41,6 +70,93 @@ namespace
 		SpriteList mSprites;
 
 	} gSpriteManager;
+
+	void Init3d()
+	{
+		glInit();
+		//vramSetBankD(VRAM_D_TkEXTURE); // Reserve some memory for textures
+		
+		// Setup the rear plane
+		glClearColor(31, 31, 31, 0);
+		glClearPolyID(63); // 3d backdrop must have a unique polygon ID for AA to work
+		glClearDepth(GL_MAX_DEPTH);
+		
+		// Set our viewport to be the same size as the screen
+		glViewport(0, 0, HwScreenSizeX-1, HwScreenSizeY-1);
+		
+		// Set projection matrix
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		glOrtho(0.0f, OrthoWidth, OrthoHeight, 0.0f, 0.1f, 100.0f);
+
+		// Setup BG0 to blend on top of other layers
+		REG_BLDCNT = BLEND_SRC_BG0 | BLEND_DST_BG2 | BLEND_DST_BG3 | BLEND_DST_SPRITE;
+
+		// Switch to modelview and reset
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+
+		gEnabled3d = true;
+	}
+
+	void DrawFullScreenQuad(float blendRatio)
+	{
+		uint16 alpha = static_cast<uint16>(blendRatio * 31);
+
+		DrawQuad(0, 0, HwScreenSizeX+1, HwScreenSizeY, RGB15(0, 0, 0), alpha);
+/*
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+
+		glEnable(GL_BLEND);
+		glPolyFmt(POLY_ALPHA(alpha) | POLY_CULL_BACK);
+
+		// Draw slightly larger quad to deal with imprecision issues on DS
+		glBegin(GL_QUADS);
+			glColor(RGB15(0, 0, 0));
+			VERTEX2(0, 0);
+			VERTEX2(0, HwScreenSizeY);
+			VERTEX2(HwScreenSizeX+1, HwScreenSizeY);
+			VERTEX2(HwScreenSizeX+1, 0);
+		glEnd();
+*/
+	}
+
+	void PreVBlankUpdate()
+	{
+		// Let sprites update OAM shadow/copy
+		SpriteManager::SpriteList::iterator iter = gSpriteManager.mSprites.begin();
+		for ( ; iter != gSpriteManager.mSprites.end(); ++iter)
+		{
+			(*iter)->PreVBlankUpdate();
+		}
+	}
+
+	void WaitForVBlank()
+	{
+		if (gEnabled3d)
+		{
+			glFlush(0);
+		}
+
+		swiWaitForVBlank();
+	}
+
+	void PostVBlankUpdate()
+	{
+		// Let sprites update their anim pose buffer
+		SpriteManager::SpriteList::iterator iter = gSpriteManager.mSprites.begin();
+		for ( ; iter != gSpriteManager.mSprites.end(); ++iter)
+		{
+			(*iter)->PostVBlankUpdate();
+		}
+
+		// Update actual sprite OAM from shadow/copy
+		oamUpdate(&oamMain);
+
+		// Push bg values (i.e. scroll location)
+		bgUpdate();
+	}
 }
 
 namespace GraphicsEngine
@@ -53,7 +169,8 @@ namespace GraphicsEngine
 		//consoleDebugInit(DebugDevice_NOCASH); // Output to no$gba console
 
 		// Set video mode
-		videoSetMode(MODE_5_2D);
+		//videoSetMode(MODE_5_2D);
+		videoSetMode(MODE_5_3D);
 
 		// Map vram for backgrounds
 		vramSetBankA(VRAM_A_MAIN_BG_0x06000000); // Map 128k to vram
@@ -96,7 +213,7 @@ namespace GraphicsEngine
 			vramSetBankC(VRAM_C_SUB_BG);
 			PrintConsole* pSubConsole = new PrintConsole();
 			consoleInit(pSubConsole, 3, BgType_Text4bpp, BgSize_T_256x256, 31, 0, false, true);
-			gSubBgLayers[0].Init(pSubConsole);
+			gSubBgLayers[0].InitConsole(pSubConsole);
 			ASSERT(GetSubBgLayer(0).IsTextLayer());
 		}
 
@@ -112,45 +229,62 @@ namespace GraphicsEngine
 		// 4 slots * 16k = 64k for tile image data per map, and 16x16x2 = 512 bytes per tile image,
 		// so NumTilesPerMap = 64k / 512 bytes = 128
 
+		// BG0
 		{
-			//const int tileMapBase = 0;
-			//const int tileGfxBase = 10;//2;
-			//bg0 = bgInit(0, BgType_Text8bpp, TextBgInitSize, tileMapBase, tileGfxBase);
+			// 3D
+			{
+				Init3d();
+				int bg0 = 0;
+				gBgLayers[0].Init3d(bg0);
+			}
 
-			// Default font: 256 characters, 8x8 per char, 4 bits per char -> 256 * 8*8 / 2 = 8k for gfx
-			PrintConsole* pBg0Console = new PrintConsole();
-			consoleInit(pBg0Console, 0, BgType_Text4bpp, BgSize_T_256x256, 0, 2, true, true);
+			// 2D tiled
+			{
+				//const int tileMapBase = 0;
+				//const int tileGfxBase = 10;//2;
+				//int bg0 = bgInit(0, BgType_Text8bpp, TextBgInitSize, tileMapBase, tileGfxBase);
+				//gBgLayers[0].InitTiled(bg0, metaTileSizeX, metaTileSizeY);
+			}
 
-			gBgLayers[0].Init(pBg0Console);
-			ASSERT(GetBgLayer(0).IsTextLayer());
+			// 2D console
+			{
+				// Default font: 256 characters, 8x8 per char, 4 bits per char -> 256 * 8*8 / 2 = 8k for gfx
+				//PrintConsole* pBg0Console = new PrintConsole();
+				//consoleInit(pBg0Console, 0, BgType_Text4bpp, BgSize_T_256x256, 0, 2, true, true);
+				//gBgLayers[0].InitConsole(pBg0Console);
+				//ASSERT(GetBgLayer(0).IsTextLayer());
+			}
 		}
 
+		// BG1
 		{
 			const int tileMapBase = 4;
 			const int tileGfxBase = 6;
 			int bg1 = bgInit(1, BgType_Text8bpp, TextBgInitSize, tileMapBase, tileGfxBase);
 			ASSERT(bg1 >= 0);
-			gBgLayers[1].Init(bg1, metaTileSizeX, metaTileSizeY);
+			gBgLayers[1].InitTiled(bg1, metaTileSizeX, metaTileSizeY);
 		}
 
+		// BG2
 		{
 			const int tileMapBase = 8;
 			const int tileGfxBase = 10;
 			int bg2 = bgInit(2, BgType_ExRotation, ExRotBgInitSize, tileMapBase, tileGfxBase);
 			ASSERT(bg2 >= 0);
-			gBgLayers[2].Init(bg2, metaTileSizeX, metaTileSizeY);
+			gBgLayers[2].InitTiled(bg2, metaTileSizeX, metaTileSizeY);
 		}
 
+		// BG3
 		{
 			const int tileMapBase = 12;
 			const int tileGfxBase = 14;
 			int bg3 = bgInit(3, BgType_ExRotation, ExRotBgInitSize, tileMapBase, tileGfxBase);
 			ASSERT(bg3 >= 0);
-			gBgLayers[3].Init(bg3, metaTileSizeX, metaTileSizeY);
+			gBgLayers[3].InitTiled(bg3, metaTileSizeX, metaTileSizeY);
 		}
 
 		// By default, all layers have priority 0, which is weird and useless, so we set them
-		// to a reasonable default
+		// to a reasonable default: BG0 above BG1, BG1 above BG2, etc.
 		for (uint16 i = 0; i < NUM_ARRAY_ELEMS(gBgLayers); ++i)
 		{
 			gBgLayers[i].SetPriority(i); // bg0 -> 0, bg1 -> 1, etc.
@@ -160,12 +294,18 @@ namespace GraphicsEngine
 			gSubBgLayers[i].SetPriority(i);
 		}
 
-		// Set default text layer
-		GetSubBgLayer(0).ActivateTextLayer();
+		// Initially all bgs hidden
+		SetAllBgsEnabled(false);
 
-		// Test...
-		//GetBgLayer(1).DrawTile(5, 2, 2);
-		//GetBgLayer(1).DrawTile(6, 2, 3);
+		gFadeLerper.Reset(0.0f, 1.0f, 1.0f, 1.0f, 0.0f);
+	}
+
+	void SetAllBgsEnabled(bool enabled)
+	{
+		for (uint16 i = 0; i < NUM_ARRAY_ELEMS(gBgLayers); ++i)
+		{
+			gBgLayers[i].SetEnabled(enabled);
+		}
 	}
 
 	void LoadBgPalette(const void* pPalette, uint16 sizeBytes)
@@ -232,30 +372,33 @@ namespace GraphicsEngine
 		gSpriteManager.FreeSprite(pSprite);
 	}
 
-	void PreVBlankUpdate()
+	void FadeScreen(FadeScreenDir::Type dir, GameTimeType timeToFade)
 	{
-		SpriteManager::SpriteList::iterator iter = gSpriteManager.mSprites.begin();
-		for ( ; iter != gSpriteManager.mSprites.end(); ++iter)
-		{
-			(*iter)->PreVBlankUpdate();
-		}
+		gFadeLerper.Reset(dir == FadeScreenDir::Out? -1.0f : 1.0f, timeToFade);
 	}
 
-	void WaitForVBlank()
+	void Update(GameTimeType deltaTime)
 	{
-		swiWaitForVBlank();
+		gFadeLerper.Update(deltaTime);
 	}
 
-	void PostVBlankUpdate()
-	{		
-		SpriteManager::SpriteList::iterator iter = gSpriteManager.mSprites.begin();
-		for ( ; iter != gSpriteManager.mSprites.end(); ++iter)
+	void Render(GameTimeType deltaTime)
+	{
+		// Draw the quad as long as we're not fully faded in
+		const float fadeRatio = gFadeLerper.GetCurr();
+		if (fadeRatio < 1.0f)
 		{
-			(*iter)->PostVBlankUpdate();
+			DrawFullScreenQuad(1.0f - fadeRatio);
 		}
 
-		oamUpdate(&oamMain); // Update OAM from shadow
-		bgUpdate();
+		PreVBlankUpdate();
+		WaitForVBlankAndPostVBlankUpdate();
+	}
+
+	void WaitForVBlankAndPostVBlankUpdate()
+	{
+		WaitForVBlank();
+		PostVBlankUpdate();
 	}
 
 } // namespace GraphicsEngine

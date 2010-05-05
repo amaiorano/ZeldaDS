@@ -264,15 +264,19 @@ void Enemy::OnAddToScene()
 
 	SetPosition(mInitPos);
 	mDamageInfo.Reset();
+	PlayAnim(BaseAnim::Idle); // Set initial pose
 }
 
 void Enemy::Update(GameTimeType deltaTime)
 {
-	mStateMachine.Update(deltaTime);
-	
-	//@TODO: Maybe state machine should provide some kind of hook for pre/post update?
-	ActorSharedStateData& data = static_cast<ActorSharedStateData&>(mStateMachine.GetSharedStateData());
-	data.PostHsmUpdate(deltaTime);
+	if (deltaTime > 0) // Total cop out, we don't handle deltaTime == 0 very well
+	{
+		mStateMachine.Update(deltaTime);
+		
+		//@TODO: Maybe state machine should provide some kind of hook for pre/post update?
+		ActorSharedStateData& data = static_cast<ActorSharedStateData&>(mStateMachine.GetSharedStateData());
+		data.PostHsmUpdate(deltaTime);
+	}
 	
 	Base::Update(deltaTime);
 }

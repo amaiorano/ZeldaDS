@@ -14,16 +14,22 @@ public:
 	BackgroundLayer();
 	~BackgroundLayer();
 
-	void Init(int bgId, uint8 metaTileSizeX, uint8 metaTileSizeY);
+	// Tile layer functions
+	void InitTiled(int bgId, uint8 metaTileSizeX, uint8 metaTileSizeY);
 	void LoadTilesImage(const void* pImage, uint16 sizeBytes);
 	void DrawTile(uint16 metaTileIndex, uint16 metaTileMapX, uint16 metaTileMapY);
 
-	// Text layer functions
-	void Init(PrintConsole* pConsole); // Transfers ownership of pointer (this class will delete it)
+	// Console layer functions
+	void InitConsole(PrintConsole* pConsole); // Transfers ownership of pointer (this class will delete it)
 	bool IsTextLayer() const;
 	void ActivateTextLayer(); // Call so subsequent iprintfs render to this layer
 	void SetTextWindow(int tileX, int tileY, int numTilesX, int numTilesY);
 	void ClearText();
+
+	// 3D layer functions
+	void Init3d(int bgId);
+
+	void SetEnabled(bool enabled);
 
 	void SetPriority(int priority);
 

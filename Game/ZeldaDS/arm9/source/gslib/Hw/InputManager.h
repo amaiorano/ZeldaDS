@@ -15,6 +15,9 @@ namespace InputManager
 	uint32 GetKeysHeld();
 	void ClearKeysPressed(uint32 keysToClear = ~0);
 	void ClearKeysHeld(uint32 keysToClear = ~0);
+
+	// Use to retrieve raw state of pressed keys (not modified by pause state)
+	uint32 GetRawKeysPressed();
 }
 
 #endif // INPUT_MANAGER_H

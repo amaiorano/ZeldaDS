@@ -2,17 +2,17 @@
 #include "gslib/Hw/Constants.h"
 #include "gslib/Physics/BoundingBox.h"
 
-Vector2I Camera::ScreenToWorld(const Vector2I& screenSpacePos)
+Vector2I Camera::ScreenToWorld(const Vector2I& screenSpacePos) const
 {
 	return GetPosition() + screenSpacePos;
 }
 
-Vector2I Camera::WorldToScreen(const Vector2I& worldSpacePos)
+Vector2I Camera::WorldToScreen(const Vector2I& worldSpacePos) const
 {
 	return worldSpacePos - GetPosition();
 }
 
-bool Camera::IsWorldBBoxInScreenBounds(const BoundingBox& worldBBox)
+bool Camera::IsWorldBBoxInScreenBounds(const BoundingBox& worldBBox) const
 {
 	BoundingBox screenBBox(WorldToScreen(worldBBox.pos), worldBBox.w, worldBBox.h);
 

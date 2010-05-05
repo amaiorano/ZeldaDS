@@ -2,9 +2,11 @@
 #include "IPhysical.h"
 #include "SceneGraph.h"
 #include "WorldMap.h"
+#include "Camera.h"
 #include "Player.h"
 #include "Enemy.h"
 #include "Boomerang.h" //@TODO: REPLACE WITH "Weapon.h"
+#include "DebugVars.h"
 
 class PhysicsHelpers // This class is a friend of IPhysical
 {
@@ -184,4 +186,40 @@ void PhysicsSimulator::IntegrateAndApplyCollisions(GameTimeType deltaTime)
 	PhysicsHelpers::ActorTileCollisions(players, worldMap);
 	PhysicsHelpers::ActorTileCollisions(enemies, worldMap);
 	PhysicsHelpers::ActorTileCollisions(playerWeapons, worldMap);
+
+#if DEBUG_VARS_ENABLED
+	extern void DrawQuad(uint16 x, uint16 y, uint16 w, uint16 h, uint16 color, uint16 alpha);
+
+	if ( DEBUG_VAR_GET(DrawCollisionBounds) )
+	{
+		const Camera& camera = Camera::Instance();
+
+		PhysicalList::iterator iter = physicals.begin();
+		for ( ; iter != physicals.end(); ++iter)
+		{
+			BoundingBox bbox = (*iter)->GetBoundingBox();
+			bbox.pos = camera.WorldToScreen(bbox.pos);
+			DrawQuad(bbox.pos.x, bbox.pos.y, bbox.w, bbox.h, RGB15(255,0,0), 15);
+		}
+
+		const Vector2I camPos = camera.GetPosition();
+		Vector2I currTilePos = camera.GetPosition();
+		BoundingBox bbox;
+
+		for (uint16 numTilesY = 0; numTilesY < GameNumScreenMetaTilesY; ++numTilesY)
+		{
+			for (uint16 numTilesX = 0; numTilesX < GameNumScreenMetaTilesX; ++numTilesX)
+			{
+				Vector2I currTilePos(camPos.x + numTilesX * GameMetaTileSizeX, camPos.y + numTilesY * GameMetaTileSizeX);
+
+				if ( worldMap.GetTileBoundingBoxIfCollision(currTilePos, bbox) )
+				{
+					bbox.pos = camera.WorldToScreen(bbox.pos);
+					DrawQuad(bbox.pos.x, bbox.pos.y, bbox.w, bbox.h, RGB15(255,0,0), 15);
+				}
+			}
+		}
+	}
+#endif // DEBUG_DRAW_ENABLED
+
 }
