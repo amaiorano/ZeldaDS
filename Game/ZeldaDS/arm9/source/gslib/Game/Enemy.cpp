@@ -158,7 +158,6 @@ struct GoriyasStates : EnemyStates
 			{
 				if (Owner().mDamageInfo.mEffect == DamageEffect::Stun)
 				{
-					printf("Stunned!\n");
 					return SiblingTransition<Stunned>();
 				}
 				else
@@ -212,7 +211,6 @@ struct GoriyasStates : EnemyStates
 
 			if (mElapsedTime > SEC_TO_FRAMES(2.0))
 			{
-				printf("No longer stunned\n");
 				return SiblingTransition<Moving>();
 			}
 

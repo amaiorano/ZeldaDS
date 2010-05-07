@@ -9,7 +9,6 @@ namespace AudioEngine
 	// Questions about maxmod:
 	// - Are you supposed to have only one soundbank with all the game music + sound, and just load/unload the ones you need?
 	// - When loading with mmInitDefault(char*), does it fully load data into memory with mmLoad or does it stream?
-	// - desmume_dev with --arm9gdb doesn't play sound, why?
 
 	namespace
 	{
@@ -56,6 +55,12 @@ namespace AudioEngine
 				mParams.rate = (1<<10); // 1
 				mParams.volume = 255; // Max
 				mParams.panning = 128; // Center
+			}
+
+			bool IsPlaying() const
+			{
+				//@NOTE: We can't actually check if the sound has stopped apparently
+				return mLoaded && mParams.handle != 0;
 			}
 
 			bool mLoaded;
@@ -129,7 +134,7 @@ namespace AudioEngine
 	void UnloadBank()
 	{
 		StopMusic();
-		StopAllSound();
+		StopAllSounds();
 		gActiveBank = 0; // No function to explicitly unload the active bank file (maybe mmInitDefault(NULL)?)
 	}
 
@@ -166,12 +171,13 @@ namespace AudioEngine
 		data.mParams.handle = mmEffectEx(&data.mParams); // Strangely, mmSoundEx doesn't store handle into input
 	}
 
-	void StopAllSound()
+	void StopAllSounds()
 	{
 		mmEffectCancelAll();
 		for (size_t i = 0; i < gSoundDataList.size(); ++i)
 		{
 			UnloadSound(i);
+			gSoundDataList[i].Reset(); // Not absolutely necessary, but cleaner
 		}
 	}
 
@@ -186,7 +192,10 @@ namespace AudioEngine
 		for (size_t i = 0; i < gSoundDataList.size(); ++i)
 		{
 			SoundData& data = gSoundDataList[i];
-			mmEffectRate(data.mParams.handle, paused? 0 : data.mParams.rate);
+			if (data.IsPlaying())
+			{
+				mmEffectRate(data.mParams.handle, paused? 0 : data.mParams.rate);
+			}
 		}
 	}
 

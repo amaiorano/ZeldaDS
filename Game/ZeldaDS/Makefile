@@ -19,6 +19,9 @@ GAME_ICON      := $(DEVKITPRO)/libnds/icon.bmp
 NITRODATA	:=	nitrofiles
 _ADDFILES	:=	-d $(CURDIR)/$(NITRODATA)
 
+# As long as this var is set, compiler errors will be formatted for visual studio
+export VCBUILDHELPER_COMMAND := whatever
+
 include $(DEVKITARM)/ds_rules
 
 #---------------------------------------------------------------------------------

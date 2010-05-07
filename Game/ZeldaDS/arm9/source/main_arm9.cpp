@@ -138,7 +138,6 @@ struct GameStates
 		virtual void OnEnter()
 		{
 			// Fade in screen
-			printf("fade in!\n");
 			GraphicsEngine::FadeScreen(FadeScreenDir::In, SEC_TO_FRAMES(0.5f));
 		}
 
@@ -171,8 +170,6 @@ struct GameStates
 			const bool bAllEnemiesDead = SceneGraph::Instance().GetEnemyList().size() == 0;
 			if (bAllEnemiesDead)
 			{
-				printf("All enemies dead! Respawning...\n");
-
 				for (uint16 i=0; i<NUM_ARRAY_ELEMS(gpEnemies); ++i)
 				{
 					delete gpEnemies[i];
@@ -215,6 +212,29 @@ struct GameStates
 };
 
 //---------------------------------------------------------------------------------
+#if DEBUG_VARS_ENABLED
+void UpdateDebugVars()
+{
+	const uint32& keysHeld = InputManager::GetKeysHeld();
+	const uint32& keysPressed = InputManager::GetRawKeysPressed();
+
+	// Print usage to stdout
+	if (keysPressed & KEY_SELECT)
+	{
+		printf("=== Debug Keys ===\n");
+		printf("R : Advance one frame (paused)\n");
+		printf("L + A : DrawCollisionBounds\n");
+	}
+
+	// Debug combo: L + button
+	if (keysHeld & KEY_L)
+	{
+		DEBUG_VAR_TOGGLE_IF(keysPressed & KEY_A, DrawCollisionBounds);
+	}
+}
+#endif // DEBUG_VARS_ENABLED
+
+//---------------------------------------------------------------------------------
 int main(void) 
 {
 	ExceptionHandler::EnableDefaultHandler();
@@ -252,15 +272,8 @@ int main(void)
 		}
 
 #if DEBUG_VARS_ENABLED
-		const uint32& keysPressed = InputManager::GetRawKeysPressed();
-
-		// Debug combo: L + button
-		if (InputManager::GetKeysHeld() & KEY_L)
-		{
-			if (keysPressed & KEY_A)
-				DEBUG_VAR_TOGGLE(DrawCollisionBounds);
-		}
-#endif // DEBUG_VARS_ENABLED
+		UpdateDebugVars();
+#endif
 
 		// NDS refresh rate is 60 Hz, so as long as we don't take too long in one frame, we can just pass in 1 (frame)
 		GameTimeType deltaTime = pausedThisFrame? 0 : 1;

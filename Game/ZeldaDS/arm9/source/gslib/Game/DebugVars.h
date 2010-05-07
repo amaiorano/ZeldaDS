@@ -19,8 +19,10 @@ struct DebugVars
 extern DebugVars gDebugVars;
 
 #define DEBUG_VAR_SET(var, value) gDebugVars.var = value;
-#define DEBUG_VAR_TOGGLE(var) gDebugVars.var = !gDebugVars.var;
 #define DEBUG_VAR_GET(var) (gDebugVars.var)
+
+#define DEBUG_VAR_TOGGLE(var) gDebugVars.var = !gDebugVars.var;
+#define DEBUG_VAR_TOGGLE_IF(cond, var) if (cond) { gDebugVars.var = !gDebugVars.var; }
 
 #endif // DEBUG_VARS_ENABLED
 

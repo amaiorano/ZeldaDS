@@ -1,7 +1,6 @@
 @echo off
 
 setlocal
-set GNU_TO_MSDEV_CMD=sed -e "s/\(\.*\):\([0-9]\+\):/\1(\2):/"
 set CONFIG=%2
 
 if "%1"=="build" goto :BUILD
@@ -13,7 +12,7 @@ echo Invalid input param!
 goto :END
 
 :BUILD
-make CONFIG=%CONFIG% 2>&1 | %GNU_TO_MSDEV_CMD%
+make CONFIG=%CONFIG%
 goto :END
 
 :CLEAN
@@ -22,7 +21,6 @@ goto :END
 
 :REBUILD
 make clean CONFIG=%CONFIG%
-make CONFIG=%CONFIG% 2>&1 | %GNU_TO_MSDEV_CMD%
-
+make CONFIG=%CONFIG%
 
 :END

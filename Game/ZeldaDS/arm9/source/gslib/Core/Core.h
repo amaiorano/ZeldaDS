@@ -15,7 +15,7 @@ const uint16 TargetFramesPerSecond = 60;
 // Convert seconds to frames; i.e. if you want an anim frame to last 2 seconds, it will last 2 * 60 = 120 frames
 #define SEC_TO_FRAMES(seconds)	static_cast<GameTimeType>(seconds * TargetFramesPerSecond)
 
-#if PRINT_TO_EMULATOR_CONSOLE == 1
+#if PRINT_TO_EMULATOR_CONSOLE
 	// Prints to console within certain emulators (iDeaS and deSmuME)
 	extern void EmuConsolePrintF(const char* format, ...);
 

@@ -22,7 +22,7 @@ namespace AudioEngine
 	bool IsPlayingMusic();
 
 	void PlaySound(SoundId SoundId);
-	void StopAllSound();
+	void StopAllSounds();
 
 	void SetPaused(bool paused);
 }
