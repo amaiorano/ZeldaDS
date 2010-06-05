@@ -33,8 +33,8 @@ void Sword::OnCollision(const CollisionInfo& collisionInfo)
 {
 	if (Enemy* pEnemy = DynamicCast<Enemy*>(collisionInfo.mpCollidingWith))
 	{
-		// Stun attack (might kill the enemy, depends on the enemy)
 		static DamageInfo dmgInfo;
+		dmgInfo.mEffect = DamageEffect::Hurt;
 		dmgInfo.mAmount = 10;
 		dmgInfo.mPushVector = -collisionInfo.mPushVector;
 

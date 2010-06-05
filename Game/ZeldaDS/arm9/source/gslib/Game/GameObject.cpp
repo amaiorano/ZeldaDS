@@ -14,7 +14,6 @@ void GameObject::OnAddToScene()
 	GameObjectInfo goi;
 	GetGameObjectInfo(goi);
 
-	//@TODO: template method to get dimensions and GameActor type from child
 	IAnimatedRenderable::Activate(goi.mSpriteSize.x, goi.mSpriteSize.y, goi.mGameActor);
 	IPhysical::Activate(goi.mPhysicalSize.x, goi.mPhysicalSize.y);
 }

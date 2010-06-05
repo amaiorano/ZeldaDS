@@ -218,35 +218,7 @@
 						>
 					</File>
 					<File
-						RelativePath=".\ZeldaDS\arm9\source\gslib\Game\GameItems.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\ZeldaDS\arm9\source\gslib\Game\GameItems.h"
-						>
-					</File>
-					<File
-						RelativePath=".\ZeldaDS\arm9\source\gslib\Game\GameObject.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\ZeldaDS\arm9\source\gslib\Game\GameObject.h"
-						>
-					</File>
-					<File
-						RelativePath=".\ZeldaDS\arm9\source\gslib\Game\PhysicsSimulator.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\ZeldaDS\arm9\source\gslib\Game\PhysicsSimulator.h"
-						>
-					</File>
-					<File
-						RelativePath=".\ZeldaDS\arm9\source\gslib\Game\SceneGraph.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\ZeldaDS\arm9\source\gslib\Game\SceneGraph.h"
+						RelativePath=".\ZeldaDS\arm9\source\gslib\Game\Health.h"
 						>
 					</File>
 					<File
@@ -265,14 +237,6 @@
 						RelativePath=".\ZeldaDS\arm9\source\gslib\Game\WorldMap.h"
 						>
 					</File>
-					<Filter
-						Name="Unsure"
-						>
-						<File
-							RelativePath=".\ZeldaDS\arm9\source\gslib\Game\ActorSharedStateData.h"
-							>
-						</File>
-					</Filter>
 					<Filter
 						Name="Interfaces"
 						>
@@ -333,6 +297,14 @@
 							>
 						</File>
 						<File
+							RelativePath=".\ZeldaDS\arm9\source\gslib\Game\GameItems.cpp"
+							>
+						</File>
+						<File
+							RelativePath=".\ZeldaDS\arm9\source\gslib\Game\GameItems.h"
+							>
+						</File>
+						<File
 							RelativePath=".\ZeldaDS\arm9\source\gslib\Game\Sword.cpp"
 							>
 						</File>
@@ -348,6 +320,10 @@
 					<Filter
 						Name="Characters"
 						>
+						<File
+							RelativePath=".\ZeldaDS\arm9\source\gslib\Game\ActorSharedStateData.h"
+							>
+						</File>
 						<File
 							RelativePath=".\ZeldaDS\arm9\source\gslib\Game\Character.cpp"
 							>
@@ -378,6 +354,38 @@
 						</File>
 						<File
 							RelativePath=".\ZeldaDS\arm9\source\gslib\Game\Player.h"
+							>
+						</File>
+					</Filter>
+					<Filter
+						Name="Physics"
+						>
+						<File
+							RelativePath=".\ZeldaDS\arm9\source\gslib\Game\PhysicsSimulator.cpp"
+							>
+						</File>
+						<File
+							RelativePath=".\ZeldaDS\arm9\source\gslib\Game\PhysicsSimulator.h"
+							>
+						</File>
+					</Filter>
+					<Filter
+						Name="Scene"
+						>
+						<File
+							RelativePath=".\ZeldaDS\arm9\source\gslib\Game\GameObject.cpp"
+							>
+						</File>
+						<File
+							RelativePath=".\ZeldaDS\arm9\source\gslib\Game\GameObject.h"
+							>
+						</File>
+						<File
+							RelativePath=".\ZeldaDS\arm9\source\gslib\Game\SceneGraph.cpp"
+							>
+						</File>
+						<File
+							RelativePath=".\ZeldaDS\arm9\source\gslib\Game\SceneGraph.h"
 							>
 						</File>
 					</Filter>

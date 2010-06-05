@@ -8,30 +8,20 @@
 #include "gslib/Anim/AnimControl.h"
 #include "GameAnims.h"
 
-//@TODO: Rename this file and types - GameObject is the base for any entity in the game. This file
-// contains HSM stuff for characters (CharacterSharedStateData...)
+//@TODO: Rename this file: CharacterState.h?
 
-struct ActorSharedStateData : SharedStateData
+struct CharacterSharedStateData : SharedStateData
 {
-	ActorSharedStateData() 
-		: mHealth(6)
+	CharacterSharedStateData() 
+		: mAttribCanTakeDamage(false)
 	{
 	}
 
-	virtual ~ActorSharedStateData()
-	{
-	}
-
-	virtual void PostHsmUpdate(HsmTimeType deltaTime)
-	{
-	}
-
-	// Data...
-	int16 mHealth; // Number of half-hearts
+	Attribute<bool> mAttribCanTakeDamage; // Can we take damage?
 };
 
 template <typename SharedStateDataChild, typename OwnerType>
-struct ActorStateBase : ClientStateBase<SharedStateDataChild, OwnerType>
+struct CharacterStateBase : ClientStateBase<SharedStateDataChild, OwnerType>
 {
 	void PlayAnim(BaseAnim::Type anim)
 	{

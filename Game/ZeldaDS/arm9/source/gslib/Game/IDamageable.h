@@ -16,11 +16,17 @@ namespace DamageEffect
 struct DamageInfo
 {
 	DamageInfo() { Reset(); }
+	
 	void Reset()
 	{
 		mEffect = DamageEffect::Default;
 		mAmount = 0;
 		mPushVector.Reset(InitZero);
+	}
+
+	bool IsSet() const
+	{
+		return mAmount > 0;
 	}
 
 	DamageEffect::Type mEffect;

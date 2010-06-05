@@ -1,6 +1,8 @@
 #include "Core.h"
 #include <stdarg.h>
 
+DBG_STATEMENT(uint32 gDebugFrameCount = 0);
+
 // Globals for memory debugging
 struct mallinfo mi_start;
 struct mallinfo mi_end;

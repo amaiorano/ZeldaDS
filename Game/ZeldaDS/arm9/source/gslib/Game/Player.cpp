@@ -1,7 +1,4 @@
 #include "Player.h"
-#include "gslib/Core/Core.h"
-#include "gslib/Hsm/HsmStateMachine.h"
-#include "gslib/Math/Vector2.h"
 #include "gslib/Hw/Constants.h"
 #include "gslib/Hw/InputManager.h"
 #include "gslib/Hw/AudioEngine.h"
@@ -18,41 +15,24 @@
 
 // Player HSM
 
+struct PlayerSharedStateData : CharacterSharedStateData
+{
+	typedef CharacterSharedStateData Base;
+
+	PlayerSharedStateData()
+		: mScrollDir(ScrollDir::None)
+	{
+	}
+
+	// Data...
+	Sword mSword;
+	Boomerang mBoomerang;
+	ScrollDir::Type mScrollDir;
+};
+
 struct PlayerStates
 {
-	struct PlayerSharedStateData : ActorSharedStateData
-	{
-		typedef ActorSharedStateData Base;
-
-		PlayerSharedStateData()
-			: mScrollDir(ScrollDir::None)
-			, mAttribDamageable(false)
-		{
-		}
-
-		virtual ~PlayerSharedStateData()
-		{
-		}
-
-		virtual void PostHsmUpdate(HsmTimeType deltaTime)
-		{
-			if ( mBoomerang.IsNodeInScene() && mBoomerang.HasReturned() )
-			{
-				SceneGraph::Instance().RemoveNodePostUpdate(mBoomerang);
-			}
-
-			Base::PostHsmUpdate(deltaTime);
-		}
-
-		// Data...
-		Sword mSword;
-		Boomerang mBoomerang;
-		ScrollDir::Type mScrollDir;
-
-		Attribute<bool> mAttribDamageable;
-	};
-
-	struct PlayerStateBase : ActorStateBase<PlayerSharedStateData, Player>
+	struct PlayerStateBase : CharacterStateBase<PlayerSharedStateData, Player>
 	{
 	};
 
@@ -65,7 +45,7 @@ struct PlayerStates
 
 		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
 		{
-			if (Data().mHealth <= 0)
+			if (Owner().mHealth.IsDead())
 			{
 				return InnerTransition<Dead>();
 			}
@@ -106,12 +86,13 @@ struct PlayerStates
 
 		virtual void OnEnter()
 		{
-			SetAttribute(Data().mAttribDamageable, true);
+			SetAttribute(Data().mAttribCanTakeDamage, true);
 		}
 
 		virtual void OnExit()
 		{
-			SetTakingDamage(false);
+			// In case we get kicked out of this state early, make sure we don't remain invincible
+			Owner().mHealth.SetInvincible(false);
 		}
 
 		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
@@ -136,41 +117,12 @@ struct PlayerStates
 
 		virtual void PerformStateActions(HsmTimeType deltaTime)
 		{
-			if (!Owner().mInvincible)
+			if (Owner().mDamageInfo.IsSet())
 			{
-				if (Owner().mDamageInfo.mAmount > 0) //@TODO: This is a shitty way to know if mDamageInfo has been set
-				{
-					SetTakingDamage(true);
-					mElapsedDamageTime = 0;
-				}
-			}
-			else
-			{
-				mElapsedDamageTime += deltaTime;
-
-				if (mElapsedDamageTime >= SEC_TO_FRAMES(0.2f))
-				{
-					SetTakingDamage(false);
-				}
-			}
-		}
-
-	private:
-		void SetTakingDamage(bool takingDamage)
-		{
-			if (takingDamage)
-			{
-				DamageInfo& dmgInfo = Owner().mDamageInfo;
-				Data().mHealth -= dmgInfo.mAmount;
-				Owner().mInvincible = true;
-				//@HACK: Velocity set in Update
-				//Owner().SetVelocity(Normalized(dmgInfo.mPushVector) * 3);
-			}
-			else
-			{
-				Owner().mInvincible = false;
+				Owner().mHealth.OffsetValue(-Owner().mDamageInfo.mAmount);
+				Owner().mHealth.SetInvincible(true, SEC_TO_FRAMES(0.2f));
+				Owner().mLastDamagePushVector = Owner().mDamageInfo.mPushVector;
 				Owner().mDamageInfo.Reset();
-				Owner().SetVelocity(InitZero);
 			}
 		}
 	};
@@ -253,7 +205,7 @@ struct PlayerStates
 			const bool shouldDie = ( InputManager::GetKeysPressed() & KEY_Y ) != 0;
 			if (shouldDie)
 			{
-				Data().mHealth = 0;
+				Owner().mHealth.SetValue(0);
 			}
 		}
 
@@ -437,7 +389,7 @@ struct PlayerStates
 		{
 			if (IsAnimFinished())
 			{
-				Data().mHealth = 6; // Resurrect me (for now)
+				Owner().mHealth.Resurrect(); // Resurrect me (for now)
 			}
 		}
 	};
@@ -446,19 +398,19 @@ struct PlayerStates
 
 // Player class implementation
 
-void Player::Init(const Vector2I& initPos)
+Player::Player()
+	: mLastDamagePushVector(InitZero)
 {
-	PlayerStates::PlayerSharedStateData* pSharedStateData = new PlayerStates::PlayerSharedStateData();
-	mpSharedStateData = pSharedStateData;
+}
+
+void Player::InitStateMachine()
+{
+	mpSharedStateData = new PlayerSharedStateData();
 
 	//mStateMachine.SetDebugLevel(1);
 	mStateMachine.SetOwner(this);
 	mStateMachine.SetSharedStateData(mpSharedStateData);
 	mStateMachine.SetInitialState<PlayerStates::Root>();
-
-	mInitPos = initPos;
-	mInvincible = false;
-	mInvincibleElapsedTime = 0;
 }
 
 void Player::GetGameObjectInfo(GameObjectInfo& gameObjectInfo)
@@ -466,35 +418,24 @@ void Player::GetGameObjectInfo(GameObjectInfo& gameObjectInfo)
 	gameObjectInfo.mGameActor = GameActor::Hero;
 }
 
-void Player::OnAddToScene()
-{
-	Base::OnAddToScene();
-
-	SetPosition(mInitPos);
-	mDamageInfo.Reset();
-	PlayAnim(BaseAnim::Idle); // Set initial pose
-}
-
 void Player::Update(GameTimeType deltaTime)
 {
-	if (deltaTime > 0) // Total cop out, we don't handle deltaTime == 0 very well
+	Base::Update(deltaTime); // Let base update state machine
+
+	if (deltaTime > 0)
 	{
-		mStateMachine.Update(deltaTime);
-
-		//@TODO: Maybe state machine should provide some kind of hook for pre/post update?
-		ActorSharedStateData& sharedData = static_cast<ActorSharedStateData&>(*mpSharedStateData);
-		sharedData.PostHsmUpdate(deltaTime);
-
-		//@HACK: I do this because the velocity is potentially crushed by the Moving state
-		// while being hurt. Need some way for an outer state to set the velocity, and for
-		// inner state velocity changes to be ignored.
-		if (mInvincible)
+		// If boomerang has returned, remove it from the scene
+		if ( mpSharedStateData->mBoomerang.IsNodeInScene() && mpSharedStateData->mBoomerang.HasReturned() )
 		{
-			SetVelocity(Normalized(mDamageInfo.mPushVector) * 3);		
+			SceneGraph::Instance().RemoveNodePostUpdate(mpSharedStateData->mBoomerang);
+		}
+
+		// Knockback (override any player input velocity)
+		if (mHealth.IsInvincible())
+		{
+			SetVelocity(Normalized(mLastDamagePushVector) * 3);
 		}
 	}
-
-	Base::Update(deltaTime);
 }
 
 void Player::Render(GameTimeType deltaTime)
@@ -514,15 +455,4 @@ void Player::Render(GameTimeType deltaTime)
 	}
 
 	Base::Render(deltaTime);
-}
-
-void Player::OnDamage(const DamageInfo& damageInfo)
-{
-	if (mInvincible)
-		return;
-
-	if (!static_cast<PlayerStates::PlayerSharedStateData&>(*mpSharedStateData).mAttribDamageable)
-		return;
-
-	mDamageInfo = damageInfo;
 }

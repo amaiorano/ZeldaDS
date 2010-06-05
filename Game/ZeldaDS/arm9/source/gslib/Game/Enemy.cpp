@@ -1,8 +1,8 @@
 #include "Enemy.h"
-#include "ActorSharedStateData.h"
 #include "gslib/Hw/Constants.h"
-#include "gslib/Game/GameHelpers.h"
 #include "gslib/Math/MathEx.h"
+#include "ActorSharedStateData.h"
+#include "GameHelpers.h"
 #include "Player.h"
 #include "SceneGraph.h"
 #include <cstdlib>
@@ -10,30 +10,30 @@
 // Interface for core enemy AI
 struct IEnemyAI
 {
-	virtual void Init(Enemy& enemy, ActorSharedStateData& sharedStateData) {}
-	virtual Transition& GetRootTransition() { return NoTransition(); }	
+	virtual void Init(Enemy& enemy, CharacterSharedStateData& sharedStateData) {}
+	virtual Transition& GetRootTransition() = 0;
+};
+
+struct EnemySharedStateData : CharacterSharedStateData
+{
+	EnemySharedStateData()
+		: mpEnemyAI(0)
+		, mAttribCanDamage(false)
+	{
+	}
+
+	virtual ~EnemySharedStateData()
+	{
+		delete mpEnemyAI;
+	}
+
+	IEnemyAI* mpEnemyAI;
+	Attribute<bool> mAttribCanDamage; // Can we damage player?
 };
 
 struct EnemyStates
 {
-	struct EnemySharedStateData : ActorSharedStateData
-	{
-		EnemySharedStateData()
-			: mpEnemyAI(0)
-			, mAttribCanDamage(false)
-		{
-		}
-
-		virtual ~EnemySharedStateData()
-		{
-			delete mpEnemyAI;
-		}
-
-		IEnemyAI* mpEnemyAI;
-		Attribute<bool> mAttribCanDamage;
-	};
-
-	struct EnemyStateBase : ActorStateBase<EnemySharedStateData, Enemy>
+	struct EnemyStateBase : CharacterStateBase<EnemySharedStateData, Enemy>
 	{
 	};
 
@@ -46,7 +46,7 @@ struct EnemyStates
 
 		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
 		{
-			if (Data().mHealth <= 0)
+			if (Owner().mHealth.IsDead())
 			{
 				return InnerTransition<Dead>();
 			}
@@ -87,6 +87,7 @@ struct EnemyStates
 		virtual void OnEnter()
 		{
 			SetAttribute(Data().mAttribCanDamage, true);
+			SetAttribute(Data().mAttribCanTakeDamage, true);
 		}
 
 		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
@@ -123,13 +124,6 @@ struct GoriyasStates : EnemyStates
 	{
 		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
 		{
-			if (Owner().mDamageInfo.mAmount > 0 && Owner().mDamageInfo.mEffect != DamageEffect::Stun)
-			{
-				//@TODO: For now, just absorb the damage
-				Data().mHealth -= Owner().mDamageInfo.mAmount;
-				Owner().mDamageInfo.mAmount = 0;
-			}
-
 			return InnerEntryTransition<Moving>();
 		}
 	};
@@ -154,16 +148,14 @@ struct GoriyasStates : EnemyStates
 
 		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
 		{
-			if (Owner().mDamageInfo.mAmount > 0)
+			if (Owner().mDamageInfo.IsSet())
 			{
 				if (Owner().mDamageInfo.mEffect == DamageEffect::Stun)
 				{
 					return SiblingTransition<Stunned>();
 				}
-				else
-				{
-					FAIL(); // Non-stun handled in outer state
-				}
+
+				return SiblingTransition<Hurt>();
 			}
 
 			return NoTransition();
@@ -190,6 +182,7 @@ struct GoriyasStates : EnemyStates
 		}
 	};
 
+	//@TODO: Move Stunned and Hurt to generic EnemyStates
 	struct Stunned : EnemyStateBase
 	{
 		HsmTimeType mElapsedTime;
@@ -197,18 +190,23 @@ struct GoriyasStates : EnemyStates
 		virtual void OnEnter()
 		{
 			mElapsedTime = 0;
-			PlayAnim(BaseAnim::Idle);
-		}
-
-		virtual void OnExit()
-		{
+			ASSERT(Owner().mDamageInfo.mEffect == DamageEffect::Stun);
 			Owner().mDamageInfo.Reset();
+
+			PlayAnim(BaseAnim::Idle);
 		}
 
 		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
 		{
-			mElapsedTime += deltaTime;
+			// Not crazy about this, probably should have single outer state
+			// that transitions us to Hurt
+			DamageInfo& dmgInfo = Owner().mDamageInfo;
+			if (dmgInfo.IsSet() && dmgInfo.mEffect != DamageEffect::Stun)
+			{
+				return SiblingTransition<Hurt>();
+			}
 
+			mElapsedTime += deltaTime;
 			if (mElapsedTime > SEC_TO_FRAMES(2.0))
 			{
 				return SiblingTransition<Moving>();
@@ -216,13 +214,49 @@ struct GoriyasStates : EnemyStates
 
 			return NoTransition();
 		}
+
+		virtual void PerformStateActions(HsmTimeType deltaTime)
+		{
+			// Keep resetting stunned timer if restunned. Note that re-stunning happens
+			// a few times even on the initial stun since the boomerang continues to collide
+			// with the enemy for a few frames. This is ok, not much we can do about it.
+			DamageInfo& dmgInfo = Owner().mDamageInfo;
+
+			if (dmgInfo.IsSet())
+			{
+				// Other types of damage should bump us out of this state
+				ASSERT(dmgInfo.mEffect == DamageEffect::Stun);
+
+				mElapsedTime = 0;
+				dmgInfo.Reset();
+			}
+		}
+	};
+
+	struct Hurt : EnemyStateBase
+	{
+		virtual void OnEnter()
+		{
+			//@TODO: For now, just absorb the damage. Eventually, knockback and
+			// remain invincible for some time.
+			DamageInfo& dmgInfo = Owner().mDamageInfo;
+			ASSERT(dmgInfo.mEffect == DamageEffect::Hurt);
+			
+			Owner().mHealth.OffsetValue( -dmgInfo.mAmount );
+			dmgInfo.Reset();
+		}
+
+		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
+		{
+			return SiblingTransition<Moving>();
+		}
 	};
 };
 
 //@TODO: Move to "gslib/Game/Enemies/Goriyas.h"
 struct GoriyasAI : IEnemyAI
 {
-	virtual void Init(Enemy& enemy, ActorSharedStateData& sharedStateData)
+	virtual void Init(Enemy& enemy, CharacterSharedStateData& sharedStateData)
 	{
 		enemy.SetSpriteDir(SpriteDir::Down);
 	}
@@ -237,18 +271,16 @@ struct GoriyasAI : IEnemyAI
 
 // Enemy class implementation
 
-void Enemy::Init(const Vector2I& initPos)
+void Enemy::InitStateMachine()
 {
 	//@TODO: Push down to child class... (Goriyas.cpp)
-	EnemyStates::EnemySharedStateData* pSharedStateData = new EnemyStates::EnemySharedStateData();
-	pSharedStateData->mpEnemyAI = new GoriyasAI();
+	mpSharedStateData = new EnemySharedStateData();
+	mpSharedStateData->mpEnemyAI = new GoriyasAI();
 
 	//mStateMachine.SetDebugLevel(1);
 	mStateMachine.SetOwner(this);
-	mStateMachine.SetSharedStateData(pSharedStateData);
+	mStateMachine.SetSharedStateData(mpSharedStateData);
 	mStateMachine.SetInitialState<EnemyStates::Root>();
-
-	mInitPos = initPos;
 }
 
 void Enemy::GetGameObjectInfo(GameObjectInfo& gameObjectInfo)
@@ -256,34 +288,11 @@ void Enemy::GetGameObjectInfo(GameObjectInfo& gameObjectInfo)
 	gameObjectInfo.mGameActor = GameActor::Goriyas;
 }
 
-void Enemy::OnAddToScene()
-{
-	Base::OnAddToScene();
-
-	SetPosition(mInitPos);
-	mDamageInfo.Reset();
-	PlayAnim(BaseAnim::Idle); // Set initial pose
-}
-
-void Enemy::Update(GameTimeType deltaTime)
-{
-	if (deltaTime > 0) // Total cop out, we don't handle deltaTime == 0 very well
-	{
-		mStateMachine.Update(deltaTime);
-		
-		//@TODO: Maybe state machine should provide some kind of hook for pre/post update?
-		ActorSharedStateData& data = static_cast<ActorSharedStateData&>(mStateMachine.GetSharedStateData());
-		data.PostHsmUpdate(deltaTime);
-	}
-	
-	Base::Update(deltaTime);
-}
-
 void Enemy::OnCollision(const CollisionInfo& collisionInfo)
 {
 	if ( Player* pPlayer = DynamicCast<Player*>(collisionInfo.mpCollidingWith) )
 	{
-		if (static_cast<EnemyStates::EnemySharedStateData&>(mStateMachine.GetSharedStateData()).mAttribCanDamage)
+		if (mpSharedStateData->mAttribCanDamage)
 		{
 			static DamageInfo dmgInfo; //@MT_UNSAFE
 			dmgInfo.mAmount = 1;
@@ -291,18 +300,4 @@ void Enemy::OnCollision(const CollisionInfo& collisionInfo)
 			pPlayer->OnDamage(dmgInfo);
 		}
 	}
-}
-
-void Enemy::OnDamage(const DamageInfo& damageInfo)
-{
-	// Phew, so many hacks already!
-	//@TODO: Remove this! We need to handle multiple OnDamage calls properly!
-	// State machine should not rely on mDamageInfo.mAmount to stay in damaged state.
-	// For instance, while stunned, if another stun ondamage happens, the enemy
-	// should prolong (reset/reenter) it's stunned state. Or while stunned, if a
-	// hurt ondamage happens, he should get hurt even while stunned.
-	if (mDamageInfo.mAmount > 0 && mDamageInfo.mEffect == damageInfo.mEffect)
-		return;
-
-	mDamageInfo = damageInfo;
 }

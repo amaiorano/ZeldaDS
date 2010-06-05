@@ -170,22 +170,25 @@ void PhysicsSimulator::IntegrateAndApplyCollisions(GameTimeType deltaTime)
 	EnemyList& enemies = sceneGraph.GetEnemyList();
 	WeaponList& playerWeapons = sceneGraph.GetPlayerWeaponList();
 
-	// Move all IPhysical objects
-	PhysicsHelpers::IntegrateEachPhysical(physicals, deltaTime);
+	if (deltaTime > 0)
+	{
+		// Move all IPhysical objects
+		PhysicsHelpers::IntegrateEachPhysical(physicals, deltaTime);
 
-	// Resolve object collisions
-	PhysicsHelpers::ActorActorCollisions(players, enemies);
-	PhysicsHelpers::ActorActorCollisions(enemies, enemies);
+		// Resolve object collisions
+		PhysicsHelpers::ActorActorCollisions(players, enemies);
+		PhysicsHelpers::ActorActorCollisions(enemies, enemies);
 
-	//@TODO: Player-Items -> on collision, player picks up (rupees, bombs, treasure)
-	//@TODO: Player-EnemyWeapon -> on collision, player is damaged, weapon stops doing damage and (eventually) dissapears
+		//@TODO: Player-Items -> on collision, player picks up (rupees, bombs, treasure)
+		//@TODO: Player-EnemyWeapon -> on collision, player is damaged, weapon stops doing damage and (eventually) dissapears
 
-	PhysicsHelpers::ActorActorCollisions(playerWeapons, enemies);
+		PhysicsHelpers::ActorActorCollisions(playerWeapons, enemies);
 
-	// Resolve world collisions
-	PhysicsHelpers::ActorTileCollisions(players, worldMap);
-	PhysicsHelpers::ActorTileCollisions(enemies, worldMap);
-	PhysicsHelpers::ActorTileCollisions(playerWeapons, worldMap);
+		// Resolve world collisions
+		PhysicsHelpers::ActorTileCollisions(players, worldMap);
+		PhysicsHelpers::ActorTileCollisions(enemies, worldMap);
+		PhysicsHelpers::ActorTileCollisions(playerWeapons, worldMap);
+	}
 
 #if DEBUG_VARS_ENABLED
 	extern void DrawQuad(uint16 x, uint16 y, uint16 w, uint16 h, uint16 color, uint16 alpha);

@@ -2,7 +2,6 @@
 #define PLAYER_H
 
 #include "Character.h"
-#include "gslib/Hsm/HsmStateMachine.h"
 
 class SharedStateData;
 
@@ -11,28 +10,23 @@ class Player : public Character
 public:
 	typedef Character Base;	
 
-	void Init(const Vector2I& initPos);
+	Player();
+
+	// Character interface
+	virtual void InitStateMachine();
 	
 	// GameObject interface
 	virtual void GetGameObjectInfo(GameObjectInfo& gameObjectInfo);
 
 	// ISceneNode interface
-	virtual void OnAddToScene();
 	virtual void Update(GameTimeType deltaTime);
 	virtual void Render(GameTimeType deltaTime);
 
-	// IDamageable interface
-	virtual void OnDamage(const DamageInfo& damageInfo);
-
 private:
-	StateMachine mStateMachine;
-	SharedStateData* mpSharedStateData; // Alias for convenience
+	struct PlayerSharedStateData* mpSharedStateData;
 
 	friend class PlayerStates;
-	Vector2I mInitPos;
-	DamageInfo mDamageInfo;
-	bool mInvincible;
-	uint16 mInvincibleElapsedTime;
+	Vector2I mLastDamagePushVector;
 };
 
 

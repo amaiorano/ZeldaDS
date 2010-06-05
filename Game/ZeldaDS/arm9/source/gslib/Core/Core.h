@@ -50,6 +50,9 @@ const uint16 TargetFramesPerSecond = 60;
 #define DBG_STATEMENT(s) s
 #endif
 
+// Global frame count for debugging
+DBG_STATEMENT(extern uint32 gDebugFrameCount);
+
 // Memory debugging
 extern struct mallinfo mi_start;
 extern struct mallinfo mi_end;

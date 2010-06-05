@@ -21,10 +21,9 @@ inline T CheckedDynamicCast(U pObj)
 	return DynamicCast<T>(pObj);
 #else
 	T pRet = DynamicCast<T>(pObj);
-	ASSERT_MSG(pRet != 0, "Checked cast failed!");
+	ASSERT_MSG(pRet != 0, "CheckedDynamicCast failed!");
 	return pRet;
 #endif
 }
-
 
 #endif // GS_RTTI

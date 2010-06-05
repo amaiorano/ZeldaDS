@@ -282,6 +282,8 @@ int main(void)
 
 		GraphicsEngine::Update(deltaTime);
 		GraphicsEngine::Render(deltaTime);
+
+		DBG_STATEMENT(++gDebugFrameCount);
 	}
 
 	return 0;
