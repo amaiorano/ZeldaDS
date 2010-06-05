@@ -4,7 +4,7 @@
 #include "gslib/Hw/AudioEngine.h"
 #include "data/soundbank.h"
 #include "GameItems.h"
-#include "ActorSharedStateData.h"
+#include "CharacterState.h"
 #include "Sword.h"
 #include "Boomerang.h"
 #include "SceneGraph.h"

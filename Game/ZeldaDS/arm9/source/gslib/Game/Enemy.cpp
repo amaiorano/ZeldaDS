@@ -1,7 +1,7 @@
 #include "Enemy.h"
 #include "gslib/Hw/Constants.h"
 #include "gslib/Math/MathEx.h"
-#include "ActorSharedStateData.h"
+#include "CharacterState.h"
 #include "GameHelpers.h"
 #include "Player.h"
 #include "SceneGraph.h"

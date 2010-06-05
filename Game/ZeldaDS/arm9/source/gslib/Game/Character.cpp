@@ -1,5 +1,5 @@
 #include "Character.h"
-#include "ActorSharedStateData.h"
+#include "CharacterState.h"
 
 void Character::Init(const Vector2I& initPos)
 {

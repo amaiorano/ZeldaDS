@@ -321,15 +321,15 @@
 						Name="Characters"
 						>
 						<File
-							RelativePath=".\ZeldaDS\arm9\source\gslib\Game\ActorSharedStateData.h"
-							>
-						</File>
-						<File
 							RelativePath=".\ZeldaDS\arm9\source\gslib\Game\Character.cpp"
 							>
 						</File>
 						<File
 							RelativePath=".\ZeldaDS\arm9\source\gslib\Game\Character.h"
+							>
+						</File>
+						<File
+							RelativePath=".\ZeldaDS\arm9\source\gslib\Game\CharacterState.h"
 							>
 						</File>
 						<File
