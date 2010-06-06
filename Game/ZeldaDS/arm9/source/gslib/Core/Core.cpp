@@ -11,7 +11,7 @@ int mi_bytes_delta;
 #if PRINT_TO_EMULATOR_CONSOLE
 extern "C" void ideasPrint(const char* str);
 
-#define EMU_PRINTS_EXTRA_NEWLINE 1
+#define EMU_PRINTS_EXTRA_NEWLINE 0
 
 void EmuConsolePrintF(const char* format, ...)
 {

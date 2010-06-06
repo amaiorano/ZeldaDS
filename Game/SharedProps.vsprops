@@ -10,10 +10,14 @@
 	/>
 	<UserMacro
 		Name="NDSEMUARGS"
-		Value="$(TargetPath)"
+		Value="--gbaslot-rom=$(TargetPath) $(TargetPath)"
 	/>
 	<UserMacro
 		Name="NDSEMUARGS_FORNEWEMU"
 		Value="--gbaslot-rom=$(TargetPath) $(TargetPath)"
+	/>
+	<UserMacro
+		Name="NDSEMUARGS_FOROLDEMU"
+		Value="$(TargetPath)"
 	/>
 </VisualStudioPropertySheet>
