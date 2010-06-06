@@ -1,5 +1,5 @@
-#ifndef ACTOR_SHARED_STATE_DATA_H
-#define ACTOR_SHARED_STATE_DATA_H
+#ifndef CHARACTER_STATE_H
+#define CHARACTER_STATE_H
 
 #include "gslib/Hsm/HsmStateMachine.h"
 #include "gslib/Hsm/HsmState.h"
@@ -7,8 +7,6 @@
 #include "gslib/Hw/Sprite.h"
 #include "gslib/Anim/AnimControl.h"
 #include "GameAnims.h"
-
-//@TODO: Rename this file: CharacterState.h?
 
 struct CharacterSharedStateData : SharedStateData
 {
@@ -39,4 +37,4 @@ struct CharacterStateBase : ClientStateBase<SharedStateDataChild, OwnerType>
 	}
 };
 
-#endif // ACTOR_SHARED_STATE_DATA_H
+#endif // CHARACTER_STATE_H
