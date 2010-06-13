@@ -18,7 +18,7 @@ void Sword::OnAddToScene()
 	Base::OnAddToScene();
 
 	// No anim to play on the sword
-	//mAnimControl.PlayAnim( MakeAnimAssetKey(GameActor::Boomerang, BaseAnim::ItemDefault, SpriteDir::None));
+	//GetAnimControl().PlayAnim( MakeAnimAssetKey(GameActor::Boomerang, BaseAnim::ItemDefault, SpriteDir::None));
 	mpSprite->SetAnimPose(GetGameItemPose(GameItem::Sword, mDirection));
 }
 

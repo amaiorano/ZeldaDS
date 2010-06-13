@@ -33,7 +33,7 @@ public:
 	void SetGameActor(GameActor::Type gameActor) { mGameActor = gameActor; }
 	GameActor::Type GetGameActor() const { return mGameActor; }
 
-protected:
+private:
 	AnimControl mAnimControl;
 	GameActor::Type mGameActor;
 	SpriteDir::Type mSpriteDir;

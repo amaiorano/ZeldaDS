@@ -36,6 +36,12 @@ const uint16 TargetFramesPerSecond = 60;
 #define FAIL()					sassert(false, "FAIL")
 #define FAIL_MSG(msg)			sassert(false, "FAIL: " msg)
 
+#ifdef NDEBUG
+#define VERIFY(exp)				exp
+#else
+#define VERIFY(exp)				ASSERT(exp)
+#endif
+
 // Compile-time assertion (@TODO: Should this be moved to Generic.h?)
 #define CT_ASSERT(expr)				struct __UNIQUE_NAME { unsigned int no_message : expr; }
 #define CT_ASSERT_MSG(expr, msg)	struct __UNIQUE_NAME { unsigned int msg : expr; }

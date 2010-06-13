@@ -31,8 +31,8 @@ void Boomerang::OnAddToScene()
 	Base::OnAddToScene();
 
 	SetPosition(mPositionF + Vector2F(0.5f, 0.5f));
-	mAnimControl.PlayAnim(MakeAnimAssetKey(GameActor::Boomerang, BaseAnim::ItemDefault, SpriteDir::None));
-	mpSprite->SetAnimPose(mAnimControl.GetCurrPose());
+	GetAnimControl().PlayAnim(MakeAnimAssetKey(GameActor::Boomerang, BaseAnim::ItemDefault, SpriteDir::None));
+	mpSprite->SetAnimPose(GetAnimControl().GetCurrPose());
 }
 
 void Boomerang::Update(GameTimeType deltaTime)

@@ -5,12 +5,18 @@
 #include "GameHelpers.h"
 #include "Player.h"
 #include "SceneGraph.h"
+#include "Camera.h"
+#include "MovementModel.h"
 #include <cstdlib>
 
 // Interface for core enemy AI
 struct IEnemyAI
 {
-	virtual void Init(Enemy& enemy, CharacterSharedStateData& sharedStateData) {}
+	virtual void Init(Enemy& enemy, CharacterSharedStateData& sharedStateData)
+	{
+		enemy.SetSpriteDir(GameHelpers::GetRandomSpriteDir());
+	}
+
 	virtual Transition& GetRootTransition() = 0;
 };
 
@@ -33,9 +39,7 @@ struct EnemySharedStateData : CharacterSharedStateData
 
 struct EnemyStates
 {
-	struct EnemyStateBase : CharacterStateBase<EnemySharedStateData, Enemy>
-	{
-	};
+	typedef CharacterStateBase<EnemySharedStateData, Enemy> EnemyStateBase;
 
 	struct Root : EnemyStateBase
 	{
@@ -92,98 +96,29 @@ struct EnemyStates
 
 		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
 		{
-			return Data().mpEnemyAI->GetRootTransition();
+			return InnerEntryTransition<Alive_Main_Locomotion>();
 		}
 	};
 
-	struct Dead : EnemyStateBase
+	struct Alive_Main_Locomotion : EnemyStateBase
 	{
-		virtual void OnEnter()
-		{
-			PlayGlobalAnim(BaseAnim::Spawn); // Play same anim as spawn
-			//@TODO: Tell someone we're dead
-		}
-
-		virtual void PerformStateActions(HsmTimeType deltaTime)
-		{
-			if (IsAnimFinished())
-			{
-				SceneGraph::Instance().RemoveNodePostUpdate(Owner());
-			}
-		}
-	};
-};
-
-
-
-
-//@TODO: Move to "gslib/Game/Enemies/Goriyas.cpp"
-struct GoriyasStates : EnemyStates
-{
-	struct Main : EnemyStateBase
-	{
-		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
-		{
-			return InnerEntryTransition<Moving>();
-		}
-	};
-
-	struct Moving : EnemyStateBase
-	{
-		uint16 mUnitsMoved;
-		uint16 mUnitsToMoveInOneDir;
-
-		virtual void OnEnter()
-		{
-			PlayAnim(BaseAnim::Move);
-
-			mUnitsMoved = 0;
-			mUnitsToMoveInOneDir = MathEx::Rand(3, 5) * 16; // Move in random increments of 3 to 5 tiles
-		}
-
-		virtual void OnExit()
-		{
-			Owner().SetVelocity(InitZero);
-		}
-
 		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
 		{
 			if (Owner().mDamageInfo.IsSet())
 			{
 				if (Owner().mDamageInfo.mEffect == DamageEffect::Stun)
 				{
-					return SiblingTransition<Stunned>();
+					return SiblingTransition<Alive_Main_Stunned>();
 				}
 
-				return SiblingTransition<Hurt>();
+				return SiblingTransition<Alive_Main_Hurt>();
 			}
 
-			return NoTransition();
-		}
-
-		virtual void PerformStateActions(HsmTimeType deltaTime)
-		{
-			const int16 moveSpeed = 1; // pixels/frame
-			const int16 unitsToMove = moveSpeed * deltaTime;
-
-			const Vector2I& dirVec = GameHelpers::SpriteDirToUnitVector(Owner().GetSpriteDir());
-			Owner().SetVelocity(dirVec * moveSpeed);
-
-			mUnitsMoved += unitsToMove;
-
-			if (mUnitsMoved >mUnitsToMoveInOneDir)
-			{
-				Owner().SetSpriteDir( (SpriteDir::Type)(((int)Owner().GetSpriteDir()+1) % SpriteDir::NumTypes) );
-				PlayAnim(BaseAnim::Move); //@TODO: Annoying that we have to manually replay the anim on direction change...
-
-				mUnitsMoved = 0;
-				mUnitsToMoveInOneDir = MathEx::Rand(3, 5) * 16; // Move in random increments of 3 to 5 tiles
-			}
+			return Data().mpEnemyAI->GetRootTransition();
 		}
 	};
 
-	//@TODO: Move Stunned and Hurt to generic EnemyStates
-	struct Stunned : EnemyStateBase
+	struct Alive_Main_Stunned : EnemyStateBase
 	{
 		HsmTimeType mElapsedTime;
 
@@ -203,13 +138,13 @@ struct GoriyasStates : EnemyStates
 			DamageInfo& dmgInfo = Owner().mDamageInfo;
 			if (dmgInfo.IsSet() && dmgInfo.mEffect != DamageEffect::Stun)
 			{
-				return SiblingTransition<Hurt>();
+				return SiblingTransition<Alive_Main_Hurt>();
 			}
 
 			mElapsedTime += deltaTime;
 			if (mElapsedTime > SEC_TO_FRAMES(2.0))
 			{
-				return SiblingTransition<Moving>();
+				return SiblingTransition<Alive_Main_Locomotion>();
 			}
 
 			return NoTransition();
@@ -217,7 +152,7 @@ struct GoriyasStates : EnemyStates
 
 		virtual void PerformStateActions(HsmTimeType deltaTime)
 		{
-			// Keep resetting stunned timer if restunned. Note that re-stunning happens
+			// Keep resetting Alive_Main_Stunned timer if reAlive_Main_Stunned. Note that re-stunning happens
 			// a few times even on the initial stun since the boomerang continues to collide
 			// with the enemy for a few frames. This is ok, not much we can do about it.
 			DamageInfo& dmgInfo = Owner().mDamageInfo;
@@ -233,7 +168,7 @@ struct GoriyasStates : EnemyStates
 		}
 	};
 
-	struct Hurt : EnemyStateBase
+	struct Alive_Main_Hurt : EnemyStateBase
 	{
 		virtual void OnEnter()
 		{
@@ -248,19 +183,153 @@ struct GoriyasStates : EnemyStates
 
 		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
 		{
-			return SiblingTransition<Moving>();
+			return SiblingTransition<Alive_Main_Locomotion>();
+		}
+	};	
+
+	struct Dead : EnemyStateBase
+	{
+		virtual void OnEnter()
+		{
+			PlayGlobalAnim(BaseAnim::Spawn); // Play same anim as spawn
+			//@TODO: Tell someone we're dead
+		}
+
+		virtual void PerformStateActions(HsmTimeType deltaTime)
+		{
+			if (IsAnimFinished())
+			{
+				SceneGraph::Instance().RemoveNodePostUpdate(Owner());
+			}
 		}
 	};
 };
 
-//@TODO: Move to "gslib/Game/Enemies/Goriyas.h"
+///////////////////////////////////////////////////////////////////////////////
+// Shared states for all enemies (could be moved to EnemyStates)
+///////////////////////////////////////////////////////////////////////////////
+struct EnemySharedStates : EnemyStates
+{
+	struct RandomMovement : EnemyStateBase
+	{
+		uint16 mUnitsMoved;
+		uint16 mUnitsToMoveInOneDir;
+
+		// Desired direction will not necessarily match current direction due to 8x8 grid movement
+		SpriteDir::Type mDesiredDir;
+
+		//@TODO: Pass this in somehow
+		static const uint16 mMinTilesToMove = 3;
+		static const uint16 mMaxTilesToMove = 8;
+
+		virtual void OnEnter()
+		{
+			PlayAnim(BaseAnim::Move);
+
+			mUnitsMoved = 0;
+			mUnitsToMoveInOneDir = MathEx::Rand(mMinTilesToMove, mMaxTilesToMove) * 16;
+
+			mDesiredDir = Owner().GetSpriteDir();
+		}
+
+		virtual void PerformStateActions(HsmTimeType deltaTime)
+		{
+			const int16 moveSpeed = 1; // pixels/frame
+			const int16 unitsToMove = moveSpeed * deltaTime;
+
+			// Move on 8x8 grid
+			Vector2I newVelocity(InitZero);
+			SpriteDir::Type newDir = SpriteDir::None;
+			MovementModel::MoveGrid8x8(Owner().GetPosition(), mDesiredDir, moveSpeed, newVelocity, newDir);
+
+			if (Owner().GetSpriteDir() != newDir)
+			{
+				Owner().SetSpriteDir(newDir);
+				PlayAnim(BaseAnim::Move);  // Update anim on direction change
+			}
+			Owner().SetVelocity(newVelocity);
+
+			//@TODO: This check is one frame late, meaning we're already off screen. As a result,
+			// we're off the 8x8 grid, and it looks crappy when we change to a perpendicular direction.
+			// We could check if future bounds are outside the screen bounds (frame-based dependent,
+			// however, just like the rest of this function)
+			ScrollDir::Type scrollDir = ScrollDir::None;
+			const bool leavingScreen = !GameHelpers::IsPhysicalInScreenBounds(Owner(), &scrollDir) 
+				&& GameHelpers::ScrollToSpriteDir(scrollDir) == Owner().GetSpriteDir();
+
+			if (mDesiredDir == Owner().GetSpriteDir()) // Count units moved in desired direction
+			{
+				mUnitsMoved += unitsToMove;
+			}
+
+			const bool changeDirection = mUnitsMoved > mUnitsToMoveInOneDir || leavingScreen;
+			if (changeDirection)
+			{
+				mDesiredDir = GameHelpers::GetRandomSpriteDir(Owner().GetSpriteDir());
+				mUnitsMoved = 0;
+				mUnitsToMoveInOneDir = MathEx::Rand(mMinTilesToMove, mMaxTilesToMove) * 16;
+			}
+		}
+	};
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// Goryias
+///////////////////////////////////////////////////////////////////////////////
+struct GoriyasStates : EnemyStates
+{
+	struct Main : EnemyStateBase
+	{
+		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
+		{
+			return InnerEntryTransition<Move>();
+		}
+	};
+
+	struct Move : EnemySharedStates::RandomMovement
+	{
+		HsmTimeType mElapsedTime;
+		HsmTimeType mTimeToAttack;
+
+		virtual void OnEnter()
+		{
+			mElapsedTime = 0;
+			mTimeToAttack = MathEx::Rand(SEC_TO_FRAMES(2), SEC_TO_FRAMES(4));
+		}
+
+		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
+		{
+			mElapsedTime += deltaTime;
+			if (mElapsedTime > mTimeToAttack)
+			{
+				return SiblingTransition<Attack>();
+			}
+			return NoTransition();
+		}
+	};
+
+	struct Attack : EnemyStateBase
+	{
+		virtual void OnEnter()
+		{
+			PlayAnim(BaseAnim::Attack);
+			//@TODO: Throw boomerang
+		}
+
+		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
+		{
+			//@TODO: When boomerang returns, go back to Move
+			if (IsAnimFinished())
+			{
+				return SiblingTransition<Move>();
+			}
+			return NoTransition();
+		}
+	};
+};
+
 struct GoriyasAI : IEnemyAI
 {
-	virtual void Init(Enemy& enemy, CharacterSharedStateData& sharedStateData)
-	{
-		enemy.SetSpriteDir(SpriteDir::Down);
-	}
-
 	virtual Transition& GetRootTransition()
 	{
 		return InnerEntryTransition<GoriyasStates::Main>();
@@ -268,16 +337,174 @@ struct GoriyasAI : IEnemyAI
 };
 
 
+///////////////////////////////////////////////////////////////////////////////
+// Snake
+///////////////////////////////////////////////////////////////////////////////
+struct SnakeStates : EnemyStates
+{
+	// Snake moves around randomly, but as soon as it sees the player, it strikes in the players
+	// direction until it collides, at which point it resumes random movement
+
+	struct Main : EnemyStateBase
+	{
+		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
+		{
+			return InnerEntryTransition<Move>();
+		}
+	};
+
+	struct Move : EnemySharedStates::RandomMovement
+	{
+		typedef EnemySharedStates::RandomMovement Base;
+		bool mShouldStrike;
+
+		Move() : mShouldStrike(false)
+		{
+		}
+
+		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
+		{
+			if (mShouldStrike)
+			{
+				return SiblingTransition<Attack>();
+			}
+			return NoTransition();
+		}
+
+		virtual void PerformStateActions(HsmTimeType deltaTime)
+		{
+			Base::PerformStateActions(deltaTime); // Move
+
+			// Due to 8x8 grid movement, we may not be facing our desired direction, so we only
+			// strike when we're on the grid line
+			const bool facingDesiredDirection = mDesiredDir == Owner().GetSpriteDir();
+			if (facingDesiredDirection)
+			{
+				// Project a bounding box in front of myself and see if it collides with the player
+				BoundingBox fwdBBox = Owner().GetBoundingBox();
+				
+				switch (mDesiredDir)
+				{
+				case SpriteDir::Left:
+					fwdBBox.pos.x -= HwScreenSizeX;
+					fwdBBox.w = HwScreenSizeX;
+					break;
+
+				case SpriteDir::Right:
+					fwdBBox.pos.x += Owner().GetWidth();
+					fwdBBox.w = HwScreenSizeX;
+					break;
+
+				case SpriteDir::Up:
+					fwdBBox.pos.y -= HwScreenSizeY;
+					fwdBBox.h = HwScreenSizeY;
+					break;
+
+				case SpriteDir::Down:
+					fwdBBox.pos.y += Owner().GetHeight();
+					fwdBBox.h = HwScreenSizeY;
+					break;
+
+				default: FAIL(); break;
+				}
+
+				const Player* pPlayer = SceneGraph::Instance().GetPlayerList().front(); //@TODO: iterate for all players
+				mShouldStrike = fwdBBox.CollidesWith(pPlayer->GetBoundingBox());
+
+				//extern void DrawQuad(uint16 x, uint16 y, uint16 w, uint16 h, uint16 color, uint16 alpha);
+				//fwdBBox.pos = Camera::Instance().WorldToScreen(fwdBBox.pos);
+				//DrawQuad(fwdBBox.pos.x, fwdBBox.pos.y, fwdBBox.w, fwdBBox.h, RGB15(255,0,0), 15);
+			}
+		}
+	};
+
+	struct Attack : EnemyStateBase
+	{
+		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
+		{
+			// If we hit anything (player or world), stop attacking
+			if (Owner().mLastFrameCollision.mIsSet 
+				|| !GameHelpers::IsPhysicalInScreenBounds(Owner())
+				)
+			{
+				// Change direction to make sure we don't keep striking the player
+				Owner().SetSpriteDir( GameHelpers::GetRandomSpriteDir(Owner().GetSpriteDir()) );
+
+				return SiblingTransition<Move>();
+			}
+
+			return InnerEntryTransition<Alert>();
+		}
+	};
+
+	struct Alert : EnemyStateBase
+	{
+		GameTimeType mElapsedTime;
+
+		virtual void OnEnter()
+		{
+			PlayAnim(BaseAnim::Idle);
+		}
+
+		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
+		{
+			mElapsedTime += deltaTime;
+			if (mElapsedTime > SEC_TO_FRAMES(0.3f))
+			{
+				return SiblingTransition<Strike>();
+			}
+
+			return NoTransition();
+		}
+	};
+
+	struct Strike : EnemyStateBase
+	{
+		virtual void OnEnter()
+		{
+			PlayAnim(BaseAnim::Attack);
+		}
+
+		virtual void PerformStateActions(HsmTimeType deltaTime)
+		{
+			const int16 moveSpeed = 2; // pixels/frame
+			const Vector2I& dirVec = GameHelpers::SpriteDirToUnitVector(Owner().GetSpriteDir());
+			Owner().SetVelocity(dirVec * moveSpeed);
+		}
+	};
+};
+
+struct SnakeAI : IEnemyAI
+{
+	virtual Transition& GetRootTransition()
+	{
+		return InnerEntryTransition<SnakeStates::Main>();
+	}	
+};
+
 
 // Enemy class implementation
 
+void Enemy::Init(const Vector2I& initPos, GameActor::Type enemyType)
+{
+	mGameActor = enemyType;
+	Base::Init(initPos);
+}
+
 void Enemy::InitStateMachine()
 {
-	//@TODO: Push down to child class... (Goriyas.cpp)
-	mpSharedStateData = new EnemySharedStateData();
-	mpSharedStateData->mpEnemyAI = new GoriyasAI();
+	IEnemyAI* pEnemyAI = NULL;
+	switch (mGameActor)
+	{
+	case GameActor::Goriyas: pEnemyAI = new GoriyasAI(); break;
+	case GameActor::Snake: pEnemyAI = new SnakeAI(); break;
+	default: FAIL();
+	}
 
-	//mStateMachine.SetDebugLevel(1);
+	mpSharedStateData = new EnemySharedStateData();
+	mpSharedStateData->mpEnemyAI = pEnemyAI;
+
+	mStateMachine.SetDebugLevel(1);
 	mStateMachine.SetOwner(this);
 	mStateMachine.SetSharedStateData(mpSharedStateData);
 	mStateMachine.SetInitialState<EnemyStates::Root>();
@@ -285,11 +512,20 @@ void Enemy::InitStateMachine()
 
 void Enemy::GetGameObjectInfo(GameObjectInfo& gameObjectInfo)
 {
-	gameObjectInfo.mGameActor = GameActor::Goriyas;
+	gameObjectInfo.mGameActor = mGameActor;
+}
+
+void Enemy::Update(GameTimeType deltaTime)
+{
+	Base::Update(deltaTime);
+	mLastFrameCollision.mIsSet = false;
 }
 
 void Enemy::OnCollision(const CollisionInfo& collisionInfo)
 {
+	mLastFrameCollision.mInfo = collisionInfo;
+	mLastFrameCollision.mIsSet = true;
+
 	if ( Player* pPlayer = DynamicCast<Player*>(collisionInfo.mpCollidingWith) )
 	{
 		if (mpSharedStateData->mAttribCanDamage)

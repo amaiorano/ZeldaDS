@@ -58,8 +58,6 @@ namespace MovementModel
 		else
 		{
 			MoveDefault(currPos, currDir, moveSpeed, newVelocity, newDir);
-			//newVelocity = GameHelpers::SpriteDirToUnitVector(currDir) * moveSpeed;
-			//newDir = currDir;
 		}
 	}
 

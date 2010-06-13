@@ -135,8 +135,8 @@ inline Vector2<T> operator/(const Vector2<T>& lhs, const U& s)
 template <typename T>
 inline Vector2<T> Normalized(const Vector2<T>& v)
 {
-	Vector2<T> temp = v;
-	return temp.Normalize();
+	Vector2<T> result = v;
+	return result.Normalize();
 }
 
 template <typename T, typename U>
@@ -145,6 +145,12 @@ inline Vector2<T> ScaleComponents(const Vector2<T>& lhs, const Vector2<U>& rhs)
 	Vector2<T> result = lhs;
 	result.ScaleComponents(rhs);
 	return result;
+}
+
+template <typename T, typename U>
+inline T Dot(const Vector2<T>& lhs, const Vector2<U>& rhs)
+{
+	return (lhs.x * rhs.x + lhs.y * rhs.y);
 }
 
 #endif // VECTOR2_H

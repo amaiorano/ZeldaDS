@@ -99,16 +99,9 @@ struct PlayerStates
 		{
 			ASSERT(Data().mScrollDir == ScrollDir::None);
 
-			const BoundingBox& worldBBox = Owner().GetBoundingBox();
-			BoundingBox screenBBox(Camera::Instance().WorldToScreen(worldBBox.pos), worldBBox.w, worldBBox.h);
-
-			if (screenBBox.Left() < 0)						Data().mScrollDir = ScrollDir::Left;
-			else if (screenBBox.Top() < 0)					Data().mScrollDir = ScrollDir::Up;
-			else if (screenBBox.Right() > HwScreenSizeX)	Data().mScrollDir = ScrollDir::Right;
-			else if (screenBBox.Bottom() > HwScreenSizeY)	Data().mScrollDir = ScrollDir::Down;
-
-			if (Data().mScrollDir != ScrollDir::None)
+			if ( !GameHelpers::IsPhysicalInScreenBounds(Owner(), &Data().mScrollDir) )
 			{
+				ASSERT(Data().mScrollDir != ScrollDir::None);
 				return SiblingTransition<Alive_Scrolling>();
 			}
 
@@ -240,11 +233,6 @@ struct PlayerStates
 		{
 			PlayAnim(BaseAnim::Move);
 			mLastDir = Owner().GetSpriteDir();
-		}
-
-		virtual void OnExit()
-		{
-			Owner().SetVelocity(InitZero);
 		}
 
 		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)

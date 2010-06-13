@@ -33,6 +33,9 @@ public:
 	int16 Top() const		{ return pos.y; }
 	int16 Bottom() const	{ return pos.y + h; }
 
+	// Returns true if this rect collides with rhs
+	bool CollidesWith(const BoundingBox& rhs) const;
+
 	// Returns true if this rect collides with rhs, along with the amount
 	// to offset this rect so as not to collide with it.
 	bool CollidesWith(const BoundingBox& rhs, Vector2I& offset) const;
