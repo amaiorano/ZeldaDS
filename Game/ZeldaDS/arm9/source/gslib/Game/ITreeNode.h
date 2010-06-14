@@ -13,6 +13,7 @@ public:
 	typedef NodeType* NodePtr;
 	typedef std::vector<NodePtr> NodePtrList;
 
+	ITreeNode() : m_pParent(0) { }
 	virtual ~ITreeNode() { }
 
 	bool AttachChild(NodePtr pChild)

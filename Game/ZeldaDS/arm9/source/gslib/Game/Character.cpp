@@ -17,6 +17,7 @@ void Character::OnAddToScene()
 	SetPosition(mInitPos);
 	mDamageInfo.Reset();
 	PlayAnim(BaseAnim::Idle); // Set initial pose
+	SetSpriteDir(SpriteDir::Down); // Set initial direction
 }
 
 void Character::Update(GameTimeType deltaTime)

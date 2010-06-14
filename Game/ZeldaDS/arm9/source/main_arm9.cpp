@@ -19,6 +19,7 @@
 #include "gslib/Game/PhysicsSimulator.h"
 #include "gslib/Game/Player.h"
 #include "gslib/Game/Enemy.h"
+#include "gslib/Game/EnemyFactory.h"
 #include "gslib/Game/GameHelpers.h"
 #include "gslib/Game/DebugVars.h"
 
@@ -178,9 +179,8 @@ struct GameStates
 					Vector2I initPos(MathEx::Rand(HwScreenSizeX - 16), MathEx::Rand(HwScreenSizeY - 16));
 					initPos = Camera::Instance().ScreenToWorld(initPos);
 
-					const GameActor::Type enemyType = rand() % 2 == 0? GameActor::Goriyas : GameActor::Snake;
-					gpEnemies[i] = new Enemy();
-					gpEnemies[i]->Init(initPos, enemyType);
+					gpEnemies[i] = EnemyFactory::CreateRandomEnemy();
+					gpEnemies[i]->Init(initPos);
 					SceneGraph::Instance().AddNode(*gpEnemies[i]);
 				}
 			}

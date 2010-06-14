@@ -341,6 +341,18 @@
 							>
 						</File>
 						<File
+							RelativePath=".\ZeldaDS\arm9\source\gslib\Game\EnemyFactory.cpp"
+							>
+						</File>
+						<File
+							RelativePath=".\ZeldaDS\arm9\source\gslib\Game\EnemyFactory.h"
+							>
+						</File>
+						<File
+							RelativePath=".\ZeldaDS\arm9\source\gslib\Game\EnemyState.h"
+							>
+						</File>
+						<File
 							RelativePath=".\ZeldaDS\arm9\source\gslib\Game\MovementModel.cpp"
 							>
 						</File>
@@ -356,6 +368,26 @@
 							RelativePath=".\ZeldaDS\arm9\source\gslib\Game\Player.h"
 							>
 						</File>
+						<Filter
+							Name="Enemies"
+							>
+							<File
+								RelativePath=".\ZeldaDS\arm9\source\gslib\Game\Enemies\Goriyas.cpp"
+								>
+							</File>
+							<File
+								RelativePath=".\ZeldaDS\arm9\source\gslib\Game\Enemies\Goriyas.h"
+								>
+							</File>
+							<File
+								RelativePath=".\ZeldaDS\arm9\source\gslib\Game\Enemies\Snake.cpp"
+								>
+							</File>
+							<File
+								RelativePath=".\ZeldaDS\arm9\source\gslib\Game\Enemies\Snake.h"
+								>
+							</File>
+						</Filter>
 					</Filter>
 					<Filter
 						Name="Physics"

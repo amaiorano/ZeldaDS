@@ -12,8 +12,6 @@ public:
 
 	Player();
 
-	void Init(const Vector2I& initPos) { Base::Init(initPos); }
-
 	// Character interface
 	virtual void InitStateMachine();
 	
