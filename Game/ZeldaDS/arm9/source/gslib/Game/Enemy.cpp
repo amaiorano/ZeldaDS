@@ -165,7 +165,7 @@ struct EnemyStates
 		{
 			if (IsAnimFinished())
 			{
-				SceneGraph::Instance().RemoveNodePostUpdate(Owner());
+				Owner().OnDead();
 			}
 		}
 	};
@@ -179,12 +179,17 @@ Enemy::Enemy()
 
 void Enemy::InitStateMachine()
 {
-	mpSharedStateData = new EnemySharedStateData();
+	mpSharedStateData = CreateSharedStateData();
 
 	//mStateMachine.SetDebugLevel(1);
 	mStateMachine.SetOwner(this);
 	mStateMachine.SetSharedStateData(mpSharedStateData);
 	mStateMachine.SetInitialState<EnemyStates::Root>();
+}
+
+void Enemy::OnDead()
+{
+	SceneGraph::Instance().RemoveNodePostUpdate(*this);
 }
 
 void Enemy::OnAddToScene()
@@ -216,4 +221,9 @@ void Enemy::OnCollision(const CollisionInfo& collisionInfo)
 			pPlayer->OnDamage(dmgInfo);
 		}
 	}
+}
+
+EnemySharedStateData* Enemy::CreateSharedStateData()
+{
+	return new EnemySharedStateData();
 }

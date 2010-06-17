@@ -140,24 +140,17 @@ struct ScrollingStates
 	struct Scrolling_Scroll : ScrollingStateBase
 	{
 		bool mIsDoneScrolling;
-		bool mWaitedOneFrameWhenDone;
 
 		virtual void OnEnter()
 		{
 			mIsDoneScrolling = false;
-			mWaitedOneFrameWhenDone = false;
 		}
 
 		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
 		{
 			if (mIsDoneScrolling)
 			{
-				//if (mWaitedOneFrameWhenDone)
-				{
-					return SiblingTransition<Scrolling_PostScroll>();
-				}
-				
-				mWaitedOneFrameWhenDone = true;
+				return SiblingTransition<Scrolling_PostScroll>();
 			}
 			return NoTransition();
 		}
@@ -286,7 +279,6 @@ void ScrollingMgr::StartScrolling(ScrollDir::Type scrollDir)
 bool ScrollingMgr::IsScrolling() const
 {
 	return (mScrollDir != ScrollDir::None);
-	//return mStateMachine.IsInState<ScrollingStates::Scrolling>();
 }
 
 void ScrollingMgr::UpdateCameraPos()

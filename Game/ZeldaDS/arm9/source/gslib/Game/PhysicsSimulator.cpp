@@ -12,40 +12,49 @@ class PhysicsHelpers // This class is a friend of IPhysical
 {
 public:
 	// Collision Handlers
-	static void OnCollision(Player& player, Enemy& enemy, /*const Vector2I&*/Vector2I lhsOffset)
+	static void OnCollision(Player& player, Enemy& enemy, const Vector2I& lhsOffset)
 	{
-		//IDEA: when a collision occurs, one entity is told and is reponsible for perhaps affecting
-		// the other entity (i.e. Enemy hurts Player, Boomerang hurts/stuns Actor, Item is picked up by Player)
-		// - Enemy::OnCollision(Player& player) -> calls Player::OnDamage()
-		// - Item::OnCollision(Player& player) -> calls Player::OnCollect()
-		// - CollisionInfo struct, DamageInfo struct, CollectInfo struct?
-		// - Should OnCollision() be a virtual on IPhysical? Requires that type be known (RTTI?)
-
 		// On collision, we move each one halfway of their respective offsets.
 		//@NOTE: if vector is 1, this divide truncates value to 0
 		//lhsOffset /= 2;
 		//Vector2I rhsOffset = -lhsOffset;
 		//
-		//player.ModifyPosition() += lhsOffset;
-		//enemy.ModifyPosition() += rhsOffset;
+		//player.SetPosition(player.GetPosition() + lhsOffset);
+		//enemy.SetPosition(enemy.GetPosition() + rhsOffset);
 
 		static CollisionInfo collInfo; //@MT_UNSAFE
 		collInfo.mpCollidingWith = &player;
-		collInfo.mPushVector = -lhsOffset; // Collider pushes collidee
+		collInfo.mPushVector = -lhsOffset; // Enemy pushes Player
 		enemy.OnCollision(collInfo);
 	}
 
 	static void OnCollision(Enemy& enemy1, Enemy& enemy2, const Vector2I& lhsOffset)
 	{
-		//enemy1.ModifyPosition() += offset;
+		// On collision, we move each one halfway of their respective offsets.
+		//lhsOffset /= 2;
+		//Vector2I rhsOffset = -lhsOffset;
+		//enemy1.SetPosition(enemy1.GetPosition() + lhsOffset);
+		//enemy2.SetPosition(enemy2.GetPosition() + rhsOffset);
 	}
 
-	static void OnCollision(Weapon& playerWeapon, Enemy& enemy, Vector2I lhsOffset)
+	static void OnCollision(Weapon& weapon, Character& character, Vector2I lhsOffset)
 	{
 		static CollisionInfo collInfo; //@MT_UNSAFE
-		collInfo.mpCollidingWith = &enemy;
-		collInfo.mPushVector = -lhsOffset; // Collider pushes collidee
-		playerWeapon.OnCollision(collInfo);
+		collInfo.mpCollidingWith = &character;
+		collInfo.mPushVector = lhsOffset; // Weapon pushes Character
+		weapon.OnCollision(collInfo);
+	}
+
+	static void OnCollision(Weapon& weapon, Player& player, Vector2I lhsOffset)
+	{
+		if (!weapon.IsPlayerWeapon())
+			OnCollision(weapon, static_cast<Character&>(player), lhsOffset);
+	}
+
+	static void OnCollision(Weapon& weapon, Enemy& enemy, Vector2I lhsOffset)
+	{
+		if (weapon.IsPlayerWeapon())
+			OnCollision(weapon, static_cast<Character&>(enemy), lhsOffset);
 	}
 
 	// Helpers
@@ -169,25 +178,25 @@ void PhysicsSimulator::IntegrateAndApplyCollisions(GameTimeType deltaTime)
 	PlayerList& players = sceneGraph.GetPlayerList();
 	EnemyList& enemies = sceneGraph.GetEnemyList();
 	WeaponList& playerWeapons = sceneGraph.GetPlayerWeaponList();
+	WeaponList& enemyWeapons = sceneGraph.GetEnemyWeaponList();
 
 	if (deltaTime > 0)
 	{
 		// Move all IPhysical objects
 		PhysicsHelpers::IntegrateEachPhysical(physicals, deltaTime);
 
-		// Resolve object collisions
+		// Resolve game object collisions
 		PhysicsHelpers::ActorActorCollisions(players, enemies);
 		PhysicsHelpers::ActorActorCollisions(enemies, enemies);
-
-		//@TODO: Player-Items -> on collision, player picks up (rupees, bombs, treasure)
-		//@TODO: Player-EnemyWeapon -> on collision, player is damaged, weapon stops doing damage and (eventually) dissapears
-
 		PhysicsHelpers::ActorActorCollisions(playerWeapons, enemies);
+		PhysicsHelpers::ActorActorCollisions(enemyWeapons, players);
+		//@TODO: Player-Items -> on collision, player picks up (rupees, bombs, treasure)
 
 		// Resolve world collisions
 		PhysicsHelpers::ActorTileCollisions(players, worldMap);
 		PhysicsHelpers::ActorTileCollisions(enemies, worldMap);
 		PhysicsHelpers::ActorTileCollisions(playerWeapons, worldMap);
+		PhysicsHelpers::ActorTileCollisions(enemyWeapons, worldMap);
 	}
 
 #if DEBUG_VARS_ENABLED

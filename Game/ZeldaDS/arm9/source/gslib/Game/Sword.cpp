@@ -5,6 +5,7 @@
 
 void Sword::Init(SpriteDir::Type dir)
 {
+	Base::Init(true);
 	mDirection = dir;
 }
 

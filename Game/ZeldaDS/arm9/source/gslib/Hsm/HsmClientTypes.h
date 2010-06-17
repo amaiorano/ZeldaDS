@@ -10,9 +10,7 @@
 
 typedef uint16 HsmTimeType; // Elapsed frames
 #define HSM_ASSERT ASSERT
-
 #define HSM_PRINTF printf
-//#define HSM_PRINTF (void)
 
 // StateTypeId: requirements are that StateTypeId be unique per State type, and that they can be compared using operator==
 typedef TypeId StateTypeId;

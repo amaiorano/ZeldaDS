@@ -32,8 +32,14 @@ void SceneGraph::AddNode(Enemy& node)
 
 void SceneGraph::AddNode(Weapon& node)
 {
-	//@TODO: Check here if it's a player or enemy weapon and add to the right list?
-	mPlayerWeaponList.push_back(&node);
+	if (node.IsPlayerWeapon())
+	{
+		mPlayerWeaponList.push_back(&node);
+	}
+	else
+	{
+		mEnemyWeaponList.push_back(&node);
+	}
 	AddNode(static_cast<ISceneNode&>(node));
 }
 
@@ -52,27 +58,8 @@ void SceneGraph::RemoveNode(ISceneNode& node)
 
 	REMOVE_FROM_CONTAINER(SceneNodeList, mSceneNodeList, &node);
 
-	//mSceneNodesJustRemoved.push_back(&node);
 	node.OnRemoveFromScene();
 }
-
-//void SceneGraph::RemoveNode(Player& node)
-//{
-//	REMOVE_FROM_CONTAINER(PlayerList, mPlayerList, &node);
-//	RemoveNode(static_cast<ISceneNode&>(node));
-//}
-//
-//void SceneGraph::RemoveNode(Enemy& node)
-//{
-//	REMOVE_FROM_CONTAINER(EnemyList, mEnemyList, &node);
-//	RemoveNode(static_cast<ISceneNode&>(node));
-//}
-//
-//void SceneGraph::RemoveNode(Weapon& node)
-//{
-//	REMOVE_FROM_CONTAINER(WeaponList, mPlayerWeaponList, &node);
-//	RemoveNode(static_cast<ISceneNode&>(node));
-//}
 
 bool SceneGraph::IsNodeInScene(const ISceneNode& node) const
 {
@@ -118,58 +105,10 @@ void SceneGraph::RemoveMarkedNodesInList(List& list)
 	}
 }
 
-template <typename List>
-void Test(List& list)
-{
-	typedef typename List::iterator ListIter;
-
-	ListIter iter = list.begin();
-}
-
 void SceneGraph::RemoveNodesPostUpdate()
 {
-	Test(mPlayerList);
-
 	RemoveMarkedNodesInList(mPlayerList);
 	RemoveMarkedNodesInList(mEnemyList);
 	RemoveMarkedNodesInList(mPlayerWeaponList);
-
-	//for (PlayerList::iterator iter = mPlayerList.begin(); iter != mPlayerList.end(); /*++iter*/)
-	//{
-	//	PlayerList::iterator currIter = iter;
-	//	++iter;
-
-	//	if ((*currIter)->mRemoveNodePostUpdate)
-	//	{
-	//		(*currIter)->mRemoveNodePostUpdate = false;
-	//		RemoveNode(**currIter);
-	//		mPlayerList.erase(currIter);
-	//	}
-	//}
-
-	//for (EnemyList::iterator iter = mEnemyList.begin(); iter != mEnemyList.end(); /*++iter*/)
-	//{
-	//	EnemyList::iterator currIter = iter;
-	//	++iter;
-
-	//	if ((*currIter)->mRemoveNodePostUpdate)
-	//	{
-	//		(*currIter)->mRemoveNodePostUpdate = false;
-	//		RemoveNode(**currIter);
-	//		mEnemyList.erase(currIter);
-	//	}
-	//}
-
-	//for (WeaponList::iterator iter = mPlayerWeaponList.begin(); iter != mPlayerWeaponList.end(); /*++iter*/)
-	//{
-	//	WeaponList::iterator currIter = iter;
-	//	++iter;
-
-	//	if ((*currIter)->mRemoveNodePostUpdate)
-	//	{
-	//		(*currIter)->mRemoveNodePostUpdate = false;
-	//		RemoveNode(**currIter);
-	//		mPlayerWeaponList.erase(currIter);
-	//	}
-	//}
+	RemoveMarkedNodesInList(mEnemyWeaponList);
 }

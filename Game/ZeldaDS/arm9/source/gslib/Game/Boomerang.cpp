@@ -9,15 +9,20 @@
 
 const float BoomerangSpeed = 3.0f;
 
-void Boomerang::Init(Player* pOwner, const Vector2I& launchDir)
+void Boomerang::Init(Character* pOwner, const Vector2I& launchDir)
 {
 	mpOwner = pOwner;
+
+	mOwnerIsPlayer = DynamicCast<Player*>(pOwner) != NULL;
+	ASSERT(mOwnerIsPlayer || DynamicCast<Enemy*>(pOwner) != NULL);
 
 	mPositionF = pOwner->GetPosition();
 	mSpeed = Normalized(launchDir) * BoomerangSpeed;
 	
 	mIsLeaving = true;
 	mHasReturned = false;
+
+	Base::Init(mOwnerIsPlayer);
 }
 
 void Boomerang::GetGameObjectInfo(GameObjectInfo& gameObjectInfo)
@@ -67,15 +72,21 @@ void Boomerang::Update(GameTimeType deltaTime)
 
 void Boomerang::OnCollision(const CollisionInfo& collisionInfo)
 {
-	if (Enemy* pEnemy = DynamicCast<Enemy*>(collisionInfo.mpCollidingWith))
-	{		
-		// Stun attack (might kill the enemy, depends on the enemy)
+	ASSERT(collisionInfo.mpCollidingWith != mpOwner); // PhysicsSimulator makes sure of this
+
+	if (
+		// If Player hitting enemy
+		(mOwnerIsPlayer && DynamicCast<Enemy*>(collisionInfo.mpCollidingWith)) ||
+		// or Enemy hitting player when boomerang is NOT on its way back (like in original game)
+		(!mOwnerIsPlayer && mIsLeaving && DynamicCast<Player*>(collisionInfo.mpCollidingWith))
+		)
+	{
 		static DamageInfo dmgInfo;
-		dmgInfo.mEffect = DamageEffect::Stun;
+		dmgInfo.mEffect = mOwnerIsPlayer? DamageEffect::Stun : DamageEffect::Hurt;
 		dmgInfo.mAmount = 1; // ???
 		dmgInfo.mPushVector = -collisionInfo.mPushVector;
 
-		pEnemy->OnDamage(dmgInfo);
+		CheckedDynamicCast<IDamageable*>(collisionInfo.mpCollidingWith)->OnDamage(dmgInfo);
 	}
 
 	// Go back to owner

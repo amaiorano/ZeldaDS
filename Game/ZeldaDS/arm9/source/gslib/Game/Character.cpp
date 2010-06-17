@@ -1,5 +1,6 @@
 #include "Character.h"
 #include "CharacterState.h"
+#include "GameHelpers.h"
 
 void Character::Init(const Vector2I& initPos)
 {
@@ -47,4 +48,35 @@ void Character::OnDamage(const DamageInfo& damageInfo)
 	ASSERT_MSG(!mDamageInfo.IsSet(), "DamageInfo not consumed since last set");
 
 	mDamageInfo = damageInfo;
+
+	// Only allow damage push vector in one direction (no diagonal push)
+	//@TODO: If this is a general rule, we should probably put this right into DamageInfo
+	// via a setter for the push vector.
+	{
+		Vector2I& pushVec = mDamageInfo.mPushVector;
+
+		const uint16 x = MathEx::Abs(pushVec.x);
+		const uint16 y = MathEx::Abs(pushVec.y);
+		if (x > y)
+		{
+			pushVec.y = 0;
+		}
+		else if (y > x)
+		{
+			pushVec.x = 0;
+		}
+		else if (x == y)
+		{
+			// Favour direction we're facing
+			const Vector2I& dirVec = GameHelpers::SpriteDirToUnitVector(GetSpriteDir());
+			if (dirVec.x != 0)
+			{
+				pushVec.y = 0;
+			}
+			else
+			{
+				pushVec.x = 0;
+			}
+		}
+	}
 }

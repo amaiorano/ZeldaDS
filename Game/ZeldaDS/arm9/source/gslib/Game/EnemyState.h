@@ -24,17 +24,43 @@ typedef CharacterStateBase<EnemySharedStateData, Enemy> EnemyStateBase;
 // Shared states for all enemies
 struct EnemySharedStates
 {
-	struct RandomMovement : EnemyStateBase
+	template <typename Base = EnemyStateBase>
+	struct RandomMovement : Base
 	{
+		// Bring in names that compiler cannot deduce
+		using Base::PlayAnim;
+		using Base::Owner;
+
 		uint16 mUnitsMoved;
 		uint16 mUnitsToMoveInOneDir;
 
 		// Desired direction will not necessarily match current direction due to 8x8 grid movement
 		SpriteDir::Type mDesiredDir;
 
-		//@TODO: Pass this in somehow
-		static const uint16 mMinTilesToMove = 3;
-		static const uint16 mMaxTilesToMove = 8;
+		uint16 mMinTilesToMove;
+		uint16 mMaxTilesToMove;
+		uint16 mMoveSpeed;
+		
+		uint16 mMoveUpdateDelay;
+		uint16 mMoveUpdatesElapsed;
+
+		RandomMovement()
+		{
+			SetMinMaxTilesToMove();
+			SetMoveSpeed();
+		}
+
+		void SetMinMaxTilesToMove(uint16 minTilesToMove = 3, uint16 maxTilesToMove = 8)
+		{
+			mMinTilesToMove = minTilesToMove;
+			mMaxTilesToMove = maxTilesToMove;
+		}
+
+		void SetMoveSpeed(uint16 moveSpeed = 1, uint16 moveUpdateDelay = 0)
+		{
+			mMoveSpeed = moveSpeed;
+			mMoveUpdateDelay = moveUpdateDelay;
+		}
 
 		virtual void OnEnter()
 		{
@@ -48,18 +74,26 @@ struct EnemySharedStates
 
 		virtual void PerformStateActions(HsmTimeType deltaTime)
 		{
-			const int16 moveSpeed = 1; // pixels/frame
-			const int16 unitsToMove = moveSpeed * deltaTime;
+			// Shitty way to slow down motion while using int vectors
+			if (mMoveUpdateDelay > 0)
+			{
+				mMoveUpdatesElapsed += deltaTime;
+				if (mMoveUpdatesElapsed < mMoveUpdateDelay)
+					return;
+				mMoveUpdatesElapsed = 0;
+			}
+
+			const int16 unitsToMove = mMoveSpeed * deltaTime;
 
 			// Move on 8x8 grid
 			Vector2I newVelocity(InitZero);
 			SpriteDir::Type newDir = SpriteDir::None;
-			MovementModel::MoveGrid8x8(Owner().GetPosition(), mDesiredDir, moveSpeed, newVelocity, newDir);
+			MovementModel::MoveGrid8x8(Owner().GetPosition(), mDesiredDir, mMoveSpeed, newVelocity, newDir);
 
 			if (Owner().GetSpriteDir() != newDir)
 			{
 				Owner().SetSpriteDir(newDir);
-				PlayAnim(BaseAnim::Move);  // Update anim on direction change
+				PlayAnim(BaseAnim::Move); // Update anim on direction change
 			}
 			Owner().SetVelocity(newVelocity);
 

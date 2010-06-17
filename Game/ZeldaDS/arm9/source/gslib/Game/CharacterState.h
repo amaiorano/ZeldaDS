@@ -21,19 +21,24 @@ struct CharacterSharedStateData : SharedStateData
 template <typename SharedStateDataChild, typename OwnerType>
 struct CharacterStateBase : ClientStateBase<SharedStateDataChild, OwnerType>
 {
+	typedef ClientStateBase<SharedStateDataChild, OwnerType> Base;
+	
+	// Bring in non-template dependent names that the compiler cannot deduce
+	using Base::Owner;
+
 	void PlayAnim(BaseAnim::Type anim)
 	{
-		this->Owner().PlayAnim(anim);
+		Owner().PlayAnim(anim);
 	}
 
 	void PlayGlobalAnim(BaseAnim::Type anim)
 	{
-		this->Owner().PlayGlobalAnim(anim);
+		Owner().PlayGlobalAnim(anim);
 	}
 
 	bool IsAnimFinished()
 	{
-		return this->Owner().IsAnimFinished();
+		return Owner().IsAnimFinished();
 	}
 };
 

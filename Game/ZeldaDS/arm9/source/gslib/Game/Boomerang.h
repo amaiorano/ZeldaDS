@@ -5,7 +5,7 @@
 #include "Weapon.h"
 
 class Sprite;
-class Player;
+class Character;
 
 class Boomerang	: public Weapon
 {
@@ -13,7 +13,7 @@ public:
 	typedef Weapon Base;
 
 	//@TODO: Should NOT store a bald pointer here... what if owner is deleted?
-	void Init(Player* pOwner, const Vector2I& launchDir);
+	void Init(Character* pOwner, const Vector2I& launchDir);
 
 	// GameObject interface
 	virtual void GetGameObjectInfo(GameObjectInfo& gameObjectInfo);
@@ -29,7 +29,9 @@ public:
 	bool HasReturned() const { return mHasReturned; }
 
 private:
-	Player* mpOwner; // Not sure I like this...
+	Character* mpOwner; // Not sure I like this...
+
+	bool mOwnerIsPlayer;
 
 	Vector2F mPositionF;
 	Vector2F mSpeed;

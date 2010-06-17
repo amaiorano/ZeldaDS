@@ -17,9 +17,9 @@ struct SnakeStates
 		}
 	};
 
-	struct Move : EnemySharedStates::RandomMovement
+	struct Move : EnemySharedStates::RandomMovement<>
 	{
-		typedef EnemySharedStates::RandomMovement Base;
+		typedef EnemySharedStates::RandomMovement<> Base;
 		bool mShouldStrike;
 
 		Move() : mShouldStrike(false)

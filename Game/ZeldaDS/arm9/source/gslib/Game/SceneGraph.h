@@ -32,9 +32,6 @@ public:
 
 private:
 	void RemoveNode(ISceneNode& node);
-	//void RemoveNode(Player& node);
-	//void RemoveNode(Enemy& node);
-	//void RemoveNode(Weapon& node);
 public:
 
 	bool IsNodeInScene(const ISceneNode& node) const;
@@ -46,6 +43,7 @@ public:
 	PlayerList& GetPlayerList()			{ return mPlayerList; }
 	EnemyList& GetEnemyList()			{ return mEnemyList; }
 	WeaponList& GetPlayerWeaponList()	{ return mPlayerWeaponList; }
+	WeaponList& GetEnemyWeaponList()	{ return mEnemyWeaponList; }
 
 	// Updates/Renders all scene nodes
 	void Update(GameTimeType deltaTime);
@@ -66,6 +64,7 @@ private:
 	PlayerList mPlayerList;
 	EnemyList mEnemyList;
 	WeaponList mPlayerWeaponList;
+	WeaponList mEnemyWeaponList;
 };
 
 #endif // SCENE_GRAPH_H

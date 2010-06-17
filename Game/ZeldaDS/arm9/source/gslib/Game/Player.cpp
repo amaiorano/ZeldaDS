@@ -136,8 +136,18 @@ struct PlayerStates
 
 			mScrollingMgr.StartScrolling(Data().mScrollDir);
 
-			// Remove all enemies
-			//@TODO: Should defer to an EnemyManager
+			// Remove all enemies, weapons, etc.
+			//@TODO: Should handle this somewhere else, perhaps via a SpawnManager
+			WeaponList& playerWeapons = SceneGraph::Instance().GetPlayerWeaponList();
+			for (WeaponList::iterator iter = playerWeapons.begin(); iter != playerWeapons.end(); ++iter)
+			{
+				SceneGraph::Instance().RemoveNodePostUpdate(**iter);
+			}
+			WeaponList& enemyWeapons = SceneGraph::Instance().GetEnemyWeaponList();
+			for (WeaponList::iterator iter = enemyWeapons.begin(); iter != enemyWeapons.end(); ++iter)
+			{
+				SceneGraph::Instance().RemoveNodePostUpdate(**iter);
+			}
 			EnemyList& enemies = SceneGraph::Instance().GetEnemyList();
 			for (EnemyList::iterator iter = enemies.begin(); iter != enemies.end(); ++iter)
 			{
@@ -260,7 +270,7 @@ struct PlayerStates
 			Owner().SetVelocity(newVelocity);
 			Owner().SetSpriteDir(newDir);
 
-			//@HACK: If our direction changed while moving, replay the move anim to see the new directional one
+			// Update anim on direction change
 			if (mLastDir != Owner().GetSpriteDir())
 			{
 				mLastDir = Owner().GetSpriteDir();
@@ -378,6 +388,7 @@ struct PlayerStates
 			if (IsAnimFinished())
 			{
 				Owner().mHealth.Resurrect(); // Resurrect me (for now)
+				//@TODO: Should call Owner().OnDead() here, and let game state machine do its thing
 			}
 		}
 	};

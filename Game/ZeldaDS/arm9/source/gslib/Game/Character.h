@@ -14,6 +14,7 @@ public:
 
 	void Init(const Vector2I& initPos);
 	virtual void InitStateMachine() = 0;
+	virtual void OnDead() { }
 
 	// ISceneNode interface
 	virtual void OnAddToScene();

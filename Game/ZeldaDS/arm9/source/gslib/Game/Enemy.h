@@ -3,6 +3,8 @@
 
 #include "Character.h"
 
+struct EnemySharedStateData;
+
 class Enemy : public Character
 {
 public:
@@ -12,6 +14,7 @@ public:
 
 	// Character interface
 	virtual void InitStateMachine();
+	virtual void OnDead();
 
 	// ISceneNode interface
 	virtual void OnAddToScene();
@@ -21,10 +24,12 @@ public:
 	virtual void OnCollision(const CollisionInfo& collisionInfo);
 
 protected:
+	// Child class must override if extending EnemySharedStateData
+	virtual EnemySharedStateData* CreateSharedStateData();
+
 	virtual Transition& GetRootTransition() = 0;
 
-private:
-	struct EnemySharedStateData* mpSharedStateData;
+	EnemySharedStateData* mpSharedStateData;
 	
 	struct LastFrameCollision
 	{
@@ -34,6 +39,7 @@ private:
 	} mLastFrameCollision;
 
 	friend class EnemyStates;
+	//@TODO: Figure out how to get rid of these friendships
 	friend class GoriyasStates;
 	friend class SnakeStates;
 };
