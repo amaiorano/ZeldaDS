@@ -87,28 +87,38 @@ void SceneGraph::Render(GameTimeType deltaTime)
 }
 
 template <typename List>
-void SceneGraph::RemoveMarkedNodesInList(List& list)
+void SceneGraph::RemoveMarkedNodesInList(List& list, bool deleteNode)
 {
 	typedef typename List::iterator Iterator;
+	typedef typename List::value_type ValueType;
 	
 	for (Iterator iter = list.begin(); iter != list.end(); /*++iter*/)
 	{
 		Iterator currIter = iter;
 		++iter;
 
-		if ((*currIter)->mRemoveNodePostUpdate)
+		ValueType pNode = *currIter;
+
+		if (pNode->mRemoveNodePostUpdate)
 		{
-			(*currIter)->mRemoveNodePostUpdate = false;
-			RemoveNode(**currIter);
+			pNode->mRemoveNodePostUpdate = false;
+			RemoveNode(*pNode);
 			list.erase(currIter);
+			if (deleteNode)
+			{
+				delete pNode;
+			}
 		}
 	}
 }
 
 void SceneGraph::RemoveNodesPostUpdate()
 {
-	RemoveMarkedNodesInList(mPlayerList);
-	RemoveMarkedNodesInList(mEnemyList);
-	RemoveMarkedNodesInList(mPlayerWeaponList);
-	RemoveMarkedNodesInList(mEnemyWeaponList);
+	RemoveMarkedNodesInList(mPlayerList, false);
+	//@HACK: Fact that SceneGraph owns enemies is hard-coded. We
+	// need to communicate whether SceneGraph owns certain nodes,
+	// or just have it own all nodes.
+	RemoveMarkedNodesInList(mEnemyList, true);
+	RemoveMarkedNodesInList(mPlayerWeaponList, false);
+	RemoveMarkedNodesInList(mEnemyWeaponList, false);
 }

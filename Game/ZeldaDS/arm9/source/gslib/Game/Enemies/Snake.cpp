@@ -4,9 +4,9 @@
 #include "gslib/Game/SceneGraph.h"
 #include "gslib/Hw/Constants.h"
 
-struct SnakeStates
+struct RopeStates
 {
-	// Snake moves around randomly, but as soon as it sees the player, it strikes in the players
+	// Rope moves around randomly, but as soon as it sees the player, it strikes in the players
 	// direction until it collides, at which point it resumes random movement
 
 	struct Main : EnemyStateBase
@@ -137,9 +137,9 @@ struct SnakeStates
 		}
 	};
 
-}; // struct SnakeStates
+}; // struct RopeStates
 
-Transition& Snake::GetRootTransition()
+Transition& Rope::GetRootTransition()
 {
-	return InnerEntryTransition<SnakeStates::Main>();
+	return InnerEntryTransition<RopeStates::Main>();
 }

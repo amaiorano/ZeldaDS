@@ -1,16 +1,16 @@
-#ifndef ENEMY_GORIYAS_H
-#define ENEMY_GORIYAS_H
+#ifndef ENEMY_GORIYA_H
+#define ENEMY_GORIYA_H
 
 #include "gslib/Game/Enemy.h"
 
-class Goriyas : public Enemy
+class Goriya : public Enemy
 {
 	typedef Enemy Base;
 
 protected:
 	void GetGameObjectInfo(GameObjectInfo& gameObjectInfo)
 	{
-		gameObjectInfo.mGameActor = GameActor::Goriyas;
+		gameObjectInfo.mGameActor = GameActor::Goriya;
 	}
 
 	virtual EnemySharedStateData* CreateSharedStateData();
@@ -19,4 +19,4 @@ protected:
 	virtual void Update(GameTimeType deltaTime);
 };
 
-#endif // ENEMY_GORIYAS_H
+#endif // ENEMY_GORIYA_H

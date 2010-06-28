@@ -11,11 +11,24 @@ namespace ScrollDir
 	enum Type { None, Right, Left, Up, Down };
 }
 
+class IScrollingEventListener
+{
+public:
+	// Called by ScrollingMgr::StartScrolling() is called
+	virtual void OnScrollingBegin() { }
+
+	// Called by ScrollingMgr::Update() when scrolling has just ended
+	virtual void OnScrollingEnd() { }
+};
+
 class ScrollingMgr : public Singleton<ScrollingMgr>
 {
 public:
 	void Init(const Vector2I& startScreen);
 	void Update(GameTimeType deltaTime);
+
+	void AddEventListener(IScrollingEventListener* pListener);
+	void RemoveEventListener(IScrollingEventListener* pListener);
 
 	const Vector2I& GetCurrScreen() { return mCurrScreen; }
 	//@NOTE: Not exposing SetCurrScreen() as it should be set via Init() to ensure state consistency
@@ -26,9 +39,12 @@ public:
 
 private:
 	friend class Singleton<ScrollingMgr>;
-	ScrollingMgr() { }
+	ScrollingMgr();
 
 	void UpdateCameraPos();
+	
+	void CallOnScrollingBegin();
+	void CallOnScrollingEnd();
 
 	StateMachine mStateMachine;
 	SharedStateData* mpSharedStateData; // Alias for convenience
@@ -39,6 +55,9 @@ private:
 	Vector2I mScrollOffset;
 
 	ScrollDir::Type mScrollDir;
+	
+	typedef std::vector<IScrollingEventListener*> EventListenerList;
+	EventListenerList mEventListeners;
 };
 
 #endif // SCROLLING_MGR_H

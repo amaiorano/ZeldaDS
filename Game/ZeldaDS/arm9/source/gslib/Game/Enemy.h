@@ -40,8 +40,8 @@ protected:
 
 	friend class EnemyStates;
 	//@TODO: Figure out how to get rid of these friendships
-	friend class GoriyasStates;
-	friend class SnakeStates;
+	friend class GoriyaStates;
+	friend class RopeStates;
 };
 
 #endif // ENEMY_H

@@ -151,16 +151,16 @@ void LoadAllGameAnimAssets()
 	}
 
 	// These enemies only move
-	CreateAndAddAnimAssets(Snake,    Idle, pFrameGfx, FrameSize, (2 * NumTilesPerRow), 1, 2, SEC_TO_FRAMES(0.0f), AnimCycle::Once);
-	CreateAndAddAnimAssets(Snake,    Move, pFrameGfx, FrameSize, 2 * NumTilesPerRow, 3, 0, SEC_TO_FRAMES(0.25f), AnimCycle::PingPong);
-	CreateAndAddAnimAssets(Snake,    Attack, pFrameGfx, FrameSize, (2 * NumTilesPerRow)+2, 1, 2, SEC_TO_FRAMES(0.25f), AnimCycle::Once);
+	CreateAndAddAnimAssets(Rope,    Idle, pFrameGfx, FrameSize, (2 * NumTilesPerRow), 1, 2, SEC_TO_FRAMES(0.0f), AnimCycle::Once);
+	CreateAndAddAnimAssets(Rope,    Move, pFrameGfx, FrameSize, 2 * NumTilesPerRow, 3, 0, SEC_TO_FRAMES(0.25f), AnimCycle::PingPong);
+	CreateAndAddAnimAssets(Rope,    Attack, pFrameGfx, FrameSize, (2 * NumTilesPerRow)+2, 1, 2, SEC_TO_FRAMES(0.25f), AnimCycle::Once);
 	
-	CreateAndAddAnimAssets(Knight,   Move, pFrameGfx, FrameSize, 3 * NumTilesPerRow, 3, 0, SEC_TO_FRAMES(0.25f), AnimCycle::PingPong);
-	CreateAndAddAnimAssets(Skeleton, Move, pFrameGfx, FrameSize, 4 * NumTilesPerRow, 3, 0, SEC_TO_FRAMES(0.25f), AnimCycle::PingPong);
+	CreateAndAddAnimAssets(Darknut,  Move, pFrameGfx, FrameSize, 3 * NumTilesPerRow, 3, 0, SEC_TO_FRAMES(0.25f), AnimCycle::PingPong);
+	CreateAndAddAnimAssets(Stalfos, Move, pFrameGfx, FrameSize, 4 * NumTilesPerRow, 3, 0, SEC_TO_FRAMES(0.25f), AnimCycle::PingPong);
 	
-	CreateAndAddAnimAssets(Goriyas,  Idle, pFrameGfx, FrameSize, (5 * NumTilesPerRow)+1, 1, 2, SEC_TO_FRAMES(0.0f), AnimCycle::Loop);
-	CreateAndAddAnimAssets(Goriyas,  Move, pFrameGfx, FrameSize, 5 * NumTilesPerRow, 3, 0, SEC_TO_FRAMES(0.25f), AnimCycle::PingPong);
-	CreateAndAddAnimAssets(Goriyas,  Attack, pFrameGfx, FrameSize, (5 * NumTilesPerRow)+12, 1, 0, SEC_TO_FRAMES(0.5f), AnimCycle::Once);
+	CreateAndAddAnimAssets(Goriya,  Idle, pFrameGfx, FrameSize, (5 * NumTilesPerRow)+1, 1, 2, SEC_TO_FRAMES(0.0f), AnimCycle::Loop);
+	CreateAndAddAnimAssets(Goriya,  Move, pFrameGfx, FrameSize, 5 * NumTilesPerRow, 3, 0, SEC_TO_FRAMES(0.25f), AnimCycle::PingPong);
+	CreateAndAddAnimAssets(Goriya,  Attack, pFrameGfx, FrameSize, (5 * NumTilesPerRow)+12, 1, 0, SEC_TO_FRAMES(0.5f), AnimCycle::Once);
 
 
 	// Item animations

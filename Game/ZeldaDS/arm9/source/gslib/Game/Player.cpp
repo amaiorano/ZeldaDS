@@ -136,24 +136,6 @@ struct PlayerStates
 
 			mScrollingMgr.StartScrolling(Data().mScrollDir);
 
-			// Remove all enemies, weapons, etc.
-			//@TODO: Should handle this somewhere else, perhaps via a SpawnManager
-			WeaponList& playerWeapons = SceneGraph::Instance().GetPlayerWeaponList();
-			for (WeaponList::iterator iter = playerWeapons.begin(); iter != playerWeapons.end(); ++iter)
-			{
-				SceneGraph::Instance().RemoveNodePostUpdate(**iter);
-			}
-			WeaponList& enemyWeapons = SceneGraph::Instance().GetEnemyWeaponList();
-			for (WeaponList::iterator iter = enemyWeapons.begin(); iter != enemyWeapons.end(); ++iter)
-			{
-				SceneGraph::Instance().RemoveNodePostUpdate(**iter);
-			}
-			EnemyList& enemies = SceneGraph::Instance().GetEnemyList();
-			for (EnemyList::iterator iter = enemies.begin(); iter != enemies.end(); ++iter)
-			{
-				SceneGraph::Instance().RemoveNodePostUpdate(**iter);
-			}
-
 			// Just play movement anim in current dir, but don't actually allow player movement
 			PlayAnim(BaseAnim::Move);
 		}

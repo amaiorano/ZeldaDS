@@ -7,6 +7,7 @@
 #include "gslib/Math/Vector2.h"
 #include "gslib/Anim/AnimTimeline.h"
 #include "gslib/Util/Array2d.h"
+#include "GameAnims.h"
 #include <vector>
 
 // Game-specific constants
@@ -57,7 +58,7 @@ private:
 	TileData mTileData[MaxNumTiles];
 };
 
-typedef uint16 TileIndexType;
+typedef uint16 TileIndexType; //@TODO: Make this uint8 (TileSet::MaxNumTiles is < 256)
 typedef Array2d<TileIndexType, uint16> TileMap;
 
 // TileLayer represents a single layer of tiles. WorldMap aggregates one TileLayer
@@ -110,6 +111,14 @@ public:
 	// Returns true and sets bbox if a collision tile is set at input world pos
 	bool GetTileBoundingBoxIfCollision(const Vector2I& worldPos, BoundingBox& bbox);
 
+	struct SpawnData
+	{
+		GameActor::Type mGameActor;
+		Vector2I mPos;
+	};
+	typedef std::vector<SpawnData> SpawnDataList;
+	void GetSpawnDataForScreen(const Vector2I& screen, SpawnDataList& spawnDataList);
+
 private:
 	friend class Singleton<WorldMap>;
 	WorldMap();
@@ -136,7 +145,31 @@ private:
 	std::vector<ColorRotElem> mColorRotElems;
 
 	TileLayer mTileLayers[NumLayers];
-	Array2d<uint16, uint16> mCollisionMap; //@TODO: store 2d array of DataTile
+
+	//@TODO: Rename to mDataLayer and interpret 16 bits for different types of data
+	//
+	// Stuff that needs to be stored:
+	// - collision: none, solid to all, solid to chars (but not to boomerang, for example)
+	// - door: map to load (index into list of maps, stored separately in map data)
+	// - enemy spawner: enemy type to load (GameActor::Type), spawn at location, or adjacent offscreen location
+	// - hidden stairwell: map to load (temp map?), how to uncover (fire, push statue enemy off)
+	// - hidden overworld bomb door: similar to stairwell, uncovered by bomb
+	// - hidden dungeon bomb door: no map to load, just replace tile and remove collisions
+	// - raft dock: if have raft, raft to location
+	//
+	// 2 bits: collision
+	// 6 bits: spawner actor type
+	// 1 bit : is door (warp info in separate list, hashed by 1D tile index)
+	// etc.
+	struct DataLayerEntry
+	{
+		uint16 Collision : 2;
+		uint16 SpawnActorType : 6;
+		uint16 Unused : 8;
+	};
+	CT_ASSERT( sizeof(DataLayerEntry) == sizeof(uint16) );
+
+	Array2d<DataLayerEntry, uint16> mDataLayer;
 };
 
 #endif // WORLD_MAP_H

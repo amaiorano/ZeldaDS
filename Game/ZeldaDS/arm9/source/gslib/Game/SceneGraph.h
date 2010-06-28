@@ -54,7 +54,7 @@ private:
 	SceneGraph() {}
 
 	template <typename List>
-	void RemoveMarkedNodesInList(List& list);
+	void RemoveMarkedNodesInList(List& list, bool deleteNode);
 	void RemoveNodesPostUpdate();
 
 	WorldMap* mpWorldMap;

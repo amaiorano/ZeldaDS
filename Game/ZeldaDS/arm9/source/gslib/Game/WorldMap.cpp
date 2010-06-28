@@ -67,7 +67,7 @@ void WorldMap::Init(uint16 numScreensX, uint16 numScreensY)
 		mTileLayers[layer].Init(mNumTilesX, mNumTilesY);
 	}
 
-	mCollisionMap.Reset(mNumTilesX, mNumTilesY);
+	mDataLayer.Reset(mNumTilesX, mNumTilesY);
 }
 
 void WorldMap::Shutdown()
@@ -107,10 +107,10 @@ void WorldMap::LoadMap(const char* mapFile)
 			ASSERT(numElemsToRead == GetTileMapLayer(layer).Size());
 			bfs.ReadElems<uint16>(GetTileMapLayer(layer).RawPtr(), numElemsToRead);
 		}
-		else
+		else // Third layer is the data layer
 		{
-			ASSERT(numElemsToRead == mCollisionMap.Size());
-			bfs.ReadElems<uint16>(mCollisionMap.RawPtr(), numElemsToRead);
+			ASSERT(numElemsToRead == mDataLayer.Size());
+			bfs.ReadElems<DataLayerEntry>(mDataLayer.RawPtr(), numElemsToRead);
 		}
 
 		uint16 marker = bfs.ReadInt<uint16>();
@@ -139,6 +139,15 @@ void WorldMap::LoadMap(const char* mapFile)
 		uint16 paletteIndices[] = {10, 11, 13, 14};
 		EnableColorRotation(paletteIndices, NUM_ARRAY_ELEMS(paletteIndices), SEC_TO_FRAMES(0.2f));
 	}
+
+	//@TODO: Read enemy spawn info from file (packed with collision data)
+	mDataLayer(1, 1).SpawnActorType = GameActor::Rope;
+	mDataLayer(6, 3).SpawnActorType = GameActor::Goriya;
+	mDataLayer(12, 5).SpawnActorType = GameActor::Rope;
+
+	mDataLayer(GameNumScreenMetaTilesX+6, 4).SpawnActorType = GameActor::Rope;
+	mDataLayer(GameNumScreenMetaTilesX+13, 8).SpawnActorType = GameActor::Goriya;
+	mDataLayer(GameNumScreenMetaTilesX+5, 10).SpawnActorType = GameActor::Goriya;
 }
 
 uint16 WorldMap::AddAnimTileSharedClock(int numFrames, AnimTimeType unitsPerFrame, AnimCycle::Type animCycle)
@@ -233,16 +242,41 @@ void WorldMap::DrawScreenTiles(const Vector2I& srcScreen, const Vector2I& tgtScr
 	}
 }
 
+
 bool WorldMap::GetTileBoundingBoxIfCollision(const Vector2I& worldPos, BoundingBox& bbox)
 {
 	Vector2I tilePos(worldPos.x / GameMetaTileSizeX, worldPos.y / GameMetaTileSizeY);
 
-	if ( !mCollisionMap(tilePos.x, tilePos.y) )
+	if ( mDataLayer(tilePos.x, tilePos.y).Collision == 0 )
 		return false;
 
 	//@NOTE: height is halved so we get the fake 3D feel from Zelda
 	bbox.Reset(tilePos.x * GameMetaTileSizeX, tilePos.y * GameMetaTileSizeY, GameMetaTileSizeX, GameMetaTileSizeY / 2);
 	return true;
+}
+
+void WorldMap::GetSpawnDataForScreen(const Vector2I& screen, SpawnDataList& spawnDataList)
+{
+	uint16 firstTileX = screen.x * GameNumScreenMetaTilesX;
+	uint16 firstTileY = screen.y * GameNumScreenMetaTilesY;
+
+	for (uint16 y = 0; y < GameNumScreenMetaTilesY; ++y)
+	{
+		const uint16 currTileY = firstTileY + y;
+		for (uint16 x = 0; x < GameNumScreenMetaTilesX; ++x)
+		{
+			const uint16 currTileX = firstTileX + x;
+
+			const uint16 actorType = mDataLayer(currTileX, currTileY).SpawnActorType;
+			if (actorType > 0)
+			{
+				spawnDataList.push_back(SpawnData());
+				SpawnData& spawnData = spawnDataList.back();
+				spawnData.mGameActor = static_cast<GameActor::Type>(actorType);
+				spawnData.mPos.Reset(currTileX * GameMetaTileSizeX, currTileY * GameMetaTileSizeY);
+			}			
+		}
+	}
 }
 
 uint16 WorldMap::GetTileIndexToDraw(uint16 layer, uint16 x, uint16 y, bool& tileIsAnimated) const

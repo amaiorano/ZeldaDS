@@ -9,8 +9,8 @@ namespace EnemyFactory
 	{
 		switch (enemyType)
 		{
-		case GameActor::Goriyas:	return new Goriyas();
-		case GameActor::Snake:		return new Snake();
+		case GameActor::Goriya:		return new Goriya();
+		case GameActor::Rope:		return new Rope();
 		default: break;
 		}
 
@@ -20,7 +20,7 @@ namespace EnemyFactory
 
 	Enemy* CreateRandomEnemy()
 	{
-		const GameActor::Type enemyType = rand() % 2 == 0? GameActor::Goriyas : GameActor::Snake;
+		const GameActor::Type enemyType = rand() % 2 == 0? GameActor::Goriya : GameActor::Rope;
 		return CreateEnemy(enemyType);
 	}
 }

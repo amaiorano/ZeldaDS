@@ -1,18 +1,18 @@
-#ifndef ENEMY_SNAKE_H
-#define ENEMY_SNAKE_H
+#ifndef ENEMY_ROPE_H
+#define ENEMY_ROPE_H
 
 #include "gslib/Game/Enemy.h"
 
-class Snake : public Enemy
+class Rope : public Enemy
 {
 protected:
 	void GetGameObjectInfo(GameObjectInfo& gameObjectInfo)
 	{
-		gameObjectInfo.mGameActor = GameActor::Snake;
+		gameObjectInfo.mGameActor = GameActor::Rope;
 	}
 
 	virtual Transition& GetRootTransition();
 };
 
 
-#endif // ENEMY_SNAKE_H
+#endif // ENEMY_ROPE_H

@@ -50,31 +50,47 @@ namespace GameActor
 
 		Hero,
 
-		// See www.gamefaqs.com/console/nes/file/563433/23898
+		// Enemy list (see http://zelda.wikia.com/wiki/Darknut)
 
-		// Overworld
-		
+		// Grunts (non-boss enemies)
 		Armos,		// Statues that come alive when you touch them
+		BladeTrap,	// Magnetic spiky blocks
+		Boulder,	// Come down from mountains
+		Bubble,		// Skull in bubble, if player touches, can't use sword for a short time
+		Darknut,	// Caped knight, impervious to frontal damage
+		Gel,		// Tear-drop enemy, can be killed by boomerang, never drops items
 		Ghini,		// Ghosts in cemetery
+		Gibdo,		// Mummies
+		Goriya,		// Boomerang throwing dudes
+		Keese,		// Bat
+		Lanmola,	// Caterpillar
 		Leever,		// Blue/Red sand creatures (bury into ground, come up to attack)
+		LikeLike,	// Tube-like creature that eats shields
 		Lynel,		// Blue/Red centaurs
 		Moblin,		// Orange/Blue bees that shoot arrows (blue ones can drop bombs)
+		Moldorn,	// Giant worms
 		Octorok,	// Blue/Red weird spiky thing that shoots rocks (first and easiest enemies)
 		Peahat,		// Yellow flower creature that spins, only takes damage when stops spinning
-		Rock,		// Falling rock
+		PolsVoice,	// Rabbit like creatures that jump around
+		Stalfos,	// Skeleton
+		Rope,		// Rope, charges player upon sight
 		Tektite,	// Spiders that jump
+		Vire,		// Blue bat-like demons that jump up and down
+		WallMaster,	// Blue hands that bring hero back to start of dungeon
+		WizzRobe,	// Hooded wizards that teleport
+		Zol,		// Splits into Gels
 		Zola,		// Water creature that fires projectiles at player
 
-		// Underworld
-		Snake,		//@TODO: Wrong name
-		Knight,		//@TODO: Wrong name
-		Skeleton,	//@TODO: Wrong name
-		Goriyas,	// Boomerang throwing dudes
-		Rhino,		//@TODO: Wrong name
-
-
-		// Bosses
-		//...
+		// Bosses (@TODO: Get these names)
+		Dragon,
+		Rhino,
+		Boss3,
+		Boss4,
+		Boss5,
+		Boss6,
+		Boss7,
+		Boss8,
+		Boss9,
 
 		// Items / Weapons
 		Sword,
@@ -91,26 +107,13 @@ namespace GameActor
 
 		NumTypes,
 	};
-}
 
-/*
-== Weapons ==
+	const int NumGrunts = Zola - Armos + 1;
+	const int NumBosses = Boss9 - Dragon + 1;
+	const int NumEnemies = NumGrunts + NumBosses;
+	const int NumItems = Key - Sword + 1;
 
-Normal:
-* Sword (Wood/Silver/Master)
-* Boomerang (Brown/Blue)
-* Bomb
-* Candle (Blue/Red Flame)
-
-Projectiles:
-* Sword => Flashing Sword
-* Bow => Arrows
-* Staff => Sonic Wave
-* Staff + Book => Sonic Wave to Flame
-
-*/
-
-
+} // namespace GameActor
 
 // Macro to create AnimAssetKey
 // AnimAssetKey is 32 bits: 2 bits for SpriteDir, 15 for BaseAnim and 15 for GameActor

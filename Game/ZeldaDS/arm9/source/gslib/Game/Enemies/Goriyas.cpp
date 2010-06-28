@@ -3,16 +3,16 @@
 #include "gslib/Game/SceneGraph.h"
 #include "gslib/Game/Boomerang.h"
 
-struct GoriyasStates
+struct GoriyaStates
 {
-	struct GoriyasSharedStateData : EnemySharedStateData
+	struct GoriyaSharedStateData : EnemySharedStateData
 	{
 		Boomerang mBoomerang;
 	};
 
-	typedef CharacterStateBase<GoriyasSharedStateData, Goriyas> GoriyasStateBase;
+	typedef CharacterStateBase<GoriyaSharedStateData, Goriya> GoriyaStateBase;
 
-	struct Main : GoriyasStateBase
+	struct Main : GoriyaStateBase
 	{
 		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
 		{
@@ -20,9 +20,9 @@ struct GoriyasStates
 		}
 	};
 
-	struct Move : EnemySharedStates::RandomMovement<GoriyasStateBase>
+	struct Move : EnemySharedStates::RandomMovement<GoriyaStateBase>
 	{
-		typedef EnemySharedStates::RandomMovement<GoriyasStateBase> Base;
+		typedef EnemySharedStates::RandomMovement<GoriyaStateBase> Base;
 
 		HsmTimeType mElapsedTime;
 		HsmTimeType mTimeToAttack;
@@ -51,7 +51,7 @@ struct GoriyasStates
 		}
 	};
 
-	struct Attack : GoriyasStateBase
+	struct Attack : GoriyaStateBase
 	{
 		virtual void OnEnter()
 		{
@@ -73,25 +73,25 @@ struct GoriyasStates
 		}
 	};
 
-}; // struct GoriyasStates
+}; // struct GoriyaStates
 
-EnemySharedStateData* Goriyas::CreateSharedStateData()
+EnemySharedStateData* Goriya::CreateSharedStateData()
 {
-	return new GoriyasStates::GoriyasSharedStateData();
+	return new GoriyaStates::GoriyaSharedStateData();
 }
 
-Transition& Goriyas::GetRootTransition()
+Transition& Goriya::GetRootTransition()
 {
-	return InnerEntryTransition<GoriyasStates::Main>();
+	return InnerEntryTransition<GoriyaStates::Main>();
 }
 
-void Goriyas::OnDead()
+void Goriya::OnDead()
 {
 	//@TODO: Need a way to transfer ownership of ISceneNodes to SceneGraph entirely so that
 	// if, for example, the enemy is destroyed before the boomerang, the boomerang pointer
 	// in SceneGraph won't be dangling. The only reason this works now is because we schedule
 	// the boomerang's removal before that of the enemy.
-	Boomerang& boomerang = static_cast<GoriyasStates::GoriyasSharedStateData*>(mpSharedStateData)->mBoomerang;
+	Boomerang& boomerang = static_cast<GoriyaStates::GoriyaSharedStateData*>(mpSharedStateData)->mBoomerang;
 	if (boomerang.IsNodeInScene())
 	{
 		SceneGraph::Instance().RemoveNodePostUpdate(boomerang);
@@ -100,11 +100,11 @@ void Goriyas::OnDead()
 	Base::OnDead();
 }
 
-void Goriyas::Update(GameTimeType deltaTime)
+void Goriya::Update(GameTimeType deltaTime)
 {
 	Base::Update(deltaTime);
 
-	Boomerang& boomerang = static_cast<GoriyasStates::GoriyasSharedStateData*>(mpSharedStateData)->mBoomerang;
+	Boomerang& boomerang = static_cast<GoriyaStates::GoriyaSharedStateData*>(mpSharedStateData)->mBoomerang;
 	if (boomerang.IsNodeInScene() && boomerang.HasReturned())
 	{
 		SceneGraph::Instance().RemoveNodePostUpdate(boomerang);

@@ -243,9 +243,21 @@ struct ScrollingStates
 
 	struct Scrolling_Done : ScrollingStateBase
 	{
+		virtual void OnEnter()
+		{
+			Owner().CallOnScrollingEnd();
+		}
 	};
 
 };
+
+ScrollingMgr::ScrollingMgr()
+	: mpSharedStateData(0)
+	, mCurrScreen(InitZero)
+	, mScrollOffset(InitZero)
+	, mScrollDir(ScrollDir::None)
+{
+}
 
 void ScrollingMgr::Init(const Vector2I& startScreen)
 {
@@ -269,11 +281,24 @@ void ScrollingMgr::Update(GameTimeType deltaTime)
 	mStateMachine.Update(deltaTime);
 }
 
+void ScrollingMgr::AddEventListener(IScrollingEventListener* pListener)
+{
+	mEventListeners.push_back(pListener);
+}
+
+void ScrollingMgr::RemoveEventListener(IScrollingEventListener* pListener)
+{
+	EventListenerList::iterator iter = std::find(mEventListeners.begin(), mEventListeners.end(), pListener);
+	ASSERT(iter != mEventListeners.end());
+	mEventListeners.erase(iter);
+}
+
 void ScrollingMgr::StartScrolling(ScrollDir::Type scrollDir)
 {
 	ASSERT(mScrollDir == ScrollDir::None); // Don't start scrolling while already scrolling
 	ASSERT(scrollDir != ScrollDir::None);
 	mScrollDir = scrollDir;
+	CallOnScrollingBegin();
 }
 
 bool ScrollingMgr::IsScrolling() const
@@ -289,3 +314,16 @@ void ScrollingMgr::UpdateCameraPos()
 	Camera::Instance().SetPosition(newCameraPos);
 }
 
+void ScrollingMgr::CallOnScrollingBegin()
+{
+	EventListenerList::iterator iter = mEventListeners.begin();
+	for ( ; iter != mEventListeners.end(); ++iter)
+		(*iter)->OnScrollingBegin();
+}
+
+void ScrollingMgr::CallOnScrollingEnd()
+{
+	EventListenerList::iterator iter = mEventListeners.begin();
+	for ( ; iter != mEventListeners.end(); ++iter)
+		(*iter)->OnScrollingEnd();
+}

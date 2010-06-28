@@ -19,6 +19,7 @@
 #include "gslib/Game/PhysicsSimulator.h"
 #include "gslib/Game/Player.h"
 #include "gslib/Game/Enemy.h"
+#include "gslib/Game/Weapon.h"
 #include "gslib/Game/EnemyFactory.h"
 #include "gslib/Game/GameHelpers.h"
 #include "gslib/Game/DebugVars.h"
@@ -134,17 +135,36 @@ struct GameStates
 		}
 	};
 
-	struct PlayingMap : GameStateBase
+	struct PlayingMap : GameStateBase, IScrollingEventListener
 	{
+		bool mSpawnEnemiesNextFrame;
+
 		virtual void OnEnter()
 		{
+			// Normally set by ScrollingMgr callbacks, but we want to spawn enemies for
+			// initial screen
+			mSpawnEnemiesNextFrame = true;
+
 			// Fade in screen
 			GraphicsEngine::FadeScreen(FadeScreenDir::In, SEC_TO_FRAMES(0.5f));
+
+			ScrollingMgr::Instance().AddEventListener(this);
+		}
+
+		virtual void OnExit()
+		{
+			ScrollingMgr::Instance().RemoveEventListener(this);
+			RemoveNodesBeforeChangingScreens();
 		}
 
 		virtual void PerformStateActions(HsmTimeType deltaTime)
 		{
-			TEMP_RespawnEnemiesIfAllDead();
+			// Spawn enemies before sim + render
+			if (mSpawnEnemiesNextFrame)
+			{
+				SpawnEnemiesForCurrentScreen();
+				mSpawnEnemiesNextFrame = false;
+			}
 
 			// Sim
 			SceneGraph::Instance().Update(deltaTime);
@@ -163,26 +183,49 @@ struct GameStates
 		}
 
 	private:
-		void TEMP_RespawnEnemiesIfAllDead()
+		virtual void OnScrollingBegin()
 		{
-			if (ScrollingMgr::Instance().IsScrolling())
-				return;
+			RemoveNodesBeforeChangingScreens();
+		}
 
-			const bool bAllEnemiesDead = SceneGraph::Instance().GetEnemyList().size() == 0;
-			if (bAllEnemiesDead)
+		virtual void OnScrollingEnd()
+		{
+			mSpawnEnemiesNextFrame = true;
+		}
+
+		void RemoveNodesBeforeChangingScreens()
+		{
+			// Remove all enemies, weapons, etc.
+			WeaponList& playerWeapons = SceneGraph::Instance().GetPlayerWeaponList();
+			for (WeaponList::iterator iter = playerWeapons.begin(); iter != playerWeapons.end(); ++iter)
 			{
-				for (uint16 i=0; i<NUM_ARRAY_ELEMS(gpEnemies); ++i)
-				{
-					delete gpEnemies[i];
+				SceneGraph::Instance().RemoveNodePostUpdate(**iter);
+			}
+			WeaponList& enemyWeapons = SceneGraph::Instance().GetEnemyWeaponList();
+			for (WeaponList::iterator iter = enemyWeapons.begin(); iter != enemyWeapons.end(); ++iter)
+			{
+				SceneGraph::Instance().RemoveNodePostUpdate(**iter);
+			}
+			EnemyList& enemies = SceneGraph::Instance().GetEnemyList();
+			for (EnemyList::iterator iter = enemies.begin(); iter != enemies.end(); ++iter)
+			{
+				Enemy* pEnemy = *iter;
+				SceneGraph::Instance().RemoveNodePostUpdate(*pEnemy);
+			}
+		}
 
-					// Compute a random world position for the enemy
-					Vector2I initPos(MathEx::Rand(HwScreenSizeX - 16), MathEx::Rand(HwScreenSizeY - 16));
-					initPos = Camera::Instance().ScreenToWorld(initPos);
+		void SpawnEnemiesForCurrentScreen()
+		{
+			WorldMap::SpawnDataList spawnDataList;
+			WorldMap::Instance().GetSpawnDataForScreen(ScrollingMgr::Instance().GetCurrScreen(), spawnDataList);
 
-					gpEnemies[i] = EnemyFactory::CreateRandomEnemy();
-					gpEnemies[i]->Init(initPos);
-					SceneGraph::Instance().AddNode(*gpEnemies[i]);
-				}
+			WorldMap::SpawnDataList::iterator iter = spawnDataList.begin();
+			for ( ; iter != spawnDataList.end(); ++iter)
+			{
+				WorldMap::SpawnData& spawnData = *iter;
+				Enemy* pEnemy = EnemyFactory::CreateEnemy(spawnData.mGameActor);
+				pEnemy->Init(spawnData.mPos);
+				SceneGraph::Instance().AddNode(*pEnemy);
 			}
 		}
 
@@ -279,7 +322,7 @@ int main(void)
 		// NDS refresh rate is 60 Hz, so as long as we don't take too long in one frame, we can just pass in 1 (frame)
 		GameTimeType deltaTime = pausedThisFrame? 0 : 1;
 
-		gameStateMachine.Update(deltaTime);
+ 		gameStateMachine.Update(deltaTime);
 
 		GraphicsEngine::Update(deltaTime);
 		GraphicsEngine::Render(deltaTime);
