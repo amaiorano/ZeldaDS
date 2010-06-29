@@ -372,19 +372,19 @@
 							Name="Enemies"
 							>
 							<File
-								RelativePath=".\ZeldaDS\arm9\source\gslib\Game\Enemies\Goriyas.cpp"
+								RelativePath=".\ZeldaDS\arm9\source\gslib\Game\Enemies\Goriya.cpp"
 								>
 							</File>
 							<File
-								RelativePath=".\ZeldaDS\arm9\source\gslib\Game\Enemies\Goriyas.h"
+								RelativePath=".\ZeldaDS\arm9\source\gslib\Game\Enemies\Goriya.h"
 								>
 							</File>
 							<File
-								RelativePath=".\ZeldaDS\arm9\source\gslib\Game\Enemies\Snake.cpp"
+								RelativePath=".\ZeldaDS\arm9\source\gslib\Game\Enemies\Rope.cpp"
 								>
 							</File>
 							<File
-								RelativePath=".\ZeldaDS\arm9\source\gslib\Game\Enemies\Snake.h"
+								RelativePath=".\ZeldaDS\arm9\source\gslib\Game\Enemies\Rope.h"
 								>
 							</File>
 						</Filter>

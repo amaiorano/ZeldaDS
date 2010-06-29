@@ -1,7 +1,7 @@
 #include "EnemyFactory.h"
 
-#include "gslib/Game/Enemies/Goriyas.h"
-#include "gslib/Game/Enemies/Snake.h"
+#include "gslib/Game/Enemies/Goriya.h"
+#include "gslib/Game/Enemies/Rope.h"
 
 namespace EnemyFactory
 {
