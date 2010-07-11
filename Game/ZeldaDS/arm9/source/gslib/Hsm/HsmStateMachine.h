@@ -46,22 +46,22 @@ public:
 	// that derive from ClientStateBase.
 	void SetOwner(void* pOwner)
 	{
-		HSM_ASSERT( !m_pOwner && pOwner );
-		m_pOwner = pOwner;
+		HSM_ASSERT( !mpOwner && pOwner );
+		mpOwner = pOwner;
 	}
 
 	// Required: sets shared state data (transfers ownership)
 	void SetSharedStateData(SharedStateData* pNewSharedStateData)
 	{
-		HSM_ASSERT( !m_pSharedStateData && pNewSharedStateData );
-		m_pSharedStateData = pNewSharedStateData;
+		HSM_ASSERT( !mpSharedStateData && pNewSharedStateData );
+		mpSharedStateData = pNewSharedStateData;
 	}
-	
+
 	// Required: sets the state to start in
 	template <typename ChildState>
 	void SetInitialState()
 	{
-		HSM_ASSERT( m_stateStack.empty() );
+		HSM_ASSERT( mStateStack.empty() );
 		State* pInitialState = SiblingTransition<ChildState>().CreateState(this);
 		PushInitialState(pInitialState);
 	}
@@ -72,7 +72,7 @@ public:
 		EvaluateStateTransitions(deltaTime);
 		PerformStateActions(deltaTime);
 	}
-	
+
 	// Called by Update()
 	void EvaluateStateTransitions(HsmTimeType deltaTime);
 	void PerformStateActions(HsmTimeType deltaTime);
@@ -81,13 +81,13 @@ public:
 
 	void* GetOwner()
 	{
-		return m_pOwner;
+		return mpOwner;
 	}
 
 	SharedStateData& GetSharedStateData()
 	{
-		HSM_ASSERT(m_pSharedStateData);
-		return *m_pSharedStateData;
+		HSM_ASSERT(mpSharedStateData);
+		return *mpSharedStateData;
 	}
 
 	State* FindState(StateTypeId stateType) const;
@@ -103,29 +103,29 @@ public:
 	void VisitStatesOuterToInner(StateVisitor& visitor, void* pUserData = NULL);
 	void VisitStatesInnerToOuter(StateVisitor& visitor, void* pUserData = NULL);
 
-	void SetDebugLevel(int debugLevel) { m_debugLevel = debugLevel; }
+	void SetDebugLevel(int debugLevel) { mDebugLevel = debugLevel; }
 
 private:
 	typedef std::vector<int>::size_type size_t;
 
-	State* GetStateAtDepth(size_t depth);	
+	State* GetStateAtDepth(size_t depth);
 
 	void PushInitialState(State* pState);
 
 	// Pops states from most inner up to and including depth
-	void PopStatesToDepth(size_t depth);	
+	void PopStatesToDepth(size_t depth);
 
 	// Returns true if a transition was made (and next depth to start at), meaning we must keep evaluating
-	bool EvaluateStateTransitionsOnce(HsmTimeType deltaTime, const size_t& startDepth, size_t& nextStartDepth);	
+	bool EvaluateStateTransitionsOnce(HsmTimeType deltaTime, const size_t& startDepth, size_t& nextStartDepth);
 
 private:
-	void* m_pOwner; // Provided by client, accessed within states via Owner()
-	SharedStateData* m_pSharedStateData; // Owned/deleted by state machine
+	void* mpOwner; // Provided by client, accessed within states via Owner()
+	SharedStateData* mpSharedStateData; // Owned/deleted by state machine
 
 	typedef std::vector<State*> StateStack;
-	StateStack m_stateStack;
+	StateStack mStateStack;
 
-	int m_debugLevel;
+	int mDebugLevel;
 };
 
 

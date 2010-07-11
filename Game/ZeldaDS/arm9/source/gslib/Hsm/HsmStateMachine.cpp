@@ -3,7 +3,7 @@
 #define HSM_LOG(minLevel, numSpaces, printfArgs) \
 	do \
 	{ \
-		if (m_debugLevel >= minLevel) \
+		if (mDebugLevel >= minLevel) \
 		{ \
 			HSM_PRINTF("HSM_%d: ", minLevel); \
 			for (int i=0; i < (int)numSpaces; ++i) HSM_PRINTF(" "); /* Is there a better way to do this? */ \
@@ -34,24 +34,24 @@ namespace
 
 
 StateMachine::StateMachine()
-	: m_pOwner(NULL)
-	, m_pSharedStateData(NULL)
-	, m_debugLevel(0)
+	: mpOwner(NULL)
+	, mpSharedStateData(NULL)
+	, mDebugLevel(0)
 {
 }
 
 StateMachine::~StateMachine()
 {
 	PopStatesToDepth(0);
-	HSM_ASSERT(m_stateStack.empty());
-	m_stateStack.clear();
-	delete m_pSharedStateData;
+	HSM_ASSERT(mStateStack.empty());
+	mStateStack.clear();
+	delete mpSharedStateData;
 }
 
 void StateMachine::EvaluateStateTransitions(HsmTimeType deltaTime)
 {
-	HSM_ASSERT(m_pSharedStateData); // Make sure to set state data
-	HSM_ASSERT(!m_stateStack.empty()); // Make sure to set an initial state!
+	HSM_ASSERT(mpSharedStateData); // Make sure to set state data
+	HSM_ASSERT(!mStateStack.empty()); // Make sure to set an initial state!
 
 	// After we make a transition, we must evaluate all transitions again until we get no transitions
 	// from all states on the stack.
@@ -71,8 +71,8 @@ void StateMachine::PerformStateActions(HsmTimeType deltaTime)
 
 State* StateMachine::FindState(StateTypeId stateType) const
 {
-	StateStack::const_iterator iter = m_stateStack.begin();
-	const StateStack::const_iterator& iterEnd = m_stateStack.end();
+	StateStack::const_iterator iter = mStateStack.begin();
+	const StateStack::const_iterator& iterEnd = mStateStack.end();
 	for ( ; iter != iterEnd; ++iter)
 	{
 		State*const& pState = *iter;
@@ -84,8 +84,8 @@ State* StateMachine::FindState(StateTypeId stateType) const
 
 void StateMachine::VisitStatesOuterToInner(StateVisitor& visitor, void* pUserData)
 {
-	StateStack::iterator iter = m_stateStack.begin();
-	const StateStack::iterator& iterEnd = m_stateStack.end();
+	StateStack::iterator iter = mStateStack.begin();
+	const StateStack::iterator& iterEnd = mStateStack.end();
 	for ( ; iter != iterEnd; ++iter)
 	{
 		State*& pState = *iter;
@@ -97,8 +97,8 @@ void StateMachine::VisitStatesOuterToInner(StateVisitor& visitor, void* pUserDat
 
 void StateMachine::VisitStatesInnerToOuter(StateVisitor& visitor, void* pUserData)
 {
-	StateStack::reverse_iterator iter = m_stateStack.rbegin();
-	const StateStack::reverse_iterator& iterEnd = m_stateStack.rend();
+	StateStack::reverse_iterator iter = mStateStack.rbegin();
+	const StateStack::reverse_iterator& iterEnd = mStateStack.rend();
 	for ( ; iter != iterEnd; ++iter)
 	{
 		State* pState = *iter;
@@ -110,31 +110,31 @@ void StateMachine::VisitStatesInnerToOuter(StateVisitor& visitor, void* pUserDat
 
 State* StateMachine::GetStateAtDepth(size_t depth)
 {
-	if (depth >= m_stateStack.size())
+	if (depth >= mStateStack.size())
 		return NULL;
 
-	return m_stateStack[depth];
+	return mStateStack[depth];
 }
 
 void StateMachine::PushInitialState(State* pState)
 {
-	HSM_ASSERT(m_stateStack.empty());
+	HSM_ASSERT(mStateStack.empty());
 	HSM_LOG_TRANSITION(1, 0, "Root", pState);
-	m_stateStack.push_back(pState);
+	mStateStack.push_back(pState);
 }
 
 // Pops states from most inner up to and including depth
 void StateMachine::PopStatesToDepth(size_t depth)
 {
-	const size_t numStatesToPop = m_stateStack.size() - depth;
-	size_t rDepth = m_stateStack.size() - 1;
+	const size_t numStatesToPop = mStateStack.size() - depth;
+	size_t rDepth = mStateStack.size() - 1;
 
 	for (size_t i = 0; i < numStatesToPop; ++i)
 	{
-		State* pStateToPop = m_stateStack[rDepth];
+		State* pStateToPop = mStateStack[rDepth];
 		HSM_LOG_TRANSITION(2, rDepth, "Pop", pStateToPop);
 		DestroyState(pStateToPop);
-		m_stateStack.pop_back(); //@todo: remove size()-depth elems after loop?
+		mStateStack.pop_back(); //@todo: remove size()-depth elems after loop?
 		--rDepth;
 	}
 }
@@ -143,12 +143,12 @@ void StateMachine::PopStatesToDepth(size_t depth)
 bool StateMachine::EvaluateStateTransitionsOnce(HsmTimeType deltaTime, const size_t& startDepth, size_t& nextStartDepth)
 {
 	// Evaluate transitions from outer to inner states; if a valid sibling transition is returned,
-	// we must pop inners up to and including the state that returned the transition, then push the 
+	// we must pop inners up to and including the state that returned the transition, then push the
 	// new inner. If an inner transition is returned, we must pop inners up to but not including
 	// the state that returned the transition (if any), then push the new inner.
-	for (size_t depth = startDepth; depth < m_stateStack.size(); ++depth)
+	for (size_t depth = startDepth; depth < mStateStack.size(); ++depth)
 	{
-		State* pCurrState = m_stateStack[depth];
+		State* pCurrState = mStateStack[depth];
 		Transition& transition = pCurrState->EvaluateTransitions(deltaTime);
 
 		switch (transition.GetTransitionType())
@@ -174,8 +174,8 @@ bool StateMachine::EvaluateStateTransitionsOnce(HsmTimeType deltaTime, const siz
 
 						State* pTargetState = transition.CreateState(this);
 						HSM_LOG_TRANSITION(1, depth + 1, "Inner", pTargetState);
-						m_stateStack.push_back(pTargetState);
-						
+						mStateStack.push_back(pTargetState);
+
 						nextStartDepth = depth + 1;
 						return true;
 					}
@@ -185,8 +185,8 @@ bool StateMachine::EvaluateStateTransitionsOnce(HsmTimeType deltaTime, const siz
 					// No state under us so just push target
 					State* pTargetState = transition.CreateState(this);
 					HSM_LOG_TRANSITION(1, depth + 1, "Inner", pTargetState);
-					m_stateStack.push_back(pTargetState);
-					
+					mStateStack.push_back(pTargetState);
+
 					nextStartDepth = depth + 1;
 					return true;
 				}
@@ -200,8 +200,8 @@ bool StateMachine::EvaluateStateTransitionsOnce(HsmTimeType deltaTime, const siz
 				{
 					State* pTargetState = transition.CreateState(this);
 					HSM_LOG_TRANSITION(1, depth + 1, "Entry", pTargetState);
-					m_stateStack.push_back(pTargetState);
-					
+					mStateStack.push_back(pTargetState);
+
 					nextStartDepth = depth + 1;
 					return true;
 				}
@@ -214,7 +214,7 @@ bool StateMachine::EvaluateStateTransitionsOnce(HsmTimeType deltaTime, const siz
 
 				State* pTargetState = transition.CreateState(this);
 				HSM_LOG_TRANSITION(1, depth, "Sibling", pTargetState);
-				m_stateStack.push_back(pTargetState);
+				mStateStack.push_back(pTargetState);
 
 				nextStartDepth = depth;
 				return true;

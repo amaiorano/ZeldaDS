@@ -35,13 +35,13 @@ struct Attribute
 	// Constructor - allows client to initialize attribute; afterward,
 	// can only assign via State::SetAttribute().
 	// Note that T must be default constructable.
-	explicit Attribute(const T& initValue = T()) { m_value = initValue; }
+	explicit Attribute(const T& initValue = T()) { mValue = initValue; }
 
 	// Conversion operator to const T& (but not T&)
-	operator const T&() const { return m_value; }
+	operator const T&() const { return mValue; }
 
 	// Provided for clients who don't want to cast
-	const T& Value() const { return m_value; }
+	const T& Value() const { return mValue; }
 
 private:
 	// Disable copy
@@ -49,7 +49,7 @@ private:
 	Attribute& operator=(Attribute& rhs);
 
 	friend struct ConcreteAttributeResetter<T>;
-	T m_value;
+	T mValue;
 };
 
 struct AttributeResetter
@@ -62,18 +62,18 @@ struct ConcreteAttributeResetter : public AttributeResetter
 {
 	ConcreteAttributeResetter(Attribute<T>& attrib, const T& newValue)
 	{
-		m_pAttrib = &attrib;
-		m_origValue = attrib.m_value;
-		attrib.m_value = newValue;
+		mpAttrib = &attrib;
+		mOrigValue = attrib.mValue;
+		attrib.mValue = newValue;
 	}
 
 	virtual ~ConcreteAttributeResetter()
 	{
-		m_pAttrib->m_value = m_origValue;
+		mpAttrib->mValue = mOrigValue;
 	}
 
-	Attribute<T>* m_pAttrib;
-	T m_origValue;
+	Attribute<T>* mpAttrib;
+	T mOrigValue;
 };
 
 namespace HsmInternal
@@ -87,20 +87,20 @@ namespace HsmInternal
 
 struct State
 {
-	State() 
-		: m_pOwnerStateMachine(NULL)
-		, m_attributeResetters(0)
+	State()
+		: mpOwnerStateMachine(NULL)
+		, mAttributeResetters(0)
 	{
 	}
-	
+
 	virtual ~State()
 	{
 		ResetAttributes();
 	}
 
 	// Accessors
-	StateTypeId GetStateType() const { return GetStateTypeId(*this); }	
-	StateMachine& GetStateMachine() { HSM_ASSERT(m_pOwnerStateMachine); return *m_pOwnerStateMachine; }
+	StateTypeId GetStateType() const { return GetStateTypeId(*this); }
+	StateMachine& GetStateMachine() { HSM_ASSERT(mpOwnerStateMachine); return *mpOwnerStateMachine; }
 
 	// Convenience functions
 	template <typename ChildState>
@@ -116,7 +116,7 @@ struct State
 
 	template <typename ChildState>
 	inline bool IsInState();
-	
+
 	// Client can implement these
 	// Note: GetStateMachine() is valid in OnEnter(), but not in a state constructor
 	void OnEnter() { } // Doesn't need to be virtual - called directly on child state
@@ -134,36 +134,36 @@ struct State
 
 		#ifdef HSM_DEBUG
 		// Don't allow setting an attribute twice from a state (probably a misuse of attributes)
-		AttributeResetterList::iterator iter = m_attributeResetters.begin();
-		const AttributeResetterList::iterator& iterEnd = m_attributeResetters.end();
+		AttributeResetterList::iterator iter = mAttributeResetters.begin();
+		const AttributeResetterList::iterator& iterEnd = mAttributeResetters.end();
 		for ( ; iter != iterEnd; ++iter)
 		{
-			HSM_ASSERT(&attrib != static_cast<ConcreteAttributeResetter<T>*>(*iter)->m_pAttrib);
+			HSM_ASSERT(&attrib != static_cast<ConcreteAttributeResetter<T>*>(*iter)->mpAttrib);
 		}
 		#endif
 
 		//@TODO: Get allocator from state machine and replace this 'new'
-		m_attributeResetters.push_back( new ConcreteAttributeResetter<T>(attrib, newValue) );
+		mAttributeResetters.push_back( new ConcreteAttributeResetter<T>(attrib, newValue) );
 	}
 
 private:
 	friend inline void HsmInternal::InitState(State* pState, StateMachine* pOwnerStateMachine);
-	StateMachine* m_pOwnerStateMachine;
+	StateMachine* mpOwnerStateMachine;
 
 	void ResetAttributes()
 	{
 		// Destroy attributes (will reset to old value)
-		AttributeResetterList::iterator iter = m_attributeResetters.begin();
-		const AttributeResetterList::iterator& iterEnd = m_attributeResetters.end();
+		AttributeResetterList::iterator iter = mAttributeResetters.begin();
+		const AttributeResetterList::iterator& iterEnd = mAttributeResetters.end();
 		for ( ; iter != iterEnd; ++iter)
 		{
 			delete *iter;
 		}
-		m_attributeResetters.clear();
+		mAttributeResetters.clear();
 	}
 
 	typedef std::vector<AttributeResetter*> AttributeResetterList;
-	AttributeResetterList m_attributeResetters;
+	AttributeResetterList mAttributeResetters;
 };
 
 
@@ -198,7 +198,7 @@ namespace HsmInternal
 {
 	inline void InitState(State* pState, StateMachine* pOwnerStateMachine)
 	{
-		pState->m_pOwnerStateMachine = pOwnerStateMachine;
+		pState->mpOwnerStateMachine = pOwnerStateMachine;
 	}
 }
 
