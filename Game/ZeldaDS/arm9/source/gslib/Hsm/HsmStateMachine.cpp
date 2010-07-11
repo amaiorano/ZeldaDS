@@ -15,7 +15,7 @@
 	#define HSM_LOG_TRANSITION(minLevel, depth, transType, pState)
 #else
 	#define HSM_LOG_TRANSITION(minLevel, depth, transTypeStr, pState) \
-		HSM_LOG(minLevel, depth, ("%-8s: %s\n", transTypeStr, GetStateTypeId(*pState).name()))
+		HSM_LOG(minLevel, depth, ("%-8s: %s\n", transTypeStr, GetStateDebugName(*pState)))
 #endif
 
 namespace

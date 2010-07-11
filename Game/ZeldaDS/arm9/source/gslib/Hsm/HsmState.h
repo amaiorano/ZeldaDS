@@ -162,7 +162,7 @@ private:
 		mAttributeResetters.clear();
 	}
 
-	typedef std::vector<AttributeResetter*> AttributeResetterList;
+	typedef HSM_STD_VECTOR<AttributeResetter*> AttributeResetterList;
 	AttributeResetterList mAttributeResetters;
 };
 

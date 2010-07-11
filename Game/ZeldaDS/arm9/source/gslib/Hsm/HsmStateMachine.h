@@ -106,7 +106,7 @@ public:
 	void SetDebugLevel(int debugLevel) { mDebugLevel = debugLevel; }
 
 private:
-	typedef std::vector<int>::size_type size_t;
+	typedef HSM_STD_VECTOR<int>::size_type size_t;
 
 	State* GetStateAtDepth(size_t depth);
 
@@ -122,7 +122,7 @@ private:
 	void* mpOwner; // Provided by client, accessed within states via Owner()
 	SharedStateData* mpSharedStateData; // Owned/deleted by state machine
 
-	typedef std::vector<State*> StateStack;
+	typedef HSM_STD_VECTOR<State*> StateStack;
 	StateStack mStateStack;
 
 	int mDebugLevel;
