@@ -4,66 +4,69 @@
 #include "Boomerang.h" //@TODO: REPLACE WITH "Weapon.h"
 #include <algorithm>
 
-
-void SceneGraph::AddNode(ISceneNode& node)
+void SceneGraph::AddNode(ISceneNode* pNode)
 {
-	ASSERT_MSG(!node.mRemoveNodePostUpdate, "Probably got scheduled for remove then added in same frame");
+	ASSERT(pNode);
+	ASSERT_MSG(!pNode->mRemoveNodePostUpdate, "Probably got scheduled for remove then added in same frame");
 
-	if (IPhysical* pPhysical = DynamicCast<IPhysical*>(&node)) // Hmm...
+	//@LAME: Because we multiply inherit ISceneNode and IPhysical, we need to do this here
+	if (IPhysical* pPhysical = DynamicCast<IPhysical*>(pNode))
 	{
 		mPhysicalList.push_back(pPhysical);
 	}
 
-	mSceneNodeList.push_back(&node);
-	node.OnAddToScene();
+	mSceneNodeList.push_back(pNode);
+	pNode->OnAddToScene();
 }
 
-void SceneGraph::AddNode(Player& node)
+void SceneGraph::AddNode(Player* pNode)
 {
-	mPlayerList.push_back(&node);
-	AddNode(static_cast<ISceneNode&>(node));
+	mPlayerList.push_back(pNode);
+	AddNode(static_cast<ISceneNode*>(pNode));
 }
 
-void SceneGraph::AddNode(Enemy& node)
+void SceneGraph::AddNode(Enemy* pNode)
 {
-	mEnemyList.push_back(&node);
-	AddNode(static_cast<ISceneNode&>(node));
+	mEnemyList.push_back(pNode);
+	AddNode(static_cast<ISceneNode*>(pNode));
 } 
 
-void SceneGraph::AddNode(Weapon& node)
+void SceneGraph::AddNode(Weapon* pNode)
 {
-	if (node.IsPlayerWeapon())
+	if (pNode->IsPlayerWeapon())
 	{
-		mPlayerWeaponList.push_back(&node);
+		mPlayerWeaponList.push_back(pNode);
 	}
 	else
 	{
-		mEnemyWeaponList.push_back(&node);
+		mEnemyWeaponList.push_back(pNode);
 	}
-	AddNode(static_cast<ISceneNode&>(node));
+	AddNode(static_cast<ISceneNode*>(pNode));
 }
 
-void SceneGraph::RemoveNodePostUpdate(ISceneNode& node)
+void SceneGraph::RemoveNodePostUpdate(ISceneNode* pNode)
 {
-	ASSERT(!node.mRemoveNodePostUpdate);
-	node.mRemoveNodePostUpdate = true;
+	ASSERT(pNode);
+	ASSERT(!pNode->mRemoveNodePostUpdate);
+	pNode->mRemoveNodePostUpdate = true;
 }
 
-void SceneGraph::RemoveNode(ISceneNode& node)
+void SceneGraph::RemoveNode(ISceneNode* pNode)
 {
-	if (IPhysical* pPhysical = DynamicCast<IPhysical*>(&node)) // Hmm...
+	if (IPhysical* pPhysical = DynamicCast<IPhysical*>(pNode))
 	{
 		REMOVE_FROM_CONTAINER(PhysicalList, mPhysicalList, pPhysical);
 	}
 
-	REMOVE_FROM_CONTAINER(SceneNodeList, mSceneNodeList, &node);
+	REMOVE_FROM_CONTAINER(SceneNodeList, mSceneNodeList, pNode);
 
-	node.OnRemoveFromScene();
+	pNode->OnRemoveFromScene();
 }
 
-bool SceneGraph::IsNodeInScene(const ISceneNode& node) const
+bool SceneGraph::IsNodeInScene(const ISceneNode* pNode) const
 {
-	return std::find(mSceneNodeList.begin(), mSceneNodeList.end(), &node) != mSceneNodeList.end();
+	ASSERT(pNode);
+	return std::find(mSceneNodeList.begin(), mSceneNodeList.end(), pNode) != mSceneNodeList.end();
 }
 
 void SceneGraph::Update(GameTimeType deltaTime)
@@ -87,7 +90,7 @@ void SceneGraph::Render(GameTimeType deltaTime)
 }
 
 template <typename List>
-void SceneGraph::RemoveMarkedNodesInList(List& list, bool deleteNode)
+void SceneGraph::RemoveMarkedNodesInList(List& list)
 {
 	typedef typename List::iterator Iterator;
 	typedef typename List::value_type ValueType;
@@ -102,23 +105,17 @@ void SceneGraph::RemoveMarkedNodesInList(List& list, bool deleteNode)
 		if (pNode->mRemoveNodePostUpdate)
 		{
 			pNode->mRemoveNodePostUpdate = false;
-			RemoveNode(*pNode);
+			RemoveNode(pNode);
 			list.erase(currIter);
-			if (deleteNode)
-			{
-				delete pNode;
-			}
+			delete pNode;
 		}
 	}
 }
 
 void SceneGraph::RemoveNodesPostUpdate()
 {
-	RemoveMarkedNodesInList(mPlayerList, false);
-	//@HACK: Fact that SceneGraph owns enemies is hard-coded. We
-	// need to communicate whether SceneGraph owns certain nodes,
-	// or just have it own all nodes.
-	RemoveMarkedNodesInList(mEnemyList, true);
-	RemoveMarkedNodesInList(mPlayerWeaponList, false);
-	RemoveMarkedNodesInList(mEnemyWeaponList, false);
+	RemoveMarkedNodesInList(mPlayerList);
+	RemoveMarkedNodesInList(mEnemyList);
+	RemoveMarkedNodesInList(mPlayerWeaponList);
+	RemoveMarkedNodesInList(mEnemyWeaponList);
 }

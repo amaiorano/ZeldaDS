@@ -5,10 +5,15 @@
 
 class Weapon : public GameObject
 {
-public:
 	typedef GameObject Base;
 
-	void Init(bool isPlayerWeapon) { mIsPlayerWeapon = isPlayerWeapon; }
+protected:
+	Weapon(bool isPlayerWeapon)
+		: mIsPlayerWeapon(isPlayerWeapon)
+	{
+	}
+
+public:
 	bool IsPlayerWeapon() const { return mIsPlayerWeapon; }
 
 	// IPhysics interface
@@ -17,6 +22,5 @@ public:
 private:
 	bool mIsPlayerWeapon;
 };
-
 
 #endif // WEAPON_H

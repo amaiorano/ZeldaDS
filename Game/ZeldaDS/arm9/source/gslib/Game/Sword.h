@@ -9,6 +9,8 @@ class Sword : public Weapon
 public:
 	typedef Weapon Base;
 
+	Sword();
+
 	void Init(SpriteDir::Type dir);
 
 	// GameObject interface

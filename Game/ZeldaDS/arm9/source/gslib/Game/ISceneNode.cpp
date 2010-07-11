@@ -2,13 +2,15 @@
 #include "SceneGraph.h"
 
 ISceneNode::ISceneNode()
-	: mRemoveNodePostUpdate(false)
+	: mLocalPos(InitZero)
+	, mWorldPos(InitZero)
+	, mRemoveNodePostUpdate(false)
 {
 }
 
 bool ISceneNode::IsNodeInScene() const
 {
-	return SceneGraph::Instance().IsNodeInScene(*this);
+	return SceneGraph::Instance().IsNodeInScene(this);
 }
 
 const Vector2I& ISceneNode::GetPosition() const

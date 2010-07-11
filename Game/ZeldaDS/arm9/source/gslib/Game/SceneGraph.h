@@ -23,18 +23,18 @@ class SceneGraph : public Singleton<SceneGraph>
 public:
 	void SetWorldMap(WorldMap& worldMap) { mpWorldMap = &worldMap; }
 
-	void AddNode(ISceneNode& node);
-	void AddNode(Player& node);
-	void AddNode(Enemy& node);
-	void AddNode(Weapon& node);
+	void AddNode(ISceneNode* pNode);
+	void AddNode(Player* pNode);
+	void AddNode(Enemy* pNode);
+	void AddNode(Weapon* pNode);
 
-	void RemoveNodePostUpdate(ISceneNode& node);
+	void RemoveNodePostUpdate(ISceneNode* pNode);
 
 private:
-	void RemoveNode(ISceneNode& node);
+	void RemoveNode(ISceneNode* pNode);
 public:
 
-	bool IsNodeInScene(const ISceneNode& node) const;
+	bool IsNodeInScene(const ISceneNode* pNode) const;
 
 	WorldMap& GetWorldMap()				{ ASSERT(mpWorldMap); return *mpWorldMap; }
 
@@ -54,7 +54,7 @@ private:
 	SceneGraph() {}
 
 	template <typename List>
-	void RemoveMarkedNodesInList(List& list, bool deleteNode);
+	void RemoveMarkedNodesInList(List& list);
 	void RemoveNodesPostUpdate();
 
 	WorldMap* mpWorldMap;

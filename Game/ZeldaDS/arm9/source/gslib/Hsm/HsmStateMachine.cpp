@@ -66,13 +66,13 @@ void StateMachine::EvaluateStateTransitions(HsmTimeType deltaTime)
 
 void StateMachine::PerformStateActions(HsmTimeType deltaTime)
 {
-	VisitStatesOuterToInner(gCallPerformStateActionsVisitor, &deltaTime);	
+	VisitStatesOuterToInner(gCallPerformStateActionsVisitor, &deltaTime);
 }
 
 State* StateMachine::FindState(StateTypeId stateType) const
 {
-	StateVector::const_iterator iter = m_stateStack.begin();
-	const StateVector::const_iterator& iterEnd = m_stateStack.end();
+	StateStack::const_iterator iter = m_stateStack.begin();
+	const StateStack::const_iterator& iterEnd = m_stateStack.end();
 	for ( ; iter != iterEnd; ++iter)
 	{
 		State*const& pState = *iter;
@@ -84,8 +84,8 @@ State* StateMachine::FindState(StateTypeId stateType) const
 
 void StateMachine::VisitStatesOuterToInner(StateVisitor& visitor, void* pUserData)
 {
-	StateVector::iterator iter = m_stateStack.begin();
-	const StateVector::iterator& iterEnd = m_stateStack.end();
+	StateStack::iterator iter = m_stateStack.begin();
+	const StateStack::iterator& iterEnd = m_stateStack.end();
 	for ( ; iter != iterEnd; ++iter)
 	{
 		State*& pState = *iter;
@@ -97,8 +97,8 @@ void StateMachine::VisitStatesOuterToInner(StateVisitor& visitor, void* pUserDat
 
 void StateMachine::VisitStatesInnerToOuter(StateVisitor& visitor, void* pUserData)
 {
-	StateVector::reverse_iterator iter = m_stateStack.rbegin();
-	const StateVector::reverse_iterator& iterEnd = m_stateStack.rend();
+	StateStack::reverse_iterator iter = m_stateStack.rbegin();
+	const StateStack::reverse_iterator& iterEnd = m_stateStack.rend();
 	for ( ; iter != iterEnd; ++iter)
 	{
 		State* pState = *iter;

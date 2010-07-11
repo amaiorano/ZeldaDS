@@ -19,6 +19,8 @@ struct CollisionInfo
 class IPhysical
 {
 public:
+	IPhysical();
+
 	void Activate(uint16 width, uint16 height);
 	void Deactivate();
 

@@ -34,9 +34,6 @@
 // Amount left for heap: 4 MB - 32k (internal libnds stuff) - <your program size>
 // <your program size> can be found using arm-eabi-size.exe <elf_file>
 
-Player* gpPlayer = 0;
-Enemy* gpEnemies[5] = {0};
-
 struct GameStates
 {
 	struct GameSharedStateData : SharedStateData
@@ -122,11 +119,11 @@ struct GameStates
 			ScrollingMgr::Instance().Init(startScreen);
 
 			// Once map is loaded, position the player (normally the map should tell us where)
-			gpPlayer = new Player();
+			Player* pPlayer = new Player();
 			Vector2I initPos(MathEx::Rand(HwScreenSizeX - 16), MathEx::Rand(HwScreenSizeY - 16));
 			initPos = Camera::Instance().ScreenToWorld(initPos);
-			gpPlayer->Init(initPos);
-			SceneGraph::Instance().AddNode(*gpPlayer);
+			pPlayer->Init(initPos);
+			SceneGraph::Instance().AddNode(pPlayer);
 		}
 
 		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
@@ -199,23 +196,27 @@ struct GameStates
 			WeaponList& playerWeapons = SceneGraph::Instance().GetPlayerWeaponList();
 			for (WeaponList::iterator iter = playerWeapons.begin(); iter != playerWeapons.end(); ++iter)
 			{
-				SceneGraph::Instance().RemoveNodePostUpdate(**iter);
+				SceneGraph::Instance().RemoveNodePostUpdate(*iter);
 			}
 			WeaponList& enemyWeapons = SceneGraph::Instance().GetEnemyWeaponList();
 			for (WeaponList::iterator iter = enemyWeapons.begin(); iter != enemyWeapons.end(); ++iter)
 			{
-				SceneGraph::Instance().RemoveNodePostUpdate(**iter);
+				SceneGraph::Instance().RemoveNodePostUpdate(*iter);
 			}
 			EnemyList& enemies = SceneGraph::Instance().GetEnemyList();
 			for (EnemyList::iterator iter = enemies.begin(); iter != enemies.end(); ++iter)
 			{
 				Enemy* pEnemy = *iter;
-				SceneGraph::Instance().RemoveNodePostUpdate(*pEnemy);
+				SceneGraph::Instance().RemoveNodePostUpdate(pEnemy);
 			}
+
+			ASSERT(SceneGraph::Instance().GetSceneNodeList().size()== 1); // Only player should be left
 		}
 
 		void SpawnEnemiesForCurrentScreen()
 		{
+			ASSERT(SceneGraph::Instance().GetSceneNodeList().size()== 1); // Only player should exist
+
 			WorldMap::SpawnDataList spawnDataList;
 			WorldMap::Instance().GetSpawnDataForScreen(ScrollingMgr::Instance().GetCurrScreen(), spawnDataList);
 
@@ -225,7 +226,7 @@ struct GameStates
 				WorldMap::SpawnData& spawnData = *iter;
 				Enemy* pEnemy = EnemyFactory::CreateEnemy(spawnData.mGameActor);
 				pEnemy->Init(spawnData.mPos);
-				SceneGraph::Instance().AddNode(*pEnemy);
+				SceneGraph::Instance().AddNode(pEnemy);
 			}
 		}
 

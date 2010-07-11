@@ -20,13 +20,15 @@ struct PlayerSharedStateData : CharacterSharedStateData
 	typedef CharacterSharedStateData Base;
 
 	PlayerSharedStateData()
-		: mScrollDir(ScrollDir::None)
+		: mpSword(NULL)
+		, mpBoomerang(NULL)
+		, mScrollDir(ScrollDir::None)
 	{
 	}
 
 	// Data...
-	Sword mSword;
-	Boomerang mBoomerang;
+	Sword* mpSword;
+	Boomerang* mpBoomerang;
 	ScrollDir::Type mScrollDir;
 };
 
@@ -34,6 +36,7 @@ struct PlayerStates
 {
 	struct PlayerStateBase : CharacterStateBase<PlayerSharedStateData, Player>
 	{
+		virtual void PostAnimUpdate(HsmTimeType deltaTime) { } 
 	};
 
 	struct Root : PlayerStateBase
@@ -265,35 +268,40 @@ struct PlayerStates
 	{
 		virtual void OnEnter()
 		{
+			CreateSword();
 			PlayAnim(BaseAnim::Attack);
 			AudioEngine::PlaySound(SFX_SWORD);
 
-			Data().mSword.Init(Owner().GetSpriteDir());
-			SceneGraph::Instance().AddNode(Data().mSword);
-			Owner().AttachChild(&Data().mSword); // Make sword our child
-
-			// Set sword position at halfway mark
-			UpdateSwordPos(8);
+			UpdateSwordPos(16);
 		}
 
 		virtual void OnExit()
 		{
-			Owner().DetachChild(&Data().mSword);
-			//SceneGraph::Instance().RemoveNodePostUpdate(Data().mSword);
+			DestroySword();
+		}
+
+		void CreateSword()
+		{
+			ASSERT(!Data().mpSword);
+			Data().mpSword = new Sword();
+			Data().mpSword->Init(Owner().GetSpriteDir());
+			SceneGraph::Instance().AddNode(Data().mpSword);
+			Owner().AttachChild(Data().mpSword); // Make sword our child
+		}
+
+		void DestroySword()
+		{
+			if (Data().mpSword)
+			{
+				Owner().DetachChild(Data().mpSword); // Technically detached for one frame :(
+				SceneGraph::Instance().RemoveNodePostUpdate(Data().mpSword);
+				Data().mpSword = NULL;
+			}
 		}
 
 		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
 		{
-			//@HACK: This check makes sure we stay in attack for one more
-			// state when the anim is finished to make sure the sword
-			// gets removed from the scene. This is to avoid scheduling
-			// removal + adding the sword in the same frame.
-			if (IsAnimFinished() && Data().mSword.IsNodeInScene())
-			{
-				SceneGraph::Instance().RemoveNodePostUpdate(Data().mSword);
-				return NoTransition();
-			}
-			else if (IsAnimFinished())
+			if (IsAnimFinished())
 			{
 				return SiblingTransition<Alive_Locomotion>();
 			}
@@ -301,11 +309,11 @@ struct PlayerStates
 			return NoTransition();
 		}
 
-		virtual void PerformStateActions(HsmTimeType deltaTime)
+		virtual void PostAnimUpdate(HsmTimeType deltaTime)
 		{
 			if (Owner().GetAnimControl().GetFrameIndex() == 1)
 			{
-				UpdateSwordPos(16);
+				UpdateSwordPos(8);
 			}
 		}
 
@@ -313,8 +321,7 @@ struct PlayerStates
 		void UpdateSwordPos(int16 offset)
 		{
 			const Vector2I& swordLocalPos = GameHelpers::SpriteDirToUnitVector(Owner().GetSpriteDir()) * (offset - 2);
-			Data().mSword.SetLocalPosition(swordLocalPos);
-
+			Data().mpSword->SetLocalPosition(swordLocalPos);
 		}
 	};
 
@@ -328,7 +335,7 @@ struct PlayerStates
 		{
 			mItemUsed = false;
 
-			if ( !Data().mBoomerang.IsNodeInScene() )
+			if ( !Data().mpBoomerang )
 			{
 				Vector2I launchDir = GameHelpers::SpriteDirToUnitVector(Owner().GetSpriteDir());
 
@@ -336,8 +343,10 @@ struct PlayerStates
 				launchDir.x = keysHeld & KEY_LEFT? -1.0f : keysHeld & KEY_RIGHT? 1.0f : launchDir.x;
 				launchDir.y = keysHeld & KEY_UP? -1.0f : keysHeld & KEY_DOWN? 1.0f : launchDir.y;
 
-				Data().mBoomerang.Init(&Owner(), launchDir);
-				SceneGraph::Instance().AddNode(Data().mBoomerang);
+				Data().mpBoomerang = new Boomerang(true);
+				Data().mpBoomerang->Init(&Owner(), launchDir);
+				SceneGraph::Instance().AddNode(Data().mpBoomerang);
+
 				mItemUsed = true;
 			}
 
@@ -399,16 +408,28 @@ void Player::GetGameObjectInfo(GameObjectInfo& gameObjectInfo)
 	gameObjectInfo.mGameActor = GameActor::Hero;
 }
 
+struct CallPostAnimUpdateVisitor : public StateVisitor
+{
+	virtual bool OnVisit(State* pState, void* pUserData = NULL)
+	{
+		HsmTimeType& deltaTime = *static_cast<HsmTimeType*>(pUserData);
+		static_cast<PlayerStates::PlayerStateBase*>(pState)->PostAnimUpdate( deltaTime );
+		return true;
+	}
+} gCallPostAnimUpdateVisitor;
+
 void Player::Update(GameTimeType deltaTime)
 {
-	Base::Update(deltaTime); // Let base update state machine
+	Base::Update(deltaTime); // Let base update state machine, animation, etc.
+	mStateMachine.VisitStatesOuterToInner(gCallPostAnimUpdateVisitor, &deltaTime);
 
 	if (deltaTime > 0)
 	{
 		// If boomerang has returned, remove it from the scene
-		if ( mpSharedStateData->mBoomerang.IsNodeInScene() && mpSharedStateData->mBoomerang.HasReturned() )
+		if ( mpSharedStateData->mpBoomerang && mpSharedStateData->mpBoomerang->HasReturned() )
 		{
-			SceneGraph::Instance().RemoveNodePostUpdate(mpSharedStateData->mBoomerang);
+			SceneGraph::Instance().RemoveNodePostUpdate(mpSharedStateData->mpBoomerang);
+			mpSharedStateData->mpBoomerang = NULL;
 		}
 
 		// Knockback (override any player input velocity)

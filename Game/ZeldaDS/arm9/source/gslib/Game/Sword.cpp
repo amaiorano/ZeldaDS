@@ -3,9 +3,14 @@
 #include "GameItems.h"
 #include "Enemy.h"
 
+Sword::Sword()
+	: Base(true)
+	, mDirection(SpriteDir::None)
+{
+}
+
 void Sword::Init(SpriteDir::Type dir)
 {
-	Base::Init(true);
 	mDirection = dir;
 }
 

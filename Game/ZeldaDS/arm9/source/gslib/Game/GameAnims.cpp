@@ -130,7 +130,7 @@ void LoadAllGameAnimAssets()
 	}
 
 	CreateAndAddAnimAssets(Hero, Move, pFrameGfx, FrameSize, 0 * NumTilesPerRow, 3, 0, SEC_TO_FRAMES(0.15f), AnimCycle::PingPong);
-	CreateAndAddAnimAssets(Hero, Attack, pFrameGfx, FrameSize, 1 * NumTilesPerRow, 2, 0, SEC_TO_FRAMES(0.15f), AnimCycle::Once);
+	CreateAndAddAnimAssets(Hero, Attack, pFrameGfx, FrameSize, 1 * NumTilesPerRow, 2, 0, SEC_TO_FRAMES(0.10f), AnimCycle::Once);
 	CreateAndAddAnimAssets(Hero, UseItem, pFrameGfx, FrameSize, 1 * NumTilesPerRow + 1, 1, 1, SEC_TO_FRAMES(0.20f), AnimCycle::Once);
 
 	// Player Death anim (must face down)

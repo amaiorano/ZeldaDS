@@ -189,7 +189,7 @@ void Enemy::InitStateMachine()
 
 void Enemy::OnDead()
 {
-	SceneGraph::Instance().RemoveNodePostUpdate(*this);
+	SceneGraph::Instance().RemoveNodePostUpdate(this);
 }
 
 void Enemy::OnAddToScene()

@@ -22,7 +22,9 @@ struct SharedStateData
 };
 
 
-// Attributes
+///////////////////////////////////////////////////////////////////////////////
+// State Attributes
+///////////////////////////////////////////////////////////////////////////////
 
 template <typename  T>
 struct ConcreteAttributeResetter;
@@ -74,8 +76,15 @@ struct ConcreteAttributeResetter : public AttributeResetter
 	T m_origValue;
 };
 
+namespace HsmInternal
+{
+	inline void InitState(State* pState, StateMachine* pOwnerStateMachine);
+}
 
-// Base class for states
+///////////////////////////////////////////////////////////////////////////////
+// State
+///////////////////////////////////////////////////////////////////////////////
+
 struct State
 {
 	State() 
@@ -131,16 +140,16 @@ struct State
 		{
 			HSM_ASSERT(&attrib != static_cast<ConcreteAttributeResetter<T>*>(*iter)->m_pAttrib);
 		}
-		#endif		
+		#endif
 
 		//@TODO: Get allocator from state machine and replace this 'new'
 		m_attributeResetters.push_back( new ConcreteAttributeResetter<T>(attrib, newValue) );
 	}
 
-//private:
+private:
+	friend inline void HsmInternal::InitState(State* pState, StateMachine* pOwnerStateMachine);
 	StateMachine* m_pOwnerStateMachine;
 
-private:
 	void ResetAttributes()
 	{
 		// Destroy attributes (will reset to old value)
@@ -157,6 +166,10 @@ private:
 	AttributeResetterList m_attributeResetters;
 };
 
+
+///////////////////////////////////////////////////////////////////////////////
+// ClientStateBase
+///////////////////////////////////////////////////////////////////////////////
 
 struct NoOwner { };
 
@@ -177,12 +190,24 @@ struct ClientStateBase : public State
 	}
 };
 
+///////////////////////////////////////////////////////////////////////////////
+// State Creation/Destruction
+///////////////////////////////////////////////////////////////////////////////
+
+namespace HsmInternal
+{
+	inline void InitState(State* pState, StateMachine* pOwnerStateMachine)
+	{
+		pState->m_pOwnerStateMachine = pOwnerStateMachine;
+	}
+}
+
 template <typename ChildState>
 State* CreateState(StateMachine* pOwnerStateMachine)
 {
 	ChildState* pState = new ChildState();
 	HSM_ASSERT(pOwnerStateMachine);
-	pState->m_pOwnerStateMachine = pOwnerStateMachine;
+	HsmInternal::InitState(pState, pOwnerStateMachine);
 	pState->OnEnter();
 	return pState;
 }

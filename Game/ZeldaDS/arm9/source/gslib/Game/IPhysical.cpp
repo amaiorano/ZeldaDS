@@ -1,6 +1,14 @@
 #include "IPhysical.h"
 #include "ISceneNode.h" // TransformOwner
 
+IPhysical::IPhysical()
+	: mWidth(0)
+	, mHeight(0)
+	, mVelocity(InitZero)
+	, mImpulse(InitZero)
+{
+}
+
 void IPhysical::Activate(uint16 width, uint16 height)
 {
 	mWidth = width;

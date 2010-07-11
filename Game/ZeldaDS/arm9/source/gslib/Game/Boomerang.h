@@ -12,6 +12,8 @@ class Boomerang	: public Weapon
 public:
 	typedef Weapon Base;
 
+	Boomerang(bool isPlayerWeapon);
+
 	//@TODO: Should NOT store a bald pointer here... what if owner is deleted?
 	void Init(Character* pOwner, const Vector2I& launchDir);
 
@@ -31,13 +33,13 @@ public:
 private:
 	Character* mpOwner; // Not sure I like this...
 
-	bool mOwnerIsPlayer;
-
 	Vector2F mPositionF;
 	Vector2F mSpeed;
 
 	bool mIsLeaving;
 	bool mHasReturned;
 };
+
+
 
 #endif // BOOMERANG_H

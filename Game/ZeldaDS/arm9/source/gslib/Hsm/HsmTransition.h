@@ -13,10 +13,10 @@ struct Transition
 	virtual State* CreateState(StateMachine* pOwnerStateMachine) const = 0;
 };
 
-template <typename ChildState, int transType>
+template <typename ChildState, Transition::Type transType>
 struct ConcreteTransition : public Transition
 {	
-	virtual Transition::Type GetTransitionType() const	{ return static_cast<Transition::Type>(transType); }
+	virtual Transition::Type GetTransitionType() const	{ return transType; }
 	virtual StateTypeId GetStateType() const			{ return GetStateTypeId(ChildState); }
 
 	virtual State* CreateState(StateMachine* pOwnerStateMachine) const
@@ -53,6 +53,5 @@ inline Transition& NoTransition()
 	static ConcreteTransition<NullState, Transition::No> transition;
 	return transition;
 }
-
 
 #endif // HSM_TRANSITION_H

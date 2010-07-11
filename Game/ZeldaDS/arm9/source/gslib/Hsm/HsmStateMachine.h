@@ -3,10 +3,7 @@
 
 /*
 TODO:
-- Dynamic transition objects (for deferred state)
 - State construction args
-- Deferred state transitions
-- Move internal stuff to an Internal namespace
 - Memory managment (client-provided Alloc/Free for memory into which we in-place new our objects)
 - State* State::GetImmediateInnerState() (faster than using GetState() within states for certain idioms)
 
@@ -14,18 +11,24 @@ DONE:
 - State* FindState(), IsInState(StateTypeId)
 - InnerEntryTransition()
 - Attrbitues
+- Deferred state transitions
+	- Can store Transition* to be returned later by EvaluateTransitions
+	- This works easily because all Transitions are statically allocated, so there's no memory management
+	  to worry about. If we want to alloc/free transitions, this will become more complex (shared_ptr)
+- Move internal stuff to an Internal namespace
 
 NOTES:
 - Using OnEnter/OnExit instead of constructor/destructor for States so that clients don't have to
   declare a non-trivial constructor, which would be necessary to pass the pStateMachine up the chain.
   Downside is that clients may have to chain OnEnter()/OnExit() manually to their base (not outer) state.
-
 */
-// HSM Data:
-// - Shared data across all states (StateSharedData)
-//		- Normal data
-//		- Attributes (pushed in OnEntry, popped when state destructs)
-// - State-specific data (data members of state)
+
+// Types of HSM Data:
+// - Shared data across all states (SharedStateData)
+//		- Data that only state machine cares about
+//		- Attributes (stack-based vars pushed in OnEntry, popped when state destructs)
+// - Owner data (data stored on the Owner of the state machine)
+// - State-specific data (data members of State derived class)
 // - State constructor args (TODO)
 
 #include "HsmTransition.h"
@@ -119,14 +122,14 @@ private:
 	void* m_pOwner; // Provided by client, accessed within states via Owner()
 	SharedStateData* m_pSharedStateData; // Owned/deleted by state machine
 
-	typedef std::vector<State*> StateVector;
-	StateVector m_stateStack;
+	typedef std::vector<State*> StateStack;
+	StateStack m_stateStack;
 
 	int m_debugLevel;
 };
 
 
-// Inline State member fucntion definitions - defined here because they depend on certain types
+// Inline State member function implementations - implemented here because they depend on certain types
 // to be defined (StateMachine, Transitions, etc.)
 inline Transition& State::EvaluateTransitions(HsmTimeType deltaTime)
 {
@@ -144,7 +147,5 @@ inline bool State::IsInState()
 {
 	return GetStateMachine().IsInState<ChildState>();
 }
-
-
 
 #endif // HSM_STATEMACHINE_H
