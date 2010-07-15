@@ -10,9 +10,9 @@ struct ScrollingStates
 	{
 	};
 
-	typedef ClientStateBase<ScrollingSharedStateData, ScrollingMgr> ScrollingStateBase;
+	typedef StateT<ScrollingSharedStateData, ScrollingMgr> ScrollingState;
 	
-	struct Root : ScrollingStateBase
+	struct Root : ScrollingState
 	{
 		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
 		{
@@ -20,7 +20,7 @@ struct ScrollingStates
 		}
 	};
 
-	struct NotScrolling : ScrollingStateBase
+	struct NotScrolling : ScrollingState
 	{
 		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
 		{
@@ -38,7 +38,7 @@ struct ScrollingStates
 		}
 	};
 
-	struct Scrolling : ScrollingStateBase
+	struct Scrolling : ScrollingState
 	{
 		uint16 mScrollX;
 		uint16 mScrollY;
@@ -83,7 +83,7 @@ struct ScrollingStates
 		}
 	};
 
-	struct Scrolling_PreScroll : ScrollingStateBase
+	struct Scrolling_PreScroll : ScrollingState
 	{
 		virtual void OnEnter()
 		{
@@ -137,7 +137,7 @@ struct ScrollingStates
 		}
 	};
 
-	struct Scrolling_Scroll : ScrollingStateBase
+	struct Scrolling_Scroll : ScrollingState
 	{
 		bool mIsDoneScrolling;
 
@@ -198,7 +198,7 @@ struct ScrollingStates
 		}
 	};
 
-	struct Scrolling_PostScroll : ScrollingStateBase
+	struct Scrolling_PostScroll : ScrollingState
 	{
 		virtual void OnEnter()
 		{
@@ -241,7 +241,7 @@ struct ScrollingStates
 		}
 	};
 
-	struct Scrolling_Done : ScrollingStateBase
+	struct Scrolling_Done : ScrollingState
 	{
 		virtual void OnEnter()
 		{

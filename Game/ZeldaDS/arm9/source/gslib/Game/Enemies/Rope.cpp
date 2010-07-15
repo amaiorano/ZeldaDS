@@ -9,7 +9,7 @@ struct RopeStates
 	// Rope moves around randomly, but as soon as it sees the player, it strikes in the players
 	// direction until it collides, at which point it resumes random movement
 
-	struct Main : EnemyStateBase
+	struct Main : EnemyState
 	{
 		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
 		{
@@ -82,7 +82,7 @@ struct RopeStates
 		}
 	};
 
-	struct Attack : EnemyStateBase
+	struct Attack : EnemyState
 	{
 		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
 		{
@@ -101,7 +101,7 @@ struct RopeStates
 		}
 	};
 
-	struct Alert : EnemyStateBase
+	struct Alert : EnemyState
 	{
 		GameTimeType mElapsedTime;
 
@@ -122,7 +122,7 @@ struct RopeStates
 		}
 	};
 
-	struct Strike : EnemyStateBase
+	struct Strike : EnemyState
 	{
 		virtual void OnEnter()
 		{

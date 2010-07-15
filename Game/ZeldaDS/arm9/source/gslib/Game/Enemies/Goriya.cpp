@@ -15,9 +15,9 @@ struct GoriyaStates
 		Boomerang* mpBoomerang;
 	};
 
-	typedef CharacterStateBase<GoriyaSharedStateData, Goriya> GoriyaStateBase;
+	typedef CharacterState<GoriyaSharedStateData, Goriya> GoriyaState;
 
-	struct Main : GoriyaStateBase
+	struct Main : GoriyaState
 	{
 		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
 		{
@@ -25,9 +25,9 @@ struct GoriyaStates
 		}
 	};
 
-	struct Move : EnemySharedStates::RandomMovement<GoriyaStateBase>
+	struct Move : EnemySharedStates::RandomMovement<GoriyaState>
 	{
-		typedef EnemySharedStates::RandomMovement<GoriyaStateBase> Base;
+		typedef EnemySharedStates::RandomMovement<GoriyaState> Base;
 
 		HsmTimeType mElapsedTime;
 		HsmTimeType mTimeToAttack;
@@ -56,7 +56,7 @@ struct GoriyaStates
 		}
 	};
 
-	struct Attack : GoriyaStateBase
+	struct Attack : GoriyaState
 	{
 		virtual void OnEnter()
 		{

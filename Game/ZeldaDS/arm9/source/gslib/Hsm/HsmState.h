@@ -168,16 +168,19 @@ private:
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// ClientStateBase
+// StateT
 ///////////////////////////////////////////////////////////////////////////////
 
 struct NoOwner { };
 
-// Optional class that clients can use instead of deriving directly from State to allow for
-// more convenient semantics within their state code.
-template <typename SharedStateDataChild, typename OwnerType = NoOwner>
-struct ClientStateBase : public State
+// Class that clients can use instead of deriving directly from State to allow for
+// more convenient semantics within their state code, and that also allows client
+// to insert its own class between StateT and State.
+template <typename SharedStateDataChild, typename OwnerType = NoOwner, typename BaseStateType = State>
+struct StateT : public BaseStateType
 {
+	using BaseStateType::GetStateMachine;
+
 	OwnerType& Owner()
 	{
 		HSM_ASSERT(GetStateMachine().GetOwner());

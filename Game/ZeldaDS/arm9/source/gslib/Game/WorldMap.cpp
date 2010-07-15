@@ -7,7 +7,6 @@
 #include "gslib/Anim/AnimControl.h"
 #include "gslib/Stream/BinaryFileStream.h"
 #include "ScrollingMgr.h"
-#include <cstdlib>
 #include <limits>
 #include <string.h>
 

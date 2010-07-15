@@ -34,12 +34,9 @@ struct PlayerSharedStateData : CharacterSharedStateData
 
 struct PlayerStates
 {
-	struct PlayerStateBase : CharacterStateBase<PlayerSharedStateData, Player>
-	{
-		virtual void PostAnimUpdate(HsmTimeType deltaTime) { } 
-	};
+	typedef CharacterState<PlayerSharedStateData, Player> PlayerState;
 
-	struct Root : PlayerStateBase
+	struct Root : PlayerState
 	{
 		virtual void OnEnter()
 		{
@@ -57,7 +54,7 @@ struct PlayerStates
 		}
 	};
 
-	struct Alive : PlayerStateBase
+	struct Alive : PlayerState
 	{
 		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
 		{
@@ -65,7 +62,7 @@ struct PlayerStates
 		}
 	};
 
-	struct Alive_Spawn : PlayerStateBase
+	struct Alive_Spawn : PlayerState
 	{
 		virtual void OnEnter()
 		{
@@ -83,7 +80,7 @@ struct PlayerStates
 		}
 	};
 
-	struct Alive_Normal : PlayerStateBase
+	struct Alive_Normal : PlayerState
 	{
 		HsmTimeType mElapsedDamageTime;
 
@@ -123,7 +120,7 @@ struct PlayerStates
 		}
 	};
 
-	struct Alive_Scrolling : PlayerStateBase
+	struct Alive_Scrolling : PlayerState
 	{
 		ScrollingMgr& mScrollingMgr;
 
@@ -159,7 +156,7 @@ struct PlayerStates
 		}
 	};
 
-	struct Alive_Locomotion : PlayerStateBase
+	struct Alive_Locomotion : PlayerState
 	{
 		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
 		{
@@ -199,7 +196,7 @@ struct PlayerStates
 
 	};
 
-	struct Alive_Locomotion_Idle : PlayerStateBase
+	struct Alive_Locomotion_Idle : PlayerState
 	{
 		virtual void OnEnter()
 		{
@@ -220,7 +217,7 @@ struct PlayerStates
 
 	};
 
-	struct Alive_Locomotion_Move : PlayerStateBase
+	struct Alive_Locomotion_Move : PlayerState
 	{
 		SpriteDir::Type mLastDir;
 
@@ -264,7 +261,7 @@ struct PlayerStates
 		}
 	};
 
-	struct Alive_Attack : PlayerStateBase
+	struct Alive_Attack : PlayerState
 	{
 		virtual void OnEnter()
 		{
@@ -327,7 +324,7 @@ struct PlayerStates
 
 	// For now, just the boomerang
 	//@TODO: Don't enter this state if player can't use current item
-	struct Alive_UseItem : PlayerStateBase
+	struct Alive_UseItem : PlayerState
 	{
 		bool mItemUsed;
 
@@ -366,7 +363,7 @@ struct PlayerStates
 		}
 	};
 
-	struct Dead : PlayerStateBase
+	struct Dead : PlayerState
 	{
 		virtual void OnEnter()
 		{
@@ -408,20 +405,9 @@ void Player::GetGameObjectInfo(GameObjectInfo& gameObjectInfo)
 	gameObjectInfo.mGameActor = GameActor::Hero;
 }
 
-struct CallPostAnimUpdateVisitor : public StateVisitor
-{
-	virtual bool OnVisit(State* pState, void* pUserData = NULL)
-	{
-		HsmTimeType& deltaTime = *static_cast<HsmTimeType*>(pUserData);
-		static_cast<PlayerStates::PlayerStateBase*>(pState)->PostAnimUpdate( deltaTime );
-		return true;
-	}
-} gCallPostAnimUpdateVisitor;
-
 void Player::Update(GameTimeType deltaTime)
 {
-	Base::Update(deltaTime); // Let base update state machine, animation, etc.
-	mStateMachine.VisitStatesOuterToInner(gCallPostAnimUpdateVisitor, &deltaTime);
+	Base::Update(deltaTime);
 
 	if (deltaTime > 0)
 	{

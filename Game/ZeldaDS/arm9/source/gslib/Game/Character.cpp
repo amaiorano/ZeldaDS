@@ -21,6 +21,16 @@ void Character::OnAddToScene()
 	SetSpriteDir(SpriteDir::Down); // Set initial direction
 }
 
+struct CallPostAnimUpdateVisitor : public StateVisitor
+{
+	virtual bool OnVisit(State* pState, void* pUserData = NULL)
+	{
+		HsmTimeType& deltaTime = *static_cast<HsmTimeType*>(pUserData);
+		static_cast<CharacterStateExt*>(pState)->PostAnimUpdate( deltaTime );
+		return true;
+	}
+} gCallPostAnimUpdateVisitor;
+
 void Character::Update(GameTimeType deltaTime)
 {
 	if (deltaTime > 0) // Total cop out, we don't handle deltaTime == 0 very well
@@ -32,7 +42,8 @@ void Character::Update(GameTimeType deltaTime)
 		mHealth.Update(deltaTime);
 	}
 
-	Base::Update(deltaTime);
+	Base::Update(deltaTime); // Updates anim and render state
+	mStateMachine.VisitStatesOuterToInner(gCallPostAnimUpdateVisitor, &deltaTime);
 }
 
 void Character::OnDamage(const DamageInfo& damageInfo)

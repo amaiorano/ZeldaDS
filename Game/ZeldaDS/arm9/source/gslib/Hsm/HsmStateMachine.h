@@ -43,7 +43,7 @@ public:
 	// Initialization functions
 
 	// Optional: sets an owner object that can be retrieved via Owner() from within states
-	// that derive from ClientStateBase.
+	// that derive from StateT.
 	void SetOwner(void* pOwner)
 	{
 		HSM_ASSERT( !mpOwner && pOwner );

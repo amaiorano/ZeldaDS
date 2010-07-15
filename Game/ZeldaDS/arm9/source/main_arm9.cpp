@@ -40,9 +40,9 @@ struct GameStates
 	{
 	};
 
-	typedef ClientStateBase<GameSharedStateData> GameStateBase;
+	typedef StateT<GameSharedStateData> GameState;
 
-	struct Root : GameStateBase
+	struct Root : GameState
 	{
 		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
 		{
@@ -50,7 +50,7 @@ struct GameStates
 		}
 	};
 
-	struct InitGame : GameStateBase
+	struct InitGame : GameState
 	{
 		virtual void OnEnter()
 		{
@@ -78,7 +78,7 @@ struct GameStates
 		}
 	};
 
-	struct EnableRendering : GameStateBase
+	struct EnableRendering : GameState
 	{
 		uint16 mNumElapsedFrames;
 
@@ -103,7 +103,7 @@ struct GameStates
 		}
 	};
 
-	struct LoadMap : GameStateBase
+	struct LoadMap : GameState
 	{
 		virtual void OnEnter()
 		{
@@ -132,7 +132,7 @@ struct GameStates
 		}
 	};
 
-	struct PlayingMap : GameStateBase, IScrollingEventListener
+	struct PlayingMap : GameState, IScrollingEventListener
 	{
 		bool mSpawnEnemiesNextFrame;
 

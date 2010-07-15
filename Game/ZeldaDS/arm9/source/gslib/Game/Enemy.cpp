@@ -8,11 +8,10 @@
 #include "Camera.h"
 #include "MovementModel.h"
 #include "EnemyState.h"
-#include <cstdlib>
 
 struct EnemyStates
 {
-	struct Root : EnemyStateBase
+	struct Root : EnemyState
 	{
 		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
 		{
@@ -25,7 +24,7 @@ struct EnemyStates
 		}
 	};
 
-	struct Alive : EnemyStateBase
+	struct Alive : EnemyState
 	{
 		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
 		{
@@ -33,7 +32,7 @@ struct EnemyStates
 		}
 	};
 
-	struct Alive_Spawn : EnemyStateBase
+	struct Alive_Spawn : EnemyState
 	{
 		virtual void OnEnter()
 		{
@@ -52,7 +51,7 @@ struct EnemyStates
 	};
 
 	// AI's main state
-	struct Alive_Main : EnemyStateBase
+	struct Alive_Main : EnemyState
 	{
 		virtual void OnEnter()
 		{
@@ -66,7 +65,7 @@ struct EnemyStates
 		}
 	};
 
-	struct Alive_Main_Locomotion : EnemyStateBase
+	struct Alive_Main_Locomotion : EnemyState
 	{
 		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
 		{
@@ -84,7 +83,7 @@ struct EnemyStates
 		}
 	};
 
-	struct Alive_Main_Stunned : EnemyStateBase
+	struct Alive_Main_Stunned : EnemyState
 	{
 		HsmTimeType mElapsedTime;
 
@@ -134,7 +133,7 @@ struct EnemyStates
 		}
 	};
 
-	struct Alive_Main_Hurt : EnemyStateBase
+	struct Alive_Main_Hurt : EnemyState
 	{
 		virtual void OnEnter()
 		{
@@ -153,7 +152,7 @@ struct EnemyStates
 		}
 	};	
 
-	struct Dead : EnemyStateBase
+	struct Dead : EnemyState
 	{
 		virtual void OnEnter()
 		{

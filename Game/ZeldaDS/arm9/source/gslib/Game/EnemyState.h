@@ -19,12 +19,12 @@ struct EnemySharedStateData : CharacterSharedStateData
 };
 
 // Base class for enemy states
-typedef CharacterStateBase<EnemySharedStateData, Enemy> EnemyStateBase;
+typedef CharacterState<EnemySharedStateData, Enemy> EnemyState;
 
 // Shared states for all enemies
 struct EnemySharedStates
 {
-	template <typename Base = EnemyStateBase>
+	template <typename Base = EnemyState>
 	struct RandomMovement : Base
 	{
 		// Bring in names that compiler cannot deduce
