@@ -3,6 +3,9 @@
 == Zelda DS ==
 
 * Install the latest version of devkitPro using the windows installer (http://www.devkitpro.org/)
+** Make sure the environment variables DEVKITARM and DEVKITPRO have been added, and set properly. For example:
+DEVKITARM=/c/devkitPro/devkitARM
+DEVKITPRO=/c/devkitPro
 
 * Add an environment variable named NDSGAMEROOT set to the root folder containing ZeldaDS
 ** For example: NDSGAMEROOT=C:\Code\NDS\ZeldaDS

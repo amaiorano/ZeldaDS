@@ -35,7 +35,7 @@ endif
 # Since make is called for different folders, we check if the current folder has a "source" folder,
 # and if so, we grab it and all its subfolders
 ifneq ("$(wildcard source)", "")
-	RECURSIVE_SOURCES_DIRS	:= $(shell find source -type d)
+	RECURSIVE_SOURCES_DIRS	:= $(shell $(DEVKITPRO)/msys/bin/find source -type d)
 endif	
 
 
