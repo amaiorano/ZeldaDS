@@ -115,13 +115,12 @@ struct GameStates
 			AudioEngine::LoadBank("Audio/soundbank.bin");
 			AudioEngine::PlayMusic(MOD_OVERWORLD3);
 
-			Vector2I startScreen(0, 0);
-			ScrollingMgr::Instance().Init(startScreen);
+			const WorldMap::PlayerSpawnData& playerSpawnData = worldMap.GetPlayerSpawnData();
 
-			// Once map is loaded, position the player (normally the map should tell us where)
+			ScrollingMgr::Instance().Init(playerSpawnData.mScreen);
+
 			Player* pPlayer = new Player();
-			Vector2I initPos(MathEx::Rand(HwScreenSizeX - 16), MathEx::Rand(HwScreenSizeY - 16));
-			initPos = Camera::Instance().ScreenToWorld(initPos);
+			Vector2I initPos(playerSpawnData.mPos);
 			pPlayer->Init(initPos);
 			SceneGraph::Instance().AddNode(pPlayer);
 		}
@@ -209,8 +208,6 @@ struct GameStates
 				Enemy* pEnemy = *iter;
 				SceneGraph::Instance().RemoveNodePostUpdate(pEnemy);
 			}
-
-			ASSERT(SceneGraph::Instance().GetSceneNodeList().size()== 1); // Only player should be left
 		}
 
 		void SpawnEnemiesForCurrentScreen()

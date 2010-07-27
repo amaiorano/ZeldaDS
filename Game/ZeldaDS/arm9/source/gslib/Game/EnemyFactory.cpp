@@ -1,5 +1,6 @@
 #include "EnemyFactory.h"
 
+#include "gslib/Game/Enemies/GenericEnemy.h"
 #include "gslib/Game/Enemies/Goriya.h"
 #include "gslib/Game/Enemies/Rope.h"
 
@@ -11,10 +12,12 @@ namespace EnemyFactory
 		{
 		case GameActor::Goriya:		return new Goriya();
 		case GameActor::Rope:		return new Rope();
-		default: break;
+
+		default:
+			return new GenericEnemy(enemyType);
 		}
 
-		FAIL();
+		FAIL_MSG("Shouldn't reach here");
 		return NULL;
 	}
 

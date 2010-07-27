@@ -13,8 +13,24 @@ IRenderable::~IRenderable()
 
 void IRenderable::Activate(uint16 width, uint16 height)
 {
+	ASSERT(mpSprite == 0);
 	mpSprite = GraphicsEngine::AllocSprite();
-	mpSprite->Init(width, height, SpriteSize_16x16, SpriteColorFormat_256Color);
+	
+	SpriteSize spriteSize = SpriteSize_16x16;
+	if (width == 16 && height == 16)
+	{
+		spriteSize = SpriteSize_16x16;
+	}
+	else if (width == 32 && height == 32)
+	{
+		spriteSize = SpriteSize_32x32;
+	}
+	else
+	{
+		FAIL_MSG("Unhandled sprite size");
+	}
+	
+	mpSprite->Init(width, height, spriteSize, SpriteColorFormat_256Color);
 }
 
 void IRenderable::Deactivate()

@@ -32,6 +32,8 @@ namespace Zelous
         {
             Instance = this;
 
+            //@TODO: Modify MainForm to only contain panels, and create all controls dynamically
+            // and dock within panels
             InitializeComponent();
 
             Size tileSize = new Size(16, 16);
@@ -39,11 +41,12 @@ namespace Zelous
             TileSet bgTileSet = new TileSet("overworld_bg.bmp", tileSize.Width, tileSize.Height);
             TileSet fgTileSet = new TileSet("overworld_fg.bmp", tileSize.Width, tileSize.Height);
             TileSet colTileSet = new TileSet("collision_tileset.bmp", tileSize.Width, tileSize.Height);
+            TileSet charTileSet = new TileSet("editor_characters.bmp", tileSize.Width, tileSize.Height);
 
             // Init world map view
             {
                 mWorldMap = new WorldMap();
-                mWorldMap.Init(20, 10, new TileSet[] { bgTileSet, fgTileSet, colTileSet });
+                mWorldMap.Init(20, 10, new TileSet[] { bgTileSet, fgTileSet, colTileSet, charTileSet });
                 mWorldMapView.Init("World Map", mWorldMap.TileLayers);
                 mWorldMapView.SetLayerRenderable((int)LayerType.Collision, false);
 
@@ -56,12 +59,8 @@ namespace Zelous
             // Init tile set views
             InitTileSetView(mTileSetView1, "Background Tiles", bgTileSet);
             InitTileSetView(mTileSetView2, "Foreground Tiles", fgTileSet);
-
-            // Init collision view
-            {
-                // For now just show a TileMapView, but eventually we'll show something more clear
-                InitTileSetView(mCollisionView, "Collision Tiles", colTileSet);
-            }
+            InitTileSetView(mCollisionView, "Collision Tiles", colTileSet);
+            InitTileSetView(mCharacterView, "Character Spawners", charTileSet);
         }
 
         private void InitTileSetView(TileMapView tileMapView, string title, TileSet tileSet)

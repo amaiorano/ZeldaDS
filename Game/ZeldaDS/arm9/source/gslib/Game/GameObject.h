@@ -34,12 +34,14 @@ protected:
 			: mSpriteSize(16, 16)
 			, mPhysicalSize(16, 16)
 			, mGameActor(GameActor::None)
+			, mIsDirectional(true)
 		{
 		}
 
 		Vector2I mSpriteSize;
 		Vector2I mPhysicalSize;
 		GameActor::Type mGameActor;
+		bool mIsDirectional;
 	};
 	virtual void GetGameObjectInfo(GameObjectInfo& gameObjectInfo)
 	{

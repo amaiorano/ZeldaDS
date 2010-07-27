@@ -4,6 +4,7 @@
 IAnimatedRenderable::IAnimatedRenderable()
 	: mGameActor(GameActor::None)
 	, mSpriteDir(SpriteDir::None)
+	, mIsDirectional(true)
 {
 }
 
@@ -11,10 +12,12 @@ IAnimatedRenderable::~IAnimatedRenderable()
 {
 }
 
-void IAnimatedRenderable::Activate(uint16 width, uint16 height, GameActor::Type gameActor)
+void IAnimatedRenderable::Activate(uint16 width, uint16 height, GameActor::Type gameActor, bool isDirectional)
 {
 	IRenderable::Activate(width, height);
 	mGameActor = gameActor;
+	mIsDirectional = isDirectional;
+	mSpriteDir = SpriteDir::Down;
 }
 
 //void UpdateAnimationState(GameTimeType deltaTime)
@@ -27,12 +30,19 @@ void IAnimatedRenderable::AdvanceClockAndSetAnimPose(GameTimeType deltaTime)
 void IAnimatedRenderable::PlayAnim(BaseAnim::Type anim)
 {
 	ASSERT(mGameActor != GameActor::None);
-	mAnimControl.PlayAnim( MakeAnimAssetKey(mGameActor, anim, mSpriteDir) );
+	mAnimControl.PlayAnim( MakeAnimAssetKey(mGameActor, anim, mIsDirectional? mSpriteDir : SpriteDir::None) );
 }
 
 void IAnimatedRenderable::PlayGlobalAnim(BaseAnim::Type anim)
 {
-	mAnimControl.PlayAnim( MakeAnimAssetKey(GameActor::None, anim, SpriteDir::None) );
+	// Check for actor-specific override
+	AnimAssetKey key = MakeAnimAssetKey(mGameActor, anim, SpriteDir::None);
+	if ( !AnimAssetManager::FindAnimAsset(key) )
+	{
+		key = MakeAnimAssetKey(GameActor::None, anim, SpriteDir::None);
+	}
+
+	mAnimControl.PlayAnim(key);
 }
 
 bool IAnimatedRenderable::IsAnimFinished()

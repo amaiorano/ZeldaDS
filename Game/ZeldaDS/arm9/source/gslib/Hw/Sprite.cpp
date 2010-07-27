@@ -69,7 +69,8 @@ void Sprite::UpdateOamShadow()
 void Sprite::UpdateAnimPose()
 {
 	DBG_STATEMENT(const uint16 frameSize = (mSpriteColorFormat == SpriteColorFormat_16Color? mWidth*mHeight/2 : mWidth*mHeight));
-	ASSERT_MSG(mTargetAnimPose.frameSize == frameSize, "Likely reasons: haven't called SetAnimPose() yet, or are passing in an invalid pose");
+	ASSERT_MSG(mTargetAnimPose.frameSize != 0, "Likely reason: haven't called SetAnimPose() yet");
+	ASSERT_MSG(mTargetAnimPose.frameSize == frameSize, "Likely reason: anim pose dimensions don't match sprite dimensions");
 
 	dmaCopy(mTargetAnimPose.pFrameGfx, mpSpriteGfxMem, mTargetAnimPose.frameSize);
 }

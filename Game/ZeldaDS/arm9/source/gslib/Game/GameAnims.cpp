@@ -2,6 +2,7 @@
 #include "gslib/Core/Core.h"
 
 #include "data/characters.h"
+#include "data/characters_32x32.h"
 #include "data/items.h"
 
 namespace
@@ -66,9 +67,8 @@ namespace
 		AnimAsset* mpAnimAsset;
 	};
 
-
-	// Helper to create and add regular cyclic animations for all directions (the majority of cases)
-	void CreateAndAddAnimAssets(
+	// Helper to create and add four-directional animations
+	void CreateAndAddAnimAssets4(
 		GameActor::Type gameActor,
 		BaseAnim::Type baseAnim, 
 		uint8* pFrameGfx,
@@ -88,17 +88,29 @@ namespace
 			builder.CreateAndAdd(MakeAnimAssetKey(gameActor, baseAnim, (SpriteDir::Type)d))
 				.InitPoses(pFrameGfx, frameSize)
 				.InitTimeline(firstFrameIndex, numFrames, unitsPerFrame, animCycle);
-
-			//AnimAsset* pAnimAsset = new AnimAsset();
-			//pAnimAsset->mAnimPoses.Init(pFrameGfx, frameSize);
-			//pAnimAsset->mAnimTimeline.Populate(firstFrameIndex, numFrames, unitsPerFrame, animCycle);
-
-			//AnimAssetManager::AddAnimAsset(MakeAnimAssetKey(gameActor, baseAnim, (SpriteDir::Type)d), pAnimAsset);
 		}
 	}
-}
 
+	// Helper to create and add non-directional animations
+	void CreateAndAddAnimAssets1(
+		GameActor::Type gameActor,
+		BaseAnim::Type baseAnim, 
+		uint8* pFrameGfx,
+		uint16 frameSize,
+		int firstFrameIndex,
+		int numFrames,
+		AnimTimeType unitsPerFrame,
+		AnimCycle::Type animCycle)
+	{
+		AnimAssetBuilder builder;
 
+		builder.CreateAndAdd(MakeAnimAssetKey(gameActor, baseAnim, SpriteDir::None))
+			.InitPoses(pFrameGfx, frameSize)
+			.InitTimeline(firstFrameIndex, numFrames, unitsPerFrame, animCycle);
+
+	}
+
+} // anonymous namespace
 
 void LoadAllGameAnimAssets()
 {
@@ -111,66 +123,95 @@ void LoadAllGameAnimAssets()
 	
 	AnimAssetBuilder builder;
 
-	const int NumTilesPerRow = 14;
-	
-	uint8* pFrameGfx = (uint8*)charactersTiles;
-	int FrameSize = 16 * 16; // 8bpp sprites
-
-	// General spawn anim
-	builder.CreateAndAdd(MakeAnimAssetKey(GameActor::None, Spawn, SpriteDir::None))
-		.InitPoses(pFrameGfx, FrameSize)
-		.BuildTimeline()(178, SEC_TO_FRAMES(0.1f))(179, SEC_TO_FRAMES(0.1f))(180, SEC_TO_FRAMES(0.1f))(181, SEC_TO_FRAMES(0.1f));
-
-	// Manually add the Idle anims (which include a blink frame)
+	// 16x16 characters
 	{
-		builder.CreateAndAdd(MakeAnimAssetKey(Hero, Idle, Right)).InitPoses	(pFrameGfx, FrameSize).BuildTimeline().Looping(true)(1, SEC_TO_FRAMES(2.0f))(22, SEC_TO_FRAMES(0.2f));
-		builder.CreateAndAdd(MakeAnimAssetKey(Hero, Idle, Left )).InitPoses(pFrameGfx, FrameSize).BuildTimeline().Looping(true)(4, SEC_TO_FRAMES(2.0f))(23, SEC_TO_FRAMES(0.2f));
-		builder.CreateAndAdd(MakeAnimAssetKey(Hero, Idle, Down )).InitPoses(pFrameGfx, FrameSize).BuildTimeline().Looping(true)(7, SEC_TO_FRAMES(2.0f))(24, SEC_TO_FRAMES(0.2f));
-		builder.CreateAndAdd(MakeAnimAssetKey(Hero, Idle, Up   )).InitPoses(pFrameGfx, FrameSize).BuildTimeline().Looping(true)(10, SEC_TO_FRAMES(0.0f));
+		uint8* pFrameGfx = (uint8*)charactersTiles;
+		const int FrameSize = 16 * 16; // 8bpp sprites
+		const int NumTilesPerRow = 14;
+
+		// General spawn anim
+		CreateAndAddAnimAssets1(GameActor::None, Spawn, pFrameGfx, FrameSize, 178, 4, SEC_TO_FRAMES(0.1f), AnimCycle::Once);
+
+		// Manually add the Idle anims (which include a blink frame)
+		{
+			builder.CreateAndAdd(MakeAnimAssetKey(Hero, Idle, Right)).InitPoses	(pFrameGfx, FrameSize).BuildTimeline().Looping(true)(1, SEC_TO_FRAMES(2.0f))(22, SEC_TO_FRAMES(0.2f));
+			builder.CreateAndAdd(MakeAnimAssetKey(Hero, Idle, Left )).InitPoses(pFrameGfx, FrameSize).BuildTimeline().Looping(true)(4, SEC_TO_FRAMES(2.0f))(23, SEC_TO_FRAMES(0.2f));
+			builder.CreateAndAdd(MakeAnimAssetKey(Hero, Idle, Down )).InitPoses(pFrameGfx, FrameSize).BuildTimeline().Looping(true)(7, SEC_TO_FRAMES(2.0f))(24, SEC_TO_FRAMES(0.2f));
+			builder.CreateAndAdd(MakeAnimAssetKey(Hero, Idle, Up   )).InitPoses(pFrameGfx, FrameSize).BuildTimeline().Looping(true)(10, SEC_TO_FRAMES(0.0f));
+		}
+
+		CreateAndAddAnimAssets4(Hero, Move, pFrameGfx, FrameSize, (0 * NumTilesPerRow + 0), 3, 0, SEC_TO_FRAMES(0.15f), AnimCycle::PingPong);
+		CreateAndAddAnimAssets4(Hero, Attack, pFrameGfx, FrameSize, (1 * NumTilesPerRow + 0), 2, 0, SEC_TO_FRAMES(0.10f), AnimCycle::Once);
+		CreateAndAddAnimAssets4(Hero, UseItem, pFrameGfx, FrameSize, (1 * NumTilesPerRow + 1), 1, 1, SEC_TO_FRAMES(0.20f), AnimCycle::Once);
+
+		// Player Death anim (must face down)
+		{
+			// 7: down
+			// 4: left
+			// 10: up
+			// 1: right
+			builder.CreateAndAdd(MakeAnimAssetKey(Hero, Die, SpriteDir::None))
+				.InitPoses(pFrameGfx, FrameSize)
+				.BuildTimeline()
+				(7, SEC_TO_FRAMES(0.5f))(4, SEC_TO_FRAMES(0.05f))(10, SEC_TO_FRAMES(0.05f))(1, SEC_TO_FRAMES(0.05f))
+				(7, SEC_TO_FRAMES(0.05f))(4, SEC_TO_FRAMES(0.05f))(10, SEC_TO_FRAMES(0.05f))(1, SEC_TO_FRAMES(0.05f))
+				(7, SEC_TO_FRAMES(0.05f))(4, SEC_TO_FRAMES(0.05f))(10, SEC_TO_FRAMES(0.05f))(1, SEC_TO_FRAMES(0.05f))
+				(7, SEC_TO_FRAMES(0.10f))(4, SEC_TO_FRAMES(0.10f))(10, SEC_TO_FRAMES(0.10f))(1, SEC_TO_FRAMES(0.10f))
+				(7, SEC_TO_FRAMES(0.15f))(4, SEC_TO_FRAMES(0.15f))(10, SEC_TO_FRAMES(0.15f))(1, SEC_TO_FRAMES(0.15f))
+				(7, SEC_TO_FRAMES(0.15f));
+		}
+
+		// Enemies - note that Idle is used for stunned (enemies don't really idle)
+		CreateAndAddAnimAssets4(Rope, Idle, pFrameGfx, FrameSize, (2 * NumTilesPerRow + 0), 1, 2, SEC_TO_FRAMES(0.0f), AnimCycle::Once);
+		CreateAndAddAnimAssets4(Rope, Move, pFrameGfx, FrameSize, (2 * NumTilesPerRow + 0), 3, 0, SEC_TO_FRAMES(0.25f), AnimCycle::PingPong);
+		CreateAndAddAnimAssets4(Rope, Attack, pFrameGfx, FrameSize, (2 * NumTilesPerRow + 2), 1, 2, SEC_TO_FRAMES(0.25f), AnimCycle::Once);
+		
+		CreateAndAddAnimAssets4(Darknut, Idle, pFrameGfx, FrameSize, (3 * NumTilesPerRow + 1), 1, 2, SEC_TO_FRAMES(0.25f), AnimCycle::Loop);
+		CreateAndAddAnimAssets4(Darknut, Move, pFrameGfx, FrameSize, (3 * NumTilesPerRow + 0), 3, 0, SEC_TO_FRAMES(0.25f), AnimCycle::PingPong);
+		
+		CreateAndAddAnimAssets4(Stalfos, Idle, pFrameGfx, FrameSize, (4 * NumTilesPerRow + 1), 1, 2, SEC_TO_FRAMES(0.25f), AnimCycle::Loop);
+		CreateAndAddAnimAssets4(Stalfos, Move, pFrameGfx, FrameSize, (4 * NumTilesPerRow + 0), 3, 0, SEC_TO_FRAMES(0.25f), AnimCycle::PingPong);
+		
+		CreateAndAddAnimAssets4(Goriya, Idle, pFrameGfx, FrameSize, (5 * NumTilesPerRow + 1), 1, 2, SEC_TO_FRAMES(0.0f), AnimCycle::Loop);
+		CreateAndAddAnimAssets4(Goriya, Move, pFrameGfx, FrameSize, (5 * NumTilesPerRow + 0), 3, 0, SEC_TO_FRAMES(0.25f), AnimCycle::PingPong);
+		CreateAndAddAnimAssets4(Goriya, Attack, pFrameGfx, FrameSize, (5 * NumTilesPerRow + 12), 1, 0, SEC_TO_FRAMES(0.5f), AnimCycle::Once);
+
+		CreateAndAddAnimAssets1(Gel, Idle, pFrameGfx, FrameSize, (6 * NumTilesPerRow + 5), 1, SEC_TO_FRAMES(1.0f), AnimCycle::Loop);
+		CreateAndAddAnimAssets1(Gel, Move, pFrameGfx, FrameSize, (6 * NumTilesPerRow + 5), 3, SEC_TO_FRAMES(0.25f), AnimCycle::Loop);
+
+		CreateAndAddAnimAssets1(Keese, Idle, pFrameGfx, FrameSize, (6 * NumTilesPerRow + 8), 1, SEC_TO_FRAMES(1.0f), AnimCycle::Loop);
+		CreateAndAddAnimAssets1(Keese, Move, pFrameGfx, FrameSize, (6 * NumTilesPerRow + 8), 3, SEC_TO_FRAMES(0.25f), AnimCycle::Loop);
+
+		CreateAndAddAnimAssets1(WallMaster, Idle, pFrameGfx, FrameSize, (6 * NumTilesPerRow + 2), 1, SEC_TO_FRAMES(1.0f), AnimCycle::Loop);
+		CreateAndAddAnimAssets1(WallMaster, Move, pFrameGfx, FrameSize, (6 * NumTilesPerRow + 2), 3, SEC_TO_FRAMES(0.25f), AnimCycle::Loop);
 	}
 
-	CreateAndAddAnimAssets(Hero, Move, pFrameGfx, FrameSize, 0 * NumTilesPerRow, 3, 0, SEC_TO_FRAMES(0.15f), AnimCycle::PingPong);
-	CreateAndAddAnimAssets(Hero, Attack, pFrameGfx, FrameSize, 1 * NumTilesPerRow, 2, 0, SEC_TO_FRAMES(0.10f), AnimCycle::Once);
-	CreateAndAddAnimAssets(Hero, UseItem, pFrameGfx, FrameSize, 1 * NumTilesPerRow + 1, 1, 1, SEC_TO_FRAMES(0.20f), AnimCycle::Once);
-
-	// Player Death anim (must face down)
+	// 32x32 characters
 	{
-		// 7: down
-		// 4: left
-		// 10: up
-		// 1: right
-		builder.CreateAndAdd(MakeAnimAssetKey(Hero, Die, SpriteDir::None))
-			.InitPoses(pFrameGfx, FrameSize)
-			.BuildTimeline()
-			(7, SEC_TO_FRAMES(0.5f))(4, SEC_TO_FRAMES(0.05f))(10, SEC_TO_FRAMES(0.05f))(1, SEC_TO_FRAMES(0.05f))
-			(7, SEC_TO_FRAMES(0.05f))(4, SEC_TO_FRAMES(0.05f))(10, SEC_TO_FRAMES(0.05f))(1, SEC_TO_FRAMES(0.05f))
-			(7, SEC_TO_FRAMES(0.05f))(4, SEC_TO_FRAMES(0.05f))(10, SEC_TO_FRAMES(0.05f))(1, SEC_TO_FRAMES(0.05f))
-			(7, SEC_TO_FRAMES(0.10f))(4, SEC_TO_FRAMES(0.10f))(10, SEC_TO_FRAMES(0.10f))(1, SEC_TO_FRAMES(0.10f))
-			(7, SEC_TO_FRAMES(0.15f))(4, SEC_TO_FRAMES(0.15f))(10, SEC_TO_FRAMES(0.15f))(1, SEC_TO_FRAMES(0.15f))
-			(7, SEC_TO_FRAMES(0.15f));
+		uint8* pFrameGfx = (uint8*)characters_32x32Tiles;
+		const int FrameSize = 32 * 32; // 8bpp sprites
+		const int NumTilesPerRow = 4;
+
+		// Override global Spawn with one that fits 32x32 sprites. What sucks is we need to do this for every 32x32 character.
+		//@TODO: Rename BaseAnim::Spawn to Spawn16x16, add BaseAnim::Spawn32x32, create its global anim here, and in the Enemy
+		// state machine, call the specific spawn anim based on the sprite dimenions.
+		CreateAndAddAnimAssets1(Dragon, Spawn, pFrameGfx, FrameSize, (0 * NumTilesPerRow + 0), 4, SEC_TO_FRAMES(0.1f), AnimCycle::Once);
+
+		CreateAndAddAnimAssets1(Dragon, Idle, pFrameGfx, FrameSize, (1 * NumTilesPerRow + 0), 1, SEC_TO_FRAMES(1.0f), AnimCycle::Loop);
+		CreateAndAddAnimAssets1(Dragon, Move, pFrameGfx, FrameSize, (1 * NumTilesPerRow + 0), 3, SEC_TO_FRAMES(0.25f), AnimCycle::Loop);
 	}
 
-	// These enemies only move
-	CreateAndAddAnimAssets(Rope,    Idle, pFrameGfx, FrameSize, (2 * NumTilesPerRow), 1, 2, SEC_TO_FRAMES(0.0f), AnimCycle::Once);
-	CreateAndAddAnimAssets(Rope,    Move, pFrameGfx, FrameSize, 2 * NumTilesPerRow, 3, 0, SEC_TO_FRAMES(0.25f), AnimCycle::PingPong);
-	CreateAndAddAnimAssets(Rope,    Attack, pFrameGfx, FrameSize, (2 * NumTilesPerRow)+2, 1, 2, SEC_TO_FRAMES(0.25f), AnimCycle::Once);
-	
-	CreateAndAddAnimAssets(Darknut,  Move, pFrameGfx, FrameSize, 3 * NumTilesPerRow, 3, 0, SEC_TO_FRAMES(0.25f), AnimCycle::PingPong);
-	CreateAndAddAnimAssets(Stalfos, Move, pFrameGfx, FrameSize, 4 * NumTilesPerRow, 3, 0, SEC_TO_FRAMES(0.25f), AnimCycle::PingPong);
-	
-	CreateAndAddAnimAssets(Goriya,  Idle, pFrameGfx, FrameSize, (5 * NumTilesPerRow)+1, 1, 2, SEC_TO_FRAMES(0.0f), AnimCycle::Loop);
-	CreateAndAddAnimAssets(Goriya,  Move, pFrameGfx, FrameSize, 5 * NumTilesPerRow, 3, 0, SEC_TO_FRAMES(0.25f), AnimCycle::PingPong);
-	CreateAndAddAnimAssets(Goriya,  Attack, pFrameGfx, FrameSize, (5 * NumTilesPerRow)+12, 1, 0, SEC_TO_FRAMES(0.5f), AnimCycle::Once);
-
-
-	// Item animations
-	pFrameGfx = (uint8*)itemsTiles;
-
-	// Boomerang
+	// 16x16 items
 	{
-		const int numFramesPerImage = 5;
-		builder.CreateAndAdd(MakeAnimAssetKey(Boomerang, ItemDefault, SpriteDir::None))
-			.InitPoses(pFrameGfx, FrameSize)
-			.BuildTimeline().Looping(true)(4, numFramesPerImage)(5, numFramesPerImage)(6, numFramesPerImage)(7, numFramesPerImage);
+		uint8* pFrameGfx = (uint8*)itemsTiles;
+		const int FrameSize = 16 * 16; // 8bpp sprites
+
+		// Boomerang
+		{
+			const int numFramesPerImage = 5;
+			builder.CreateAndAdd(MakeAnimAssetKey(Boomerang, ItemDefault, SpriteDir::None))
+				.InitPoses(pFrameGfx, FrameSize)
+				.BuildTimeline().Looping(true)(4, numFramesPerImage)(5, numFramesPerImage)(6, numFramesPerImage)(7, numFramesPerImage);
+		}
 	}
 }

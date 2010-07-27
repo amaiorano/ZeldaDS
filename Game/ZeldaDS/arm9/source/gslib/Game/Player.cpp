@@ -38,11 +38,6 @@ struct PlayerStates
 
 	struct Root : PlayerState
 	{
-		virtual void OnEnter()
-		{
-			Owner().SetGameActor(GameActor::Hero);
-		}
-
 		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
 		{
 			if (Owner().mHealth.IsDead())

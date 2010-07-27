@@ -117,7 +117,7 @@ namespace GameActor
 
 // Macro to create AnimAssetKey
 // AnimAssetKey is 32 bits: 2 bits for SpriteDir, 15 for BaseAnim and 15 for GameActor
-#define MakeAnimAssetKey(GameActor, BaseAnim, SpriteDir) (AnimAssetKey)((uint32)SpriteDir << 30 | (uint32)BaseAnim << 15 | (uint32)GameActor)
+#define MakeAnimAssetKey(GameActor, BaseAnim, SpriteDir) (AnimAssetKey)((uint32)(SpriteDir) << 30 | (uint32)(BaseAnim) << 15 | (uint32)(GameActor))
 CT_ASSERT_MSG((GameActor::NumTypes <= mpl::pow<2, 15>::value && BaseAnim::NumTypes <= mpl::pow<2, 15>::value && SpriteDir::NumTypes <= mpl::pow<2, 2>::value), Not_enough_bits_for_enum_range);
 
 // Loads up all animations (create + add to AnimAssetManager)

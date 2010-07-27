@@ -111,6 +111,14 @@ public:
 	// Returns true and sets bbox if a collision tile is set at input world pos
 	bool GetTileBoundingBoxIfCollision(const Vector2I& worldPos, BoundingBox& bbox);
 
+	// Returns the player spawn data for the currently loaded map
+	struct PlayerSpawnData
+	{
+		Vector2I mScreen;
+		Vector2I mPos;
+	};
+	const PlayerSpawnData& GetPlayerSpawnData() const { return mPlayerSpawnData; }
+
 	struct SpawnData
 	{
 		GameActor::Type mGameActor;
@@ -123,8 +131,11 @@ private:
 	friend class Singleton<WorldMap>;
 	WorldMap();
 
+	void FindPlayerSpawnData();
 	TileMap& GetTileMapLayer(uint16 layer) { return mTileLayers[layer].mTileMap; }
 	uint16 GetTileIndexToDraw(uint16 layer, uint16 x, uint16 y, bool& tileIsAnimated) const;
+
+	PlayerSpawnData mPlayerSpawnData;
 
 	uint16 mNumScreensX, mNumScreensY;
 	uint16 mNumTilesX, mNumTilesY;

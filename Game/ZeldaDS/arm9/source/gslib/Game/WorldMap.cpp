@@ -90,8 +90,22 @@ void WorldMap::LoadMap(const char* mapFile)
 	BinaryFileStream bfs;
 	bfs.Open(mapFile, "r");
 
+	// Header
+	{
+		const char* FILE_TAG = "WMAP";
+		const uint32 FILE_VER = 1;
+
+		char fileTag[5] = {0};
+		bfs.ReadElems(fileTag, 4);
+		ASSERT_MSG(strcmp(fileTag, FILE_TAG)==0, "Invalid Map header tag");
+
+		uint32 fileVer = bfs.ReadInt<uint32>();
+		ASSERT_MSG(fileVer == FILE_VER, "Invalid Map version");
+	}
+
+	// Map data
 	const uint16 numLayers = bfs.ReadInt<uint16>();	
-	ASSERT(numLayers == NumLayers + 1); // Tile layers + collision layer
+	ASSERT(numLayers == NumLayers + 1); // Tile layers + data layer
 	
 	for (uint16 layer=0; layer < numLayers; ++layer)
 	{
@@ -117,6 +131,8 @@ void WorldMap::LoadMap(const char* mapFile)
 		ASSERT(marker == 0xFFFF);
 	}
 
+	FindPlayerSpawnData();
+
 	//@TODO: Read anim tile info from file
 	{
 		const int TilesPerRow = 16;
@@ -138,15 +154,6 @@ void WorldMap::LoadMap(const char* mapFile)
 		uint16 paletteIndices[] = {10, 11, 13, 14};
 		EnableColorRotation(paletteIndices, NUM_ARRAY_ELEMS(paletteIndices), SEC_TO_FRAMES(0.2f));
 	}
-
-	//@TODO: Read enemy spawn info from file (packed with collision data)
-	mDataLayer(1, 1).SpawnActorType = GameActor::Rope;
-	mDataLayer(6, 3).SpawnActorType = GameActor::Goriya;
-	mDataLayer(12, 5).SpawnActorType = GameActor::Rope;
-
-	mDataLayer(GameNumScreenMetaTilesX+6, 4).SpawnActorType = GameActor::Rope;
-	mDataLayer(GameNumScreenMetaTilesX+13, 8).SpawnActorType = GameActor::Goriya;
-	mDataLayer(GameNumScreenMetaTilesX+5, 10).SpawnActorType = GameActor::Goriya;
 }
 
 uint16 WorldMap::AddAnimTileSharedClock(int numFrames, AnimTimeType unitsPerFrame, AnimCycle::Type animCycle)
@@ -241,7 +248,6 @@ void WorldMap::DrawScreenTiles(const Vector2I& srcScreen, const Vector2I& tgtScr
 	}
 }
 
-
 bool WorldMap::GetTileBoundingBoxIfCollision(const Vector2I& worldPos, BoundingBox& bbox)
 {
 	Vector2I tilePos(worldPos.x / GameMetaTileSizeX, worldPos.y / GameMetaTileSizeY);
@@ -267,6 +273,7 @@ void WorldMap::GetSpawnDataForScreen(const Vector2I& screen, SpawnDataList& spaw
 			const uint16 currTileX = firstTileX + x;
 
 			const uint16 actorType = mDataLayer(currTileX, currTileY).SpawnActorType;
+			ASSERT(actorType >= 0 && actorType < GameActor::NumTypes);
 			if (actorType > 0)
 			{
 				spawnDataList.push_back(SpawnData());
@@ -276,6 +283,29 @@ void WorldMap::GetSpawnDataForScreen(const Vector2I& screen, SpawnDataList& spaw
 			}			
 		}
 	}
+}
+
+void WorldMap::FindPlayerSpawnData()
+{
+	// Find player spawner from data layer (slow!)
+	for (uint16 y = 0; y < mNumTilesY; ++y)
+	{
+		for (uint16 x = 0; x < mNumTilesX; ++x)
+		{
+			if (mDataLayer(x, y).SpawnActorType == GameActor::Hero)
+			{
+				// Clear the value so we don't try to spawn the player when spawning enemies
+				mDataLayer(x, y).SpawnActorType = GameActor::None;
+
+				mPlayerSpawnData.mPos.Reset(x * GameMetaTileSizeX, y * GameMetaTileSizeY);
+				mPlayerSpawnData.mScreen.Reset(x / GameNumScreenMetaTilesX, y / GameNumBgMetaTilesY);
+
+				return;
+			}
+		}
+	}
+
+	FAIL_MSG("Map is missing Player spawner");
 }
 
 uint16 WorldMap::GetTileIndexToDraw(uint16 layer, uint16 x, uint16 y, bool& tileIsAnimated) const

@@ -12,7 +12,7 @@ class Character : public GameObject, public IDamageable
 public:
 	typedef GameObject Base;
 
-	void Init(const Vector2I& initPos);
+	virtual void Init(const Vector2I& initPos);
 	virtual void InitStateMachine() = 0;
 	virtual void OnDead() { }
 

@@ -22,6 +22,16 @@ namespace Zelous
         public const int GameNumScreenMetaTilesY = (HwScreenSizeY / GameMetaTileSizeY);
     }
 
+    //@TODO: Move to BitOps.cs
+    public class BitOps
+    {
+        // Returns an int with numBits 1s set
+        public static int GenNumBits(int numBits)
+        {
+            return (1 << numBits) - 1;
+        }
+    }
+
     // These classes match the same classes in the game code
 
     public class TileSet
@@ -126,7 +136,7 @@ namespace Zelous
 
     public class WorldMap
     {
-        public const int NumLayers = 3;
+        public const int NumLayers = 4;
         private TileLayer[] mTileLayers = new TileLayer[NumLayers];
         int mNumScreensX, mNumScreensY;
         int mNumTilesX, mNumTilesY;
@@ -149,6 +159,22 @@ namespace Zelous
 
         public void Serialize(SerializationType serializationType, string fileName)
         {
+            // Note: When saving, we always save the latest version, but loading must be backwards
+            // compatible with any version so that changes can be made to the map format without
+            // deprecating existing maps. The game, however, only supports loading the latest
+            // version, so old maps must be loaded and resaved within Zelous before loading in the
+            // game.
+
+            //=================================================================
+            // Version  | Changes
+            //=================================================================
+            // 0        | initial (no versioning)
+            // 1        | versioning (tag+version), character spawners
+
+            const string MapTag = "WMAP";
+            const UInt32 MapVer = 1;
+            const int NumGameLayers = 3; // Doesn't match number of layers in editor
+
             //@TODO: Seralize number of screens X/Y (game should support variable sized maps)
 
             if (serializationType == SerializationType.Saving)
@@ -156,9 +182,15 @@ namespace Zelous
                 FileStream fs = new FileStream(fileName, FileMode.Create);
                 BinaryWriter w = new BinaryWriter(fs);
 
-                w.Write((UInt16)TileLayers.Length); // Number of tile layers
+                // Header
+                w.Write((char[])MapTag.ToCharArray());
+                w.Write((UInt32)MapVer);
 
-                foreach (TileLayer tileLayer in TileLayers)
+                // Map data
+                w.Write((UInt16)NumGameLayers); // Number of tile layers
+
+                // Write out tile layers
+                for (int layerIdx = 0; layerIdx < NumGameLayers; ++layerIdx)
                 {
                     w.Write((UInt16)mNumTilesX);
                     w.Write((UInt16)mNumTilesY);
@@ -167,8 +199,31 @@ namespace Zelous
                     {
                         for (int x = 0; x < mNumTilesX; ++x)
                         {
-                            int tileIndex = tileLayer.TileMap[x, y];
-                            w.Write((UInt16)tileIndex);
+                            if (layerIdx < 2)
+                            {
+                                TileLayer tileLayer = TileLayers[layerIdx];
+                                int tileIndex = tileLayer.TileMap[x, y];
+                                w.Write((UInt16)tileIndex);
+                            }
+                            else if (layerIdx == 2)
+                            {
+                                TileLayer collLayer = TileLayers[layerIdx];
+                                TileLayer charLayer = TileLayers[layerIdx + 1];
+
+                                // Write out data layer (collisions + spawners)
+                                UInt16 collValue = (UInt16)collLayer.TileMap[x, y];
+                                UInt16 charValue = (UInt16)charLayer.TileMap[x, y];
+
+                                collValue <<= 0;
+                                charValue <<= 2;
+                                UInt16 dataLayerEntry = (UInt16)(collValue | charValue);
+
+                                w.Write((UInt16)dataLayerEntry);
+                            }
+                            else
+                            {
+                                Debug.Fail("Invalid layer index");
+                            }                            
                         }
                     }
 
@@ -178,15 +233,26 @@ namespace Zelous
                 w.Close();
                 fs.Close();
             }
-            else
+            else // Loading
             {
                 FileStream fs = new FileStream(fileName, FileMode.Open);
                 BinaryReader r = new BinaryReader(fs);
 
-                UInt16 numLayers = r.ReadUInt16();
-                Debug.Assert(numLayers == TileLayers.Length);
+                // Header
+                string fileTag = new string(r.ReadChars(4));
+                UInt32 fileVer = r.ReadUInt32();
 
-                foreach (TileLayer tileLayer in TileLayers)
+                if (fileTag != MapTag)
+                {
+                    fileVer = 0; // First version had no map tag
+                    fs.Position = 0; // Reset stream position
+                }
+
+                // Map data
+                UInt16 numLayers = r.ReadUInt16();
+                Debug.Assert(numLayers == NumGameLayers);
+
+                for (int layerIdx = 0; layerIdx < NumGameLayers; ++layerIdx)
                 {
                     UInt16 numTilesX = r.ReadUInt16();
                     UInt16 numTilesY = r.ReadUInt16();
@@ -196,8 +262,29 @@ namespace Zelous
                     {
                         for (int x = 0; x < numTilesX; ++x)
                         {
-                            UInt16 tileIndex = r.ReadUInt16();
-                            tileLayer.TileMap[x, y] = tileIndex;
+                            if (layerIdx < 2)
+                            {
+                                UInt16 tileIndex = r.ReadUInt16();
+
+                                TileLayer tileLayer = TileLayers[layerIdx];
+                                tileLayer.TileMap[x, y] = tileIndex;
+                            }
+                            else if (layerIdx == 2)
+                            {
+                                // Parse out collision + spawner value
+                                UInt16 dataLayerEntry = r.ReadUInt16();
+                                int collValue = (dataLayerEntry >> 0) & BitOps.GenNumBits(2);
+                                int charValue = (dataLayerEntry >> 2) & BitOps.GenNumBits(6);
+
+                                TileLayer collLayer = TileLayers[layerIdx];
+                                TileLayer charLayer = TileLayers[layerIdx + 1];
+                                collLayer.TileMap[x, y] = collValue;
+                                charLayer.TileMap[x, y] = charValue;
+                            }
+                            else
+                            {
+                                Debug.Fail("Invalid layer index");
+                            }                            
                         }
                     }
 
