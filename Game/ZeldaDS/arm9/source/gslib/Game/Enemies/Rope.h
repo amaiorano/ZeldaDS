@@ -5,9 +5,12 @@
 
 class Rope : public Enemy
 {
+	typedef Enemy Base;
+
 protected:
-	void GetGameObjectInfo(GameObjectInfo& gameObjectInfo)
+	virtual void GetGameObjectInfo(GameObjectInfo& gameObjectInfo)
 	{
+		Base::GetGameObjectInfo(gameObjectInfo);
 		gameObjectInfo.mGameActor = GameActor::Rope;
 	}
 

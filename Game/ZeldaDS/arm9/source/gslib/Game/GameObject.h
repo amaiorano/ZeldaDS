@@ -6,6 +6,19 @@
 #include "IAnimatedRenderable.h"
 #include "IPhysical.h"
 
+namespace GameSpriteRenderGroup
+{
+	enum Type
+	{
+		AboveAll,
+		Heroes,
+		Weapons,
+		Enemies,
+
+		NumTypes
+	};
+}
+
 // Root class for all game objects
 class GameObject : public ISceneNode, public IAnimatedRenderable, public IPhysical
 {
@@ -31,13 +44,15 @@ protected:
 	struct GameObjectInfo
 	{
 		GameObjectInfo() 
-			: mSpriteSize(16, 16)
+			: mSpriteRenderGroupId(GameSpriteRenderGroup::AboveAll)
+			, mSpriteSize(16, 16)
 			, mPhysicalSize(16, 16)
 			, mGameActor(GameActor::None)
 			, mIsDirectional(true)
 		{
 		}
 
+		uint16 mSpriteRenderGroupId;
 		Vector2I mSpriteSize;
 		Vector2I mPhysicalSize;
 		GameActor::Type mGameActor;

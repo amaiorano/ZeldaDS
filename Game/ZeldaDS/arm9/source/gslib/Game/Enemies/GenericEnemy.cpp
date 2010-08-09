@@ -31,14 +31,13 @@ void GenericEnemy::Init(const Vector2I& initPos)
 
 void GenericEnemy::GetGameObjectInfo(GameObjectInfo& gameObjectInfo)
 {
-	printf("Spawning generic enemy: %d\n", mGameActor);
+	Base::GetGameObjectInfo(gameObjectInfo);
 	gameObjectInfo.mGameActor = mGameActor;
 
 	// Determine whether we're directional by seeing if we have a Move animation in any direction but Down
 	{
 		AnimAsset* pAnimAsset = AnimAssetManager::FindAnimAsset(MakeAnimAssetKey(mGameActor, BaseAnim::Move, SpriteDir::Left));
 		gameObjectInfo.mIsDirectional = (pAnimAsset != NULL);
-		printf("mIsDirectional = %d\n", gameObjectInfo.mIsDirectional);
 	}
 
 	// Determine our dimensions by looking at our Idle anim (not exactly the "right" way, but will do)

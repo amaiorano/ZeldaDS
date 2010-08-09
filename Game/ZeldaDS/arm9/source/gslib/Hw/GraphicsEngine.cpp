@@ -377,6 +377,16 @@ namespace GraphicsEngine
 		gFadeLerper.Reset(dir == FadeScreenDir::Out? -1.0f : 1.0f, timeToFade);
 	}
 
+	bool IsFadingScreen()
+	{
+		return !gFadeLerper.IsDone();
+	}
+
+	float GetFadeRatio()
+	{
+		return gFadeLerper.GetCurr();
+	}
+
 	void Update(GameTimeType deltaTime)
 	{
 		gFadeLerper.Update(deltaTime);

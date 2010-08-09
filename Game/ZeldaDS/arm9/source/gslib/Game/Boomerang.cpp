@@ -32,6 +32,7 @@ void Boomerang::Init(Character* pOwner, const Vector2I& launchDir)
 
 void Boomerang::GetGameObjectInfo(GameObjectInfo& gameObjectInfo)
 {
+	Base::GetGameObjectInfo(gameObjectInfo);
 	gameObjectInfo.mGameActor = GameActor::Boomerang;
 	gameObjectInfo.mPhysicalSize.Reset(12, 12);  // Slightly smaller to bound actual boomerang
 }

@@ -45,6 +45,8 @@ namespace GraphicsEngine
 
 	//@TODO: Add color param (write Color class?)
 	void FadeScreen(FadeScreenDir::Type dir, GameTimeType timeToFade);
+	bool IsFadingScreen();
+	float GetFadeRatio();
 
 	void Update(GameTimeType deltaTime);
 	void Render(GameTimeType deltaTime);

@@ -13,7 +13,7 @@ protected:
 	IRenderable();	
 	virtual ~IRenderable();
 
-	void Activate(uint16 width, uint16 height);
+	void Activate(uint16 spriteRenderGroupId, uint16 width, uint16 height);
 	void Deactivate();
 
 	//@NOTE: Should probably have a Render() function that is called

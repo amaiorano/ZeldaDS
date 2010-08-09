@@ -2,6 +2,7 @@
 #include "Player.h"
 #include "Enemy.h"
 #include "Boomerang.h" //@TODO: REPLACE WITH "Weapon.h"
+#include "gslib/Core/Generic.h"
 #include <algorithm>
 
 void SceneGraph::AddNode(ISceneNode* pNode)
@@ -71,8 +72,13 @@ bool SceneGraph::IsNodeInScene(const ISceneNode* pNode) const
 
 void SceneGraph::Update(GameTimeType deltaTime)
 {
-	SceneNodeList::iterator iter = mSceneNodeList.begin();
-	for ( ; iter != mSceneNodeList.end(); ++iter)
+	// During Update(), nodes might be added to the list,
+	// so we iterate through a copy as to not worry about iterator
+	// invalidation or Updating a node twice in one frame.
+	SceneNodeList& sceneNodeListCopy = mSceneNodeList;
+
+	SceneNodeList::iterator iter = sceneNodeListCopy.begin();
+	for ( ; iter != sceneNodeListCopy.end(); ++iter)
 	{
 		(*iter)->Update(deltaTime);
 	}
@@ -94,7 +100,7 @@ void SceneGraph::RemoveMarkedNodesInList(List& list)
 {
 	typedef typename List::iterator Iterator;
 	typedef typename List::value_type ValueType;
-	
+
 	for (Iterator iter = list.begin(); iter != list.end(); /*++iter*/)
 	{
 		Iterator currIter = iter;
@@ -106,7 +112,17 @@ void SceneGraph::RemoveMarkedNodesInList(List& list)
 		{
 			pNode->mRemoveNodePostUpdate = false;
 			RemoveNode(pNode);
-			list.erase(currIter);
+
+			//@TODO: This is crap! Problem is this code assumes only a sublist is being passed in,
+			// so RemoveNode (above) removes from the sublist, and then we remove from the SceneNodeList
+			// here. But if the SceneNodeList gets passed in, we don't want to double-remove!
+			// Right solution is to have an overloaded set of RemoveNode() calls that match the overload
+			// set for AddNode(), and that remove from their respective lists.
+			if ( !type_traits::is_same<List, SceneNodeList>::value )
+			{
+				list.erase(currIter);
+			}
+			
 			delete pNode;
 		}
 	}
@@ -118,4 +134,6 @@ void SceneGraph::RemoveNodesPostUpdate()
 	RemoveMarkedNodesInList(mEnemyList);
 	RemoveMarkedNodesInList(mPlayerWeaponList);
 	RemoveMarkedNodesInList(mEnemyWeaponList);
+	// This last pass cleans up any nodes that are not in a specific sublist
+	RemoveMarkedNodesInList(mSceneNodeList);
 }

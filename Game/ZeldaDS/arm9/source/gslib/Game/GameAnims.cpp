@@ -15,6 +15,8 @@ namespace
 
 		ThisType& CreateAndAdd(AnimAssetKey key)
 		{
+			//@TODO: This allocation is never deleted! We're ok for now since we only
+			// allocate anim assets once at Init time, but we should clean this up somewhere.
 			mpAnimAsset = new AnimAsset();
 			AnimAssetManager::AddAnimAsset(key, mpAnimAsset);
 			return *this;

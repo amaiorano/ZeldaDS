@@ -12,7 +12,7 @@ typedef uint32 AnimAssetKey;
 
 struct AnimPoseType
 {
-	uint8* pFrameGfx;
+	const uint8* pFrameGfx;
 	uint16 frameSize;
 };
 
@@ -20,7 +20,7 @@ struct AnimPoseType
 class AnimPoses // Required class
 {
 public:
-	void Init(uint8* pFrameGfx, uint16 frameSize)
+	void Init(const uint8* pFrameGfx, uint16 frameSize)
 	{
 		mpFrameGfx = pFrameGfx;
 		mCurrPose.frameSize = frameSize;
@@ -33,7 +33,7 @@ public:
 	}
 
 private:
-	uint8* mpFrameGfx; // Pointer to start of sprite frames in ram
+	const uint8* mpFrameGfx; // Pointer to start of sprite frames in ram
 	mutable AnimPoseType mCurrPose; // We don't actually store all Poses, we build the latest as needed
 };
 

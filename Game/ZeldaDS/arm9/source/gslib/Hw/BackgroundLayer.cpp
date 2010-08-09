@@ -54,7 +54,7 @@ void BackgroundLayer::InitTiled(int bgId, uint8 metaTileSizeX, uint8 metaTileSiz
 	ASSERT(mBgId == -1);
 	mBgId = bgId;
 
-	mpTileMap = (uint8*)bgGetMapPtr(mBgId);
+	mpTileMap = reinterpret_cast<uint8*>(bgGetMapPtr(mBgId));
 	mMetaTileSizeX = metaTileSizeX;
 	mMetaTileSizeY = metaTileSizeY;
 
@@ -66,7 +66,7 @@ void BackgroundLayer::InitTiled(int bgId, uint8 metaTileSizeX, uint8 metaTileSiz
 	memset(mpTileMap, 0, (HwBgNumTilesX * HwBgNumTilesY * tileIndexSizeBytes)); //@TODO: use dmaCopy?
 }
 
-void BackgroundLayer::LoadTilesImage(const void* pImage, uint16 sizeBytes)
+void BackgroundLayer::LoadTilesImage(const uint8* pImage, uint16 sizeBytes)
 {
 	memcpy(bgGetGfxPtr(mBgId), pImage, sizeBytes); //@TODO: use dmaCopy?
 }
@@ -112,6 +112,12 @@ void BackgroundLayer::DrawTile(uint16 metaTileIndex, uint16 metaTileMapX, uint16
 			++currHwTileIndex;
 		}
 	}
+}
+
+const uint8* BackgroundLayer::GetTilesImagePtr() const
+{
+	ASSERT(mBgId != -1);
+	return reinterpret_cast<uint8*>(bgGetGfxPtr(mBgId));
 }
 
 void BackgroundLayer::InitConsole(PrintConsole* pConsole)

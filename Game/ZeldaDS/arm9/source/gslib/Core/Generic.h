@@ -28,6 +28,18 @@ namespace type_traits
 	{
 		enum { value = true };
 	};
+
+	template <typename T, typename U>
+	struct is_same
+	{
+		enum { value = false };
+	};
+
+	template <typename T>
+	struct is_same<T, T>
+	{
+		enum  { value = true };
+	};
 }
 
 // Metaprogramming Library
@@ -41,6 +53,9 @@ namespace mpl
 	};
 	template <int base> struct pow<base, 1> { static const int value = base; };
 	template <int base> struct pow<base, 0> { static const int value = base; };
+	
+	// Specialize for powers of two
+	template <int exp> struct pow<2, exp> { static const int value = (1<<exp); };
 }
 
 

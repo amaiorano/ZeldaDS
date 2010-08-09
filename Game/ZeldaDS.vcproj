@@ -181,6 +181,14 @@
 						RelativePath=".\ZeldaDS\arm9\source\gslib\Hw\Sprite.h"
 						>
 					</File>
+					<File
+						RelativePath=".\ZeldaDS\arm9\source\gslib\Hw\SpriteRenderGroupMgr.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\ZeldaDS\arm9\source\gslib\Hw\SpriteRenderGroupMgr.h"
+						>
+					</File>
 				</Filter>
 				<Filter
 					Name="Game"
@@ -235,6 +243,14 @@
 					</File>
 					<File
 						RelativePath=".\ZeldaDS\arm9\source\gslib\Game\WorldMap.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ZeldaDS\arm9\source\gslib\Game\WorldMapTile.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\ZeldaDS\arm9\source\gslib\Game\WorldMapTile.h"
 						>
 					</File>
 					<Filter

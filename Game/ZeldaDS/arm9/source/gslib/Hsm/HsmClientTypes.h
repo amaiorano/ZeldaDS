@@ -4,7 +4,7 @@
 #include "gslib/Core/Core.h"
 #include "gslib/Core/Rtti.h"
 
-#ifndef NDEBUG
+#if CONFIG_DEBUG
 #define HSM_DEBUG
 #endif
 

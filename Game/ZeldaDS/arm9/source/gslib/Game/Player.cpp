@@ -12,8 +12,11 @@
 #include "Camera.h"
 #include "Enemy.h"
 #include "MovementModel.h"
+#include "WorldMapTile.h"
 
 // Player HSM
+
+extern bool gHackLeaveMap;
 
 struct PlayerSharedStateData : CharacterSharedStateData
 {
@@ -35,6 +38,11 @@ struct PlayerSharedStateData : CharacterSharedStateData
 struct PlayerStates
 {
 	typedef CharacterState<PlayerSharedStateData, Player> PlayerState;
+
+	//@TODO:
+	// - Move Dead state under Alive
+	// - Remove the Alive_ prefix from most states - it's just noise
+	// - Add simple comment headers to separate major state groups
 
 	struct Root : PlayerState
 	{
@@ -100,6 +108,13 @@ struct PlayerStates
 				return SiblingTransition<Alive_Scrolling>();
 			}
 
+			//@HACK: When player is at a hard-coded position, leave the map
+			const Vector2I& warpPos = WorldMap::TileToWorldPos(2, 0);
+			if (Owner().GetPosition() == warpPos)
+			{
+				return SiblingTransition<Alive_Warping>();
+			}
+
 			return InnerEntryTransition<Alive_Locomotion>();
 		}
 
@@ -151,13 +166,82 @@ struct PlayerStates
 		}
 	};
 
+	struct Alive_Warping : PlayerState
+	{
+		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
+		{
+			return InnerTransition<Alive_Warping_Stairs>();
+		}
+	};
+
+	struct Alive_Warping_Stairs : PlayerState
+	{
+		float mSteps;
+		WorldMapTile* mpWorldMapTile;
+		Vector2I mPlayerStartPos;
+
+		Alive_Warping_Stairs()
+			: mSteps(0.0f)
+			, mpWorldMapTile(0)
+		{
+		}
+
+		virtual void OnEnter()
+		{
+			mPlayerStartPos = Owner().GetPosition();
+
+			// Create a WorldMapTile that matches exactly the tile below us so that
+			// when we move "down the stairs", it looks like we're going underneath
+			// the tile
+			const Vector2I& playerTilePos = WorldMap::WorldPosToTile(mPlayerStartPos);
+			const Vector2I& worldMapTilePos = Vector2I(playerTilePos.x, playerTilePos.y + 1);
+			
+			mpWorldMapTile = new WorldMapTile(GameTileLayer::Background, worldMapTilePos);
+			mpWorldMapTile->SetPosition( WorldMap::TileToWorldPos(worldMapTilePos) );
+			SceneGraph::Instance().AddNode(mpWorldMapTile);
+
+			Owner().SetSpriteDir(SpriteDir::Up);
+			PlayAnim(BaseAnim::Move);
+		}
+
+		virtual void OnExit()
+		{
+			// No need to remove this, leaving the map removes all nodes (including player)
+			//SceneGraph::Instance().RemoveNodePostUpdate(mpWorldMapTile);
+		}
+
+		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
+		{
+			if (mSteps >= 16.0f)
+			{
+				return SiblingTransition<Alive_Warping_Done>();
+			}
+
+			return NoTransition();
+		}
+
+		virtual void PerformStateActions(HsmTimeType deltaTime)
+		{
+			mSteps += 0.25f;
+			Owner().SetPosition(mPlayerStartPos + Vector2I(0.0f, mSteps)); 
+		}
+	};
+
+	struct Alive_Warping_Done : PlayerState
+	{
+		virtual void OnEnter()
+		{
+			gHackLeaveMap = true;
+		}
+	};
+
 	struct Alive_Locomotion : PlayerState
 	{
 		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
 		{
 			const uint32& currKeysPressed = InputManager::GetKeysPressed();
 
-			const bool shouldAttack = (currKeysPressed & KEY_A) != 0;
+			const bool shouldAttack = (currKeysPressed & KEY_Y) != 0;
 			if (shouldAttack)
 			{
 				return SiblingTransition<Alive_Attack>();
@@ -181,12 +265,6 @@ struct PlayerStates
 			if ( currKeysHeld & KEY_RIGHT )	{ Owner().SetSpriteDir(SpriteDir::Right); }
 			if ( currKeysHeld & KEY_UP )	{ Owner().SetSpriteDir(SpriteDir::Up); }
 			if ( currKeysHeld & KEY_DOWN )	{ Owner().SetSpriteDir(SpriteDir::Down); }
-
-			const bool shouldDie = ( InputManager::GetKeysPressed() & KEY_Y ) != 0;
-			if (shouldDie)
-			{
-				Owner().mHealth.SetValue(0);
-			}
 		}
 
 	};
@@ -397,6 +475,8 @@ void Player::InitStateMachine()
 
 void Player::GetGameObjectInfo(GameObjectInfo& gameObjectInfo)
 {
+	Base::GetGameObjectInfo(gameObjectInfo);
+	gameObjectInfo.mSpriteRenderGroupId = GameSpriteRenderGroup::Heroes;
 	gameObjectInfo.mGameActor = GameActor::Hero;
 }
 

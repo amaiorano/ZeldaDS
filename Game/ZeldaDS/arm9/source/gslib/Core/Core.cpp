@@ -4,9 +4,9 @@
 DBG_STATEMENT(uint32 gDebugFrameCount = 0);
 
 // Globals for memory debugging
-struct mallinfo mi_start;
-struct mallinfo mi_end;
-int mi_bytes_delta;
+struct mallinfo mi_start = {0};
+struct mallinfo mi_end = {0};
+int mi_bytes_delta = 0;
 
 #if PRINT_TO_EMULATOR_CONSOLE
 extern "C" void ideasPrint(const char* str);

@@ -36,10 +36,10 @@ const uint16 TargetFramesPerSecond = 60;
 #define FAIL()					sassert(false, "FAIL")
 #define FAIL_MSG(msg)			sassert(false, "FAIL: " msg)
 
-#ifdef NDEBUG
-#define VERIFY(exp)				exp
+#if CONFIG_DEBUG
+	#define VERIFY(exp)				ASSERT(exp)
 #else
-#define VERIFY(exp)				ASSERT(exp)
+	#define VERIFY(exp)				exp
 #endif
 
 // Compile-time assertion (@TODO: Should this be moved to Generic.h?)
@@ -50,10 +50,10 @@ const uint16 TargetFramesPerSecond = 60;
 #define __MAKE_NAME2(line)			ct_assert_failure_ ## line
 
 // Useful for wrapping debug-only statements; i.e. declaring variables used in assertions
-#ifdef NDEBUG
-#define DBG_STATEMENT(s)
+#if CONFIG_DEBUG
+	#define DBG_STATEMENT(s) s
 #else
-#define DBG_STATEMENT(s) s
+	#define DBG_STATEMENT(s)
 #endif
 
 // Global frame count for debugging

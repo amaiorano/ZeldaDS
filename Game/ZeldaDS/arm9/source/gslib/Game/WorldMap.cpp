@@ -79,6 +79,8 @@ void WorldMap::Shutdown()
 	}
 	mAnimAssets.clear();
 	mAnimControls.clear();
+
+	mColorRotElems.clear();
 }
 
 void WorldMap::LoadMap(const char* mapFile)
@@ -97,10 +99,16 @@ void WorldMap::LoadMap(const char* mapFile)
 
 		char fileTag[5] = {0};
 		bfs.ReadElems(fileTag, 4);
-		ASSERT_MSG(strcmp(fileTag, FILE_TAG)==0, "Invalid Map header tag");
+		if ( strcmp(fileTag, FILE_TAG) != 0 )
+		{
+			FAIL_MSG("Invalid Map header tag");
+		}
 
 		uint32 fileVer = bfs.ReadInt<uint32>();
-		ASSERT_MSG(fileVer == FILE_VER, "Invalid Map version");
+		if (fileVer != FILE_VER)
+		{
+			FAIL_MSG("Invalid Map version");
+		}
 	}
 
 	// Map data
@@ -218,8 +226,8 @@ void WorldMap::Update(GameTimeType deltaTime)
 
 void WorldMap::DrawScreenTiles(const Vector2I& srcScreen, const Vector2I& tgtScreen, DrawScreenTilesMode::Type mode)
 {
-	BackgroundLayer& tgtBgLayer2 = GraphicsEngine::GetBgLayer(2);
-	BackgroundLayer& tgtBgLayer3 = GraphicsEngine::GetBgLayer(3);
+	BackgroundLayer& tgtBgLayer2 = GetBgLayer(GameTileLayer::Foreground);
+	BackgroundLayer& tgtBgLayer3 = GetBgLayer(GameTileLayer::Background);
 
 	// Get upper-left tile coords in world space
 	uint16 srcCurrTileX = srcScreen.x * GameNumScreenMetaTilesX;
@@ -237,11 +245,11 @@ void WorldMap::DrawScreenTiles(const Vector2I& srcScreen, const Vector2I& tgtScr
 	{
 		for (uint16 x = 0; x < GameNumScreenMetaTilesX; ++x)
 		{
-			srcTile = GetTileIndexToDraw(0, srcCurrTileX + x, srcCurrTileY + y, tileIsAnimated);
+			srcTile = GetTileIndexToDraw(GameTileLayer::Background, srcCurrTileX + x, srcCurrTileY + y, tileIsAnimated);
 			if (!drawOnlyAnimTiles || tileIsAnimated)
 				tgtBgLayer3.DrawTile(srcTile, tgtCurrTileX + x, tgtCurrTileY + y);
 
-			srcTile = GetTileIndexToDraw(1, srcCurrTileX + x, srcCurrTileY + y, tileIsAnimated);
+			srcTile = GetTileIndexToDraw(GameTileLayer::Foreground, srcCurrTileX + x, srcCurrTileY + y, tileIsAnimated);
 			if (!drawOnlyAnimTiles || tileIsAnimated)
 				tgtBgLayer2.DrawTile(srcTile, tgtCurrTileX + x, tgtCurrTileY + y);
 		}
@@ -250,14 +258,32 @@ void WorldMap::DrawScreenTiles(const Vector2I& srcScreen, const Vector2I& tgtScr
 
 bool WorldMap::GetTileBoundingBoxIfCollision(const Vector2I& worldPos, BoundingBox& bbox)
 {
-	Vector2I tilePos(worldPos.x / GameMetaTileSizeX, worldPos.y / GameMetaTileSizeY);
+	const Vector2I tilePos = WorldPosToTile(worldPos);
 
 	if ( mDataLayer(tilePos.x, tilePos.y).Collision == 0 )
 		return false;
 
 	//@NOTE: height is halved so we get the fake 3D feel from Zelda
-	bbox.Reset(tilePos.x * GameMetaTileSizeX, tilePos.y * GameMetaTileSizeY, GameMetaTileSizeX, GameMetaTileSizeY / 2);
+	bbox.Reset(TileToWorldPos(tilePos), GameMetaTileSizeX, GameMetaTileSizeY / 2);
 	return true;
+}
+
+uint16 WorldMap::GetTileIndex(uint16 layer, const Vector2I& worldTilePos)
+{
+	return mTileLayers[layer].mTileMap(worldTilePos.x, worldTilePos.y);
+}
+
+BackgroundLayer& WorldMap::GetBgLayer(GameTileLayer::Type layer)
+{
+	switch (layer)
+	{
+	case GameTileLayer::Background: return GraphicsEngine::GetBgLayer(3);
+	case GameTileLayer::Foreground: return GraphicsEngine::GetBgLayer(2);
+	default: break;
+	}
+
+	FAIL_MSG("No BackgroundLayer mapped to input GameTileLayer");
+	return GraphicsEngine::GetBgLayer(2);
 }
 
 void WorldMap::GetSpawnDataForScreen(const Vector2I& screen, SpawnDataList& spawnDataList)
@@ -279,7 +305,7 @@ void WorldMap::GetSpawnDataForScreen(const Vector2I& screen, SpawnDataList& spaw
 				spawnDataList.push_back(SpawnData());
 				SpawnData& spawnData = spawnDataList.back();
 				spawnData.mGameActor = static_cast<GameActor::Type>(actorType);
-				spawnData.mPos.Reset(currTileX * GameMetaTileSizeX, currTileY * GameMetaTileSizeY);
+				spawnData.mPos.Reset(TileToWorldPos(currTileX, currTileY));
 			}			
 		}
 	}
@@ -297,7 +323,7 @@ void WorldMap::FindPlayerSpawnData()
 				// Clear the value so we don't try to spawn the player when spawning enemies
 				mDataLayer(x, y).SpawnActorType = GameActor::None;
 
-				mPlayerSpawnData.mPos.Reset(x * GameMetaTileSizeX, y * GameMetaTileSizeY);
+				mPlayerSpawnData.mPos.Reset(TileToWorldPos(x, y));
 				mPlayerSpawnData.mScreen.Reset(x / GameNumScreenMetaTilesX, y / GameNumBgMetaTilesY);
 
 				return;
@@ -308,11 +334,11 @@ void WorldMap::FindPlayerSpawnData()
 	FAIL_MSG("Map is missing Player spawner");
 }
 
-uint16 WorldMap::GetTileIndexToDraw(uint16 layer, uint16 x, uint16 y, bool& tileIsAnimated) const
+uint16 WorldMap::GetTileIndexToDraw(uint16 layer, uint16 tileX, uint16 tileY, bool& tileIsAnimated) const
 {
 	const TileLayer& tileLayer = mTileLayers[layer];
 
-	uint16 tileIdx = tileLayer.mTileMap(x, y);
+	uint16 tileIdx = tileLayer.mTileMap(tileX, tileY);
 
 	const TileSet::TileData& data = tileLayer.mTileSet.GetTileData(tileIdx);
 	if (data.mIsAnimated)

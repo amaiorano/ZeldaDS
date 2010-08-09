@@ -12,7 +12,7 @@ public:
 	virtual void Init(const Vector2I& initPos);
 
 protected:
-	void GetGameObjectInfo(GameObjectInfo& gameObjectInfo);
+	virtual void GetGameObjectInfo(GameObjectInfo& gameObjectInfo);
 	virtual Transition& GetRootTransition();
 
 private:

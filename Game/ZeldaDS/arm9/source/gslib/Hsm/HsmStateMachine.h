@@ -115,8 +115,8 @@ private:
 	// Pops states from most inner up to and including depth
 	void PopStatesToDepth(size_t depth);
 
-	// Returns true if a transition was made (and next depth to start at), meaning we must keep evaluating
-	bool EvaluateStateTransitionsOnce(HsmTimeType deltaTime, const size_t& startDepth, size_t& nextStartDepth);
+	// Returns true if a transition was made, meaning we must keep evaluating
+	bool EvaluateStateTransitionsOnce(HsmTimeType deltaTime);
 
 private:
 	void* mpOwner; // Provided by client, accessed within states via Owner()

@@ -11,11 +11,11 @@
 		} \
 	} while (false)
 
-#ifdef NDEBUG
-	#define HSM_LOG_TRANSITION(minLevel, depth, transType, pState)
-#else
+#ifdef HSM_DEBUG
 	#define HSM_LOG_TRANSITION(minLevel, depth, transTypeStr, pState) \
 		HSM_LOG(minLevel, depth, ("%-8s: %s\n", transTypeStr, GetStateDebugName(*pState)))
+#else
+	#define HSM_LOG_TRANSITION(minLevel, depth, transType, pState)
 #endif
 
 namespace
@@ -53,14 +53,12 @@ void StateMachine::EvaluateStateTransitions(HsmTimeType deltaTime)
 	HSM_ASSERT(mpSharedStateData); // Make sure to set state data
 	HSM_ASSERT(!mStateStack.empty()); // Make sure to set an initial state!
 
-	// After we make a transition, we must evaluate all transitions again until we get no transitions
-	// from all states on the stack.
+	// After we make any transition, we must evaluate all transitions again from the top
+	// until we get no transitions from all states on the stack.
 	bool keepEvaluating = true;
-	size_t nextStartDepth = 0;
 	while (keepEvaluating)
 	{
-		size_t startDepth = nextStartDepth;
-		keepEvaluating = EvaluateStateTransitionsOnce(deltaTime, startDepth, nextStartDepth);
+		keepEvaluating = EvaluateStateTransitionsOnce(deltaTime);
 	}
 }
 
@@ -140,13 +138,13 @@ void StateMachine::PopStatesToDepth(size_t depth)
 }
 
 // Returns true if a transition was made (and next depth to start at), meaning we must keep evaluating
-bool StateMachine::EvaluateStateTransitionsOnce(HsmTimeType deltaTime, const size_t& startDepth, size_t& nextStartDepth)
+bool StateMachine::EvaluateStateTransitionsOnce(HsmTimeType deltaTime)
 {
 	// Evaluate transitions from outer to inner states; if a valid sibling transition is returned,
 	// we must pop inners up to and including the state that returned the transition, then push the
 	// new inner. If an inner transition is returned, we must pop inners up to but not including
 	// the state that returned the transition (if any), then push the new inner.
-	for (size_t depth = startDepth; depth < mStateStack.size(); ++depth)
+	for (size_t depth = 0; depth < mStateStack.size(); ++depth)
 	{
 		State* pCurrState = mStateStack[depth];
 		Transition& transition = pCurrState->EvaluateTransitions(deltaTime);
@@ -175,8 +173,6 @@ bool StateMachine::EvaluateStateTransitionsOnce(HsmTimeType deltaTime, const siz
 						State* pTargetState = transition.CreateState(this);
 						HSM_LOG_TRANSITION(1, depth + 1, "Inner", pTargetState);
 						mStateStack.push_back(pTargetState);
-
-						nextStartDepth = depth + 1;
 						return true;
 					}
 				}
@@ -186,8 +182,6 @@ bool StateMachine::EvaluateStateTransitionsOnce(HsmTimeType deltaTime, const siz
 					State* pTargetState = transition.CreateState(this);
 					HSM_LOG_TRANSITION(1, depth + 1, "Inner", pTargetState);
 					mStateStack.push_back(pTargetState);
-
-					nextStartDepth = depth + 1;
 					return true;
 				}
 			}
@@ -201,8 +195,6 @@ bool StateMachine::EvaluateStateTransitionsOnce(HsmTimeType deltaTime, const siz
 					State* pTargetState = transition.CreateState(this);
 					HSM_LOG_TRANSITION(1, depth + 1, "Entry", pTargetState);
 					mStateStack.push_back(pTargetState);
-
-					nextStartDepth = depth + 1;
 					return true;
 				}
 			}
@@ -215,8 +207,6 @@ bool StateMachine::EvaluateStateTransitionsOnce(HsmTimeType deltaTime, const siz
 				State* pTargetState = transition.CreateState(this);
 				HSM_LOG_TRANSITION(1, depth, "Sibling", pTargetState);
 				mStateStack.push_back(pTargetState);
-
-				nextStartDepth = depth;
 				return true;
 			}
 			break;

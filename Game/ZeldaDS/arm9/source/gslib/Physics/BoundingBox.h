@@ -28,6 +28,11 @@ public:
 		this->h = h;
 	}
 
+	void Reset(const Vector2I& pos, int16 w, int16 h)
+	{
+		Reset(pos.x, pos.y, w, h);
+	}
+
 	int16 Left() const		{ return pos.x; }
 	int16 Right() const		{ return pos.x + w; }
 	int16 Top() const		{ return pos.y; }

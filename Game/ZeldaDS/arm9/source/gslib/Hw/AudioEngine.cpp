@@ -149,10 +149,14 @@ namespace AudioEngine
 
 	void StopMusic()
 	{
-		mmStop();
-
 		if (gPlayingMusicId != InvalidMusicId)
 		{
+			// mmStop() doesn't always work - sometimes, trying to play the music again
+			// after stopping causes it not to play! This workaround seems to do the trick.
+			//mmStop();
+			mmPosition(0);
+			mmPause();
+
 			UnloadMusic(gPlayingMusicId);
 			gPlayingMusicId = InvalidMusicId;
 		}
@@ -161,6 +165,12 @@ namespace AudioEngine
 	bool IsPlayingMusic()
 	{
 		return mmActive();
+	}
+
+	void SetMusicVolume(float volumeRatio)
+	{
+		const mm_word volume = static_cast<mm_word>(volumeRatio * 1024);
+		mmSetModuleVolume(volume);
 	}
 
 	void PlaySound(SoundId SoundId)

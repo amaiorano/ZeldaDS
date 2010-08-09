@@ -259,13 +259,22 @@ ScrollingMgr::ScrollingMgr()
 {
 }
 
-void ScrollingMgr::Init(const Vector2I& startScreen)
+void ScrollingMgr::Init()
 {
 	//mStateMachine.SetDebugLevel(1);
 	mStateMachine.SetOwner(this);
 	mStateMachine.SetSharedStateData(new ScrollingStates::ScrollingSharedStateData());
 	mStateMachine.SetInitialState<ScrollingStates::Root>();
+}
 
+void ScrollingMgr::Shutdown()
+{
+	//@TODO:...
+	// Clear event listeners?
+}
+
+void ScrollingMgr::Reset(const Vector2I& startScreen)
+{
 	mCurrScreen.Reset(startScreen);
 	mScrollOffset.Reset(InitZero);
 	UpdateCameraPos();

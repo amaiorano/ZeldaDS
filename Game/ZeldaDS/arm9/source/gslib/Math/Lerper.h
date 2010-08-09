@@ -52,6 +52,11 @@ public:
 
 	ValueType GetCurr() const { return mCurr; }
 
+	bool IsDone() const
+	{
+		return mTimeToLerp == 0;
+	}
+
 private:
 	ValueType mMin, mMax;
 	ValueType mDir; // +/-1

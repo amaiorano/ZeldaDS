@@ -16,8 +16,11 @@ public:
 
 	// Tile layer functions
 	void InitTiled(int bgId, uint8 metaTileSizeX, uint8 metaTileSizeY);
-	void LoadTilesImage(const void* pImage, uint16 sizeBytes);
+	void LoadTilesImage(const uint8* pImage, uint16 sizeBytes);
 	void DrawTile(uint16 metaTileIndex, uint16 metaTileMapX, uint16 metaTileMapY);
+
+	// Returns pointer to the tiles image buffer
+	const uint8* GetTilesImagePtr() const;
 
 	// Console layer functions
 	void InitConsole(PrintConsole* pConsole); // Transfers ownership of pointer (this class will delete it)

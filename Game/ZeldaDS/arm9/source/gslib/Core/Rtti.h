@@ -1,6 +1,8 @@
 #ifndef GS_RTTI
 #define GS_RTTI
 
+#include "Config.h"
+
 //@NOTE: RTTI must be enabled when compiling
 #include <typeinfo>
 
@@ -17,12 +19,12 @@ inline T DynamicCast(U pObj)
 template <typename T, typename U>
 inline T CheckedDynamicCast(U pObj)
 {
-#ifdef NDEBUG
-	return DynamicCast<T>(pObj);
-#else
+#if CONFIG_DEBUG
 	T pRet = DynamicCast<T>(pObj);
 	ASSERT_MSG(pRet != 0, "CheckedDynamicCast failed!");
 	return pRet;
+#else
+	return DynamicCast<T>(pObj);
 #endif
 }
 

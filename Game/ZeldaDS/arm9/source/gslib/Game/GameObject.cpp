@@ -14,7 +14,7 @@ void GameObject::OnAddToScene()
 	GameObjectInfo goi;
 	GetGameObjectInfo(goi);
 
-	IAnimatedRenderable::Activate(goi.mSpriteSize.x, goi.mSpriteSize.y, goi.mGameActor, goi.mIsDirectional);
+	IAnimatedRenderable::Activate(goi.mSpriteRenderGroupId, goi.mSpriteSize.x, goi.mSpriteSize.y, goi.mGameActor, goi.mIsDirectional);
 	IPhysical::Activate(goi.mPhysicalSize.x, goi.mPhysicalSize.y);
 }
 

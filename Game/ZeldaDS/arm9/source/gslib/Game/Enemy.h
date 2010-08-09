@@ -16,6 +16,13 @@ public:
 	virtual void InitStateMachine();
 	virtual void OnDead();
 
+	// GameObject interface
+	virtual void GetGameObjectInfo(GameObjectInfo& gameObjectInfo)
+	{
+		Base::GetGameObjectInfo(gameObjectInfo);
+		gameObjectInfo.mSpriteRenderGroupId = GameSpriteRenderGroup::Enemies;
+	}
+
 	// ISceneNode interface
 	virtual void OnAddToScene();
 	virtual void Update(GameTimeType deltaTime);

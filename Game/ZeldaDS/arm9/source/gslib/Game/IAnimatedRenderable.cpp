@@ -12,9 +12,9 @@ IAnimatedRenderable::~IAnimatedRenderable()
 {
 }
 
-void IAnimatedRenderable::Activate(uint16 width, uint16 height, GameActor::Type gameActor, bool isDirectional)
+void IAnimatedRenderable::Activate(uint16 spriteRenderGroupId, uint16 width, uint16 height, GameActor::Type gameActor, bool isDirectional)
 {
-	IRenderable::Activate(width, height);
+	IRenderable::Activate(spriteRenderGroupId, width, height);
 	mGameActor = gameActor;
 	mIsDirectional = isDirectional;
 	mSpriteDir = SpriteDir::Down;

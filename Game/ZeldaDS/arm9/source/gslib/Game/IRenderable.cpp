@@ -9,9 +9,10 @@ IRenderable::IRenderable()
 
 IRenderable::~IRenderable()
 {
+	ASSERT(mpSprite == 0); // Deactivate must be called if we were Activated
 }
 
-void IRenderable::Activate(uint16 width, uint16 height)
+void IRenderable::Activate(uint16 spriteRenderGroupId, uint16 width, uint16 height)
 {
 	ASSERT(mpSprite == 0);
 	mpSprite = GraphicsEngine::AllocSprite();
@@ -30,7 +31,7 @@ void IRenderable::Activate(uint16 width, uint16 height)
 		FAIL_MSG("Unhandled sprite size");
 	}
 	
-	mpSprite->Init(width, height, spriteSize, SpriteColorFormat_256Color);
+	mpSprite->Init(spriteRenderGroupId, width, height, spriteSize, SpriteColorFormat_256Color);
 }
 
 void IRenderable::Deactivate()

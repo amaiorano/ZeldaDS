@@ -18,8 +18,19 @@ const uint16 GameNumBgMetaTilesY			= (HwBgSizeY / GameMetaTileSizeY);
 const uint16 GameNumScreenMetaTilesX		= (HwScreenSizeX / GameMetaTileSizeX);
 const uint16 GameNumScreenMetaTilesY		= (HwScreenSizeY / GameMetaTileSizeY);
 
-class BoundingBox;
+namespace GameTileLayer
+{
+	enum Type
+	{
+		Background,
+		Foreground,
 
+		NumTypes
+	};
+}
+
+class BoundingBox;
+class BackgroundLayer;
 
 // WorldMap contains an array of TileLayer, which contains a TileMap and a TileSet.
 // TileMap is a 2D array of tile indices to render. TileSet contains the actual
@@ -89,6 +100,12 @@ public:
 
 	void LoadMap(const char* mapFile);
 
+	// Useful helper to convert a tile position to a world position, and vice versa
+	static Vector2I TileToWorldPos(uint16 tileX, uint16 tileY) { return Vector2I(tileX * GameMetaTileSizeX, tileY * GameMetaTileSizeY); }
+	static Vector2I TileToWorldPos(const Vector2I& tilePos) { return Vector2I(tilePos.x * GameMetaTileSizeX, tilePos.y * GameMetaTileSizeY); }
+	static Vector2I WorldPosToTile(uint16 posX, uint16 posY) { return Vector2I(posX / GameMetaTileSizeX, posY / GameMetaTileSizeY); }
+	static Vector2I WorldPosToTile(const Vector2I& worldPos) { return Vector2I(worldPos.x / GameMetaTileSizeX, worldPos.y / GameMetaTileSizeY); }
+
 	// Adds a shared clock for animated tiles and returns its index (pass index to EnableAnimTile())
 	uint16 AddAnimTileSharedClock(int numFrames, AnimTimeType unitsPerFrame, AnimCycle::Type animCycle);
 
@@ -110,6 +127,9 @@ public:
 
 	// Returns true and sets bbox if a collision tile is set at input world pos
 	bool GetTileBoundingBoxIfCollision(const Vector2I& worldPos, BoundingBox& bbox);
+
+	uint16 GetTileIndex(uint16 layer, const Vector2I& worldTilePos);
+	BackgroundLayer& GetBgLayer(GameTileLayer::Type layer);
 
 	// Returns the player spawn data for the currently loaded map
 	struct PlayerSpawnData
@@ -133,14 +153,14 @@ private:
 
 	void FindPlayerSpawnData();
 	TileMap& GetTileMapLayer(uint16 layer) { return mTileLayers[layer].mTileMap; }
-	uint16 GetTileIndexToDraw(uint16 layer, uint16 x, uint16 y, bool& tileIsAnimated) const;
+	uint16 GetTileIndexToDraw(uint16 layer, uint16 tileX, uint16 tileY, bool& tileIsAnimated) const;
 
 	PlayerSpawnData mPlayerSpawnData;
 
 	uint16 mNumScreensX, mNumScreensY;
 	uint16 mNumTilesX, mNumTilesY;
 
-	static const int NumLayers = 2;
+	static const int NumLayers = GameTileLayer::NumTypes;
 
 	// Shared anim controls for animated tiles
 	std::vector<class AnimAsset*> mAnimAssets;

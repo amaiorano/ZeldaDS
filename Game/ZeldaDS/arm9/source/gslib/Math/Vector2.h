@@ -93,6 +93,12 @@ public:
 };
 
 template <typename T>
+inline bool operator==(const Vector2<T>& lhs, const Vector2<T>& rhs)
+{
+	return (lhs.x == rhs.x && lhs.y == rhs.y);
+}
+
+template <typename T>
 inline Vector2<T> operator+(const Vector2<T>& lhs, const Vector2<T>& rhs)
 {
 	Vector2<T> result = lhs;

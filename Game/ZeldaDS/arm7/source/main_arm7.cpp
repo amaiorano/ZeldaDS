@@ -28,6 +28,7 @@ distribution.
 #include <nds.h>
 #include <dswifi7.h>
 #include <maxmod7.h>
+#include "gslib/Core/Config.h"
 
 //---------------------------------------------------------------------------------
 void VcountHandler() {
@@ -58,8 +59,10 @@ int main() {
 
 	//installWifiFIFO();
 
+#if AUDIO_ENABLED
 	installSoundFIFO();
 	mmInstall(FIFO_MAXMOD);
+#endif
 
 	installSystemFIFO();
 	

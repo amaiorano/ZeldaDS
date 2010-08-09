@@ -5,6 +5,7 @@
 #include "gslib/Hw/GraphicsEngine.h"
 #include "gslib/Hw/BackgroundLayer.h"
 #include "gslib/Hw/InputManager.h"
+#include "gslib/Hw/SpriteRenderGroupMgr.h"
 #include "gslib/Hw/Sprite.h"
 #include "gslib/Hw/CpuClock.h"
 #include "gslib/Hw/AudioEngine.h"
@@ -34,6 +35,8 @@
 // Amount left for heap: 4 MB - 32k (internal libnds stuff) - <your program size>
 // <your program size> can be found using arm-eabi-size.exe <elf_file>
 
+bool gHackLeaveMap = false;
+
 struct GameStates
 {
 	struct GameSharedStateData : SharedStateData
@@ -54,22 +57,31 @@ struct GameStates
 	{
 		virtual void OnEnter()
 		{
+			static SpriteRenderGroup groups[] =
+			{
+				{ GameSpriteRenderGroup::AboveAll, 2 },
+				{ GameSpriteRenderGroup::Heroes, 1 },
+				{ GameSpriteRenderGroup::Weapons, 20 },
+				{ GameSpriteRenderGroup::Enemies, 20 },
+			};
+			CT_ASSERT(NUM_ARRAY_ELEMS(groups) == GameSpriteRenderGroup::NumTypes);
+			
+			SpriteRenderGroupMgr::Instance().Init(groups, GameSpriteRenderGroup::NumTypes);
+
 			LoadAllGameAnimAssets();
 
-			// Palettes for both bg2 and bg3 should be the same...
-			GraphicsEngine::LoadBgPalette(overworld_bgPal, sizeof(overworld_bgPal)); //@TODO: look into grit palette sharing
-			
 			// Load sprite palette
 			GraphicsEngine::LoadSpritePalette(charactersPal, sizeof(charactersPal));
 
 			GraphicsEngine::SetBgFontColor( RGB8(255, 255, 255) );
 			GraphicsEngine::SetSubBgFontColor( RGB8(255, 255, 0) );
 			
-			GraphicsEngine::GetBgLayer(2).LoadTilesImage(overworld_fgTiles, sizeof(overworld_fgTiles));
-			GraphicsEngine::GetBgLayer(3).LoadTilesImage(overworld_bgTiles, sizeof(overworld_bgTiles));
-
 			//GraphicsEngine::GetBgLayer(0).ActivateTextLayer();
 			//printf("Testing text on bg layer 0!\n\");
+
+			AudioEngine::LoadBank("Audio/soundbank.bin");
+
+			ScrollingMgr::Instance().Init();
 		}
 		
 		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
@@ -109,25 +121,53 @@ struct GameStates
 		{
 			WorldMap& worldMap = WorldMap::Instance();
 			worldMap.Init(20, 10);
-			worldMap.LoadMap("Maps/TestMap.map");
+			//@TODO: Temporarily toggle map to load, eventually load the one specified from warp event on map
+			static int whichMap = 0;
+			worldMap.LoadMap(whichMap == 0? "Maps/TestMap.map" : "Maps/TestMap2.map");
+			whichMap = (whichMap + 1) % 2;
 			SceneGraph::Instance().SetWorldMap(worldMap);
 
-			AudioEngine::LoadBank("Audio/soundbank.bin");
+			// Palettes for both bg2 and bg3 should be the same...
+			GraphicsEngine::LoadBgPalette(overworld_bgPal, sizeof(overworld_bgPal)); //@TODO: look into grit palette sharing
+
+			GraphicsEngine::GetBgLayer(2).LoadTilesImage(reinterpret_cast<const uint8*>(overworld_fgTiles), sizeof(overworld_fgTiles));
+			GraphicsEngine::GetBgLayer(3).LoadTilesImage(reinterpret_cast<const uint8*>(overworld_bgTiles), sizeof(overworld_bgTiles));
+
+			AudioEngine::SetMusicVolume(1.0f);
 			AudioEngine::PlayMusic(MOD_OVERWORLD3);
 
 			const WorldMap::PlayerSpawnData& playerSpawnData = worldMap.GetPlayerSpawnData();
 
-			ScrollingMgr::Instance().Init(playerSpawnData.mScreen);
+			ScrollingMgr::Instance().Reset(playerSpawnData.mScreen);
 
+			//@TODO: Need to load player save data
 			Player* pPlayer = new Player();
 			Vector2I initPos(playerSpawnData.mPos);
 			pPlayer->Init(initPos);
 			SceneGraph::Instance().AddNode(pPlayer);
+
+			// After a few map reloads, we should be getting a 0 byte delta...
+			//HEAP_REPORT_DELTA_SIZE();
+			//HEAP_CHECK_SIZE();
 		}
 
 		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
 		{
 			return SiblingTransition<PlayingMap>();
+		}
+	};
+
+	struct UnloadMap : GameState
+	{
+		virtual void OnEnter()
+		{
+			AudioEngine::StopMusic();
+			WorldMap::Instance().Shutdown();
+		}
+
+		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
+		{
+			return SiblingTransition<LoadMap>();
 		}
 	};
 
@@ -150,7 +190,19 @@ struct GameStates
 		virtual void OnExit()
 		{
 			ScrollingMgr::Instance().RemoveEventListener(this);
-			RemoveNodesBeforeChangingScreens();
+			
+			RemoveAllNodesImmediately();
+		}
+
+		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
+		{
+			if ((InputManager::GetKeysHeld() & (KEY_L|KEY_R)) == (KEY_L|KEY_R)
+				|| gHackLeaveMap)
+			{
+				gHackLeaveMap = false;
+				return SiblingTransition<LeavingMap>();
+			}
+			return NoTransition();
 		}
 
 		virtual void PerformStateActions(HsmTimeType deltaTime)
@@ -181,7 +233,7 @@ struct GameStates
 	private:
 		virtual void OnScrollingBegin()
 		{
-			RemoveNodesBeforeChangingScreens();
+			RemoveAllNodesExceptPlayer();
 		}
 
 		virtual void OnScrollingEnd()
@@ -189,25 +241,30 @@ struct GameStates
 			mSpawnEnemiesNextFrame = true;
 		}
 
-		void RemoveNodesBeforeChangingScreens()
+		void RemoveAllNodesExceptPlayer()
 		{
-			// Remove all enemies, weapons, etc.
-			WeaponList& playerWeapons = SceneGraph::Instance().GetPlayerWeaponList();
-			for (WeaponList::iterator iter = playerWeapons.begin(); iter != playerWeapons.end(); ++iter)
+			Player* pPlayer = SceneGraph::Instance().GetPlayerList().front();
+			SceneNodeList& sceneNodes = SceneGraph::Instance().GetSceneNodeList();
+			for (SceneNodeList::iterator iter = sceneNodes.begin(); iter != sceneNodes.end(); ++iter)
 			{
+				if (*iter == pPlayer)
+				{
+					continue;
+				}
+
 				SceneGraph::Instance().RemoveNodePostUpdate(*iter);
 			}
-			WeaponList& enemyWeapons = SceneGraph::Instance().GetEnemyWeaponList();
-			for (WeaponList::iterator iter = enemyWeapons.begin(); iter != enemyWeapons.end(); ++iter)
-			{
-				SceneGraph::Instance().RemoveNodePostUpdate(*iter);
-			}
-			EnemyList& enemies = SceneGraph::Instance().GetEnemyList();
-			for (EnemyList::iterator iter = enemies.begin(); iter != enemies.end(); ++iter)
-			{
-				Enemy* pEnemy = *iter;
-				SceneGraph::Instance().RemoveNodePostUpdate(pEnemy);
-			}
+		}
+
+		void RemoveAllNodesImmediately()
+		{
+			RemoveAllNodesExceptPlayer();
+
+			Player* pPlayer = SceneGraph::Instance().GetPlayerList().front();
+			SceneGraph::Instance().RemoveNodePostUpdate(pPlayer);
+
+			// For removal immediately
+			SceneGraph::Instance().Update(0);
 		}
 
 		void SpawnEnemiesForCurrentScreen()
@@ -249,6 +306,33 @@ struct GameStates
 			{
 				scrollingMgr.StartScrolling(scrollDir);
 			}
+		}
+	};
+
+	struct LeavingMap : GameState
+	{
+		virtual void OnEnter()
+		{
+			GraphicsEngine::FadeScreen(FadeScreenDir::Out, SEC_TO_FRAMES(0.5f));
+		}
+
+		virtual void OnExit()
+		{
+			AudioEngine::SetMusicVolume(1.0f);
+		}
+
+		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
+		{
+			if ( !GraphicsEngine::IsFadingScreen() )
+			{
+				return SiblingTransition<UnloadMap>();
+			}
+			return NoTransition();
+		}
+
+		virtual void PerformStateActions(HsmTimeType deltaTime)
+		{
+			AudioEngine::SetMusicVolume( GraphicsEngine::GetFadeRatio() );
 		}
 	};
 };

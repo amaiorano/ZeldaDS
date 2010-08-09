@@ -16,6 +16,7 @@ void Sword::Init(SpriteDir::Type dir)
 
 void Sword::GetGameObjectInfo(GameObjectInfo& gameObjectInfo)
 {
+	Base::GetGameObjectInfo(gameObjectInfo);
 	gameObjectInfo.mGameActor = GameActor::Sword;
 }
 

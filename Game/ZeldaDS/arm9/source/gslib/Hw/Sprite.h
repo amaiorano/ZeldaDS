@@ -13,9 +13,9 @@ class Sprite
 {
 public:
 	Sprite();
-	~Sprite();	
+	~Sprite();
 
-	void Init(uint16 width, uint16 height, SpriteSize spriteSize, SpriteColorFormat spriteColorFormat, bool bMainScreen = true);
+	void Init(uint16 spriteRenderGroupId, uint16 width, uint16 height, SpriteSize spriteSize, SpriteColorFormat spriteColorFormat, bool bMainScreen = true);
 
 	struct OamProperties
 	{

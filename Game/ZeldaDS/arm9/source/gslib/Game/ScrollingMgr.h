@@ -24,7 +24,11 @@ public:
 class ScrollingMgr : public Singleton<ScrollingMgr>
 {
 public:
-	void Init(const Vector2I& startScreen);
+	void Init();
+	void Shutdown();
+
+	void Reset(const Vector2I& startScreen);
+
 	void Update(GameTimeType deltaTime);
 
 	void AddEventListener(IScrollingEventListener* pListener);

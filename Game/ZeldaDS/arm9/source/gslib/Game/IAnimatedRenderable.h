@@ -11,7 +11,7 @@ protected:
 	IAnimatedRenderable();
 	virtual ~IAnimatedRenderable();
 
-	void Activate(uint16 width, uint16 height, GameActor::Type gameActor, bool isDirectional);
+	void Activate(uint16 spriteRenderGroupId, uint16 width, uint16 height, GameActor::Type gameActor, bool isDirectional);
 
 	//void UpdateAnimationState(GameTimeType deltaTime)
 	void AdvanceClockAndSetAnimPose(GameTimeType deltaTime);

@@ -1,4 +1,5 @@
 #include "Sprite.h"
+#include "SpriteRenderGroupMgr.h"
 #include <nds/dma.h>
 
 Sprite::Sprite()
@@ -12,14 +13,18 @@ Sprite::Sprite()
 
 Sprite::~Sprite()
 {
-	if (mpSpriteGfxMem)
+	if (mpOamState)
 	{
+		ASSERT(mpSpriteGfxMem);
 		oamClear(&oamMain, mId, 1); // Seems we need to clear (disable) the sprite manually or it continues to render
 		oamFreeGfx(&oamMain, mpSpriteGfxMem);
+
+		ASSERT(mId != ~0);
+		SpriteRenderGroupMgr::Instance().FreeSpriteId(mId);
 	}
 }
 
-void Sprite::Init(uint16 width, uint16 height, SpriteSize spriteSize, SpriteColorFormat spriteColorFormat, bool bMainScreen)
+void Sprite::Init(uint16 spriteRenderGroupId, uint16 width, uint16 height, SpriteSize spriteSize, SpriteColorFormat spriteColorFormat, bool bMainScreen)
 {
 	ASSERT_MSG(!mpOamState, "Cannot Sprite::Init twice!");
 
@@ -32,10 +37,14 @@ void Sprite::Init(uint16 width, uint16 height, SpriteSize spriteSize, SpriteColo
 	//@TODO: validate SpriteSize against width and height (if we can do that, can probably just get rid of passing in SpriteSize...)
 	ASSERT(mSpriteColorFormat == SpriteColorFormat_16Color || mSpriteColorFormat == SpriteColorFormat_256Color);
 
-	//@TODO: Move getting a unique sprite id into a SpriteManager
-	static volatile uint16 sSpriteId = 0;
-	mId = sSpriteId;
-	++sSpriteId;
+	// Lazily default init the SpriteRenderGroupMgr if the client has done so (all sprites in group 0)
+	if ( !SpriteRenderGroupMgr::Instance().IsInitialized() )
+	{
+		SpriteRenderGroup defaultGroup = { 0, MaxNumSpriteIds };
+		SpriteRenderGroupMgr::Instance().Init(&defaultGroup, 1);
+	}
+
+	mId = SpriteRenderGroupMgr::Instance().AllocSpriteId(spriteRenderGroupId);
 
 	// Alloc a single block for our gfx - we will copy the current frame to vram when we need to
 	mpSpriteGfxMem = oamAllocateGfx(mpOamState, mSpriteSize, mSpriteColorFormat);

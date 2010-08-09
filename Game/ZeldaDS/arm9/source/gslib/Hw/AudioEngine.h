@@ -20,6 +20,7 @@ namespace AudioEngine
 	void PlayMusic(MusicId musicId, PlayMode::Type playMode = PlayMode::Loop);
 	void StopMusic();
 	bool IsPlayingMusic();
+	void SetMusicVolume(float volumeRatio); // [0,1]
 
 	void PlaySound(SoundId SoundId);
 	void StopAllSounds();
