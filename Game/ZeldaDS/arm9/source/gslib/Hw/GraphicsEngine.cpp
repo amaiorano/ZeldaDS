@@ -41,6 +41,7 @@ void DrawQuad(uint16 x, uint16 y, uint16 w, uint16 h, uint16 color, uint16 alpha
 
 namespace
 {
+	bool gGraphicsEngineInitialized = false;
 	BackgroundLayer gBgLayers[4];
 	BackgroundLayer gSubBgLayers[1];
 	bool gEnabled3d = false;
@@ -102,24 +103,7 @@ namespace
 	void DrawFullScreenQuad(float blendRatio)
 	{
 		uint16 alpha = static_cast<uint16>(blendRatio * 31);
-
 		DrawQuad(0, 0, HwScreenSizeX+1, HwScreenSizeY, RGB15(0, 0, 0), alpha);
-/*
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-
-		glEnable(GL_BLEND);
-		glPolyFmt(POLY_ALPHA(alpha) | POLY_CULL_BACK);
-
-		// Draw slightly larger quad to deal with imprecision issues on DS
-		glBegin(GL_QUADS);
-			glColor(RGB15(0, 0, 0));
-			VERTEX2(0, 0);
-			VERTEX2(0, HwScreenSizeY);
-			VERTEX2(HwScreenSizeX+1, HwScreenSizeY);
-			VERTEX2(HwScreenSizeX+1, 0);
-		glEnd();
-*/
 	}
 
 	void PreVBlankUpdate()
@@ -298,6 +282,13 @@ namespace GraphicsEngine
 		SetAllBgsEnabled(false);
 
 		gFadeLerper.Reset(0.0f, 1.0f, 1.0f, 1.0f, 0.0f);
+
+		gGraphicsEngineInitialized = true;
+	}
+
+	bool IsInitialized()
+	{
+		return gGraphicsEngineInitialized;
 	}
 
 	void SetAllBgsEnabled(bool enabled)

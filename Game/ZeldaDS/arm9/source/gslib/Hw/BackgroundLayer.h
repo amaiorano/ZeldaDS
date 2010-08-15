@@ -3,9 +3,6 @@
 
 #include "gslib/Core/Core.h"
 
-//@LAME: Want to forward declare PrintConsole, but it's a typedef'd anonymous struct, so I can't forward declare it and
-// am forced to include the header here :(
-//#include <nds/arm9/console.h>
 struct PrintConsole;
 
 class BackgroundLayer
@@ -26,7 +23,6 @@ public:
 	void InitConsole(PrintConsole* pConsole); // Transfers ownership of pointer (this class will delete it)
 	bool IsTextLayer() const;
 	void ActivateTextLayer(); // Call so subsequent iprintfs render to this layer
-	void SetTextWindow(int tileX, int tileY, int numTilesX, int numTilesY);
 	void ClearText();
 
 	// 3D layer functions

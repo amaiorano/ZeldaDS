@@ -20,6 +20,6 @@ typedef TypeId StateTypeId;
 #define GetStateTypeId(state) GetTypeId(state)
 
 // GetStateDebugName returns the name of a state for debug output only (not necessary)
-#define GetStateDebugName(state) GetTypeId(state).name()
+#define GetStateDebugName(state) GetObjectTypeName(state)
 
 #endif // HSM_CLIENT_TYPES_H

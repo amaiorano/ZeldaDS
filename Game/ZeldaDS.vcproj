@@ -450,6 +450,14 @@
 					Name="Core"
 					>
 					<File
+						RelativePath=".\ZeldaDS\arm9\source\gslib\Core\Assert.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\ZeldaDS\arm9\source\gslib\Core\Assert.h"
+						>
+					</File>
+					<File
 						RelativePath=".\ZeldaDS\arm9\source\gslib\Core\Config.h"
 						>
 					</File>

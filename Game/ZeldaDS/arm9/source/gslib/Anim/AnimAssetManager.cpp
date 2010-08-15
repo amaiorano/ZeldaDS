@@ -12,7 +12,7 @@ namespace AnimAssetManager
 {
 	void AddAnimAsset(AnimAssetKey key, AnimAsset* pAnimAsset)
 	{
-		ASSERT_MSG(!FindAnimAsset(key), "AnimAsset with this key already added!");
+		ASSERT_FORMATTED(!FindAnimAsset(key), ("AnimAsset with this key already added: %d", key));
 		gAnimAssetMap[key] = pAnimAsset;
 	}
 

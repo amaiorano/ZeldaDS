@@ -3,9 +3,9 @@
 
 #include "Config.h"
 #include "Types.h"
-#include <nds/arm9/sassert.h>
+#include "Assert.h"
 
-//@TODO: Remove in non-final?
+//@TODO: Remove in release?
 #include <cstdio>
 #include <malloc.h>
 
@@ -29,32 +29,6 @@ const uint16 TargetFramesPerSecond = 60;
 
 // Number of c-style array elements
 #define NUM_ARRAY_ELEMS(arr) (sizeof(arr)/sizeof(arr[0]))
-
-// Assert functions
-#define ASSERT(exp)				sassert(exp, "")
-#define ASSERT_MSG(exp, msg)	sassert(exp, msg)
-#define FAIL()					sassert(false, "FAIL")
-#define FAIL_MSG(msg)			sassert(false, "FAIL: " msg)
-
-#if CONFIG_DEBUG
-	#define VERIFY(exp)				ASSERT(exp)
-#else
-	#define VERIFY(exp)				exp
-#endif
-
-// Compile-time assertion (@TODO: Should this be moved to Generic.h?)
-#define CT_ASSERT(expr)				struct __UNIQUE_NAME { unsigned int no_message : expr; }
-#define CT_ASSERT_MSG(expr, msg)	struct __UNIQUE_NAME { unsigned int msg : expr; }
-#define __UNIQUE_NAME				__MAKE_NAME(__LINE__)
-#define __MAKE_NAME(line)			__MAKE_NAME2(line)
-#define __MAKE_NAME2(line)			ct_assert_failure_ ## line
-
-// Useful for wrapping debug-only statements; i.e. declaring variables used in assertions
-#if CONFIG_DEBUG
-	#define DBG_STATEMENT(s) s
-#else
-	#define DBG_STATEMENT(s)
-#endif
 
 // Global frame count for debugging
 DBG_STATEMENT(extern uint32 gDebugFrameCount);

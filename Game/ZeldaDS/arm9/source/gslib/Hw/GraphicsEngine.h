@@ -20,6 +20,7 @@ namespace GraphicsEngine
 {
 	// Inits video mode, sets up backgrounds, etc.
 	void Init(uint16 metaTileSizeX, uint16 metaTileSizeY);
+	bool IsInitialized();
 
 	void SetAllBgsEnabled(bool enabled);
 

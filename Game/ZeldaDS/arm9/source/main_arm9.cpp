@@ -74,7 +74,7 @@ struct GameStates
 			GraphicsEngine::LoadSpritePalette(charactersPal, sizeof(charactersPal));
 
 			GraphicsEngine::SetBgFontColor( RGB8(255, 255, 255) );
-			GraphicsEngine::SetSubBgFontColor( RGB8(255, 255, 0) );
+			GraphicsEngine::SetSubBgFontColor( RGB8(255, 255, 255) );
 			
 			//GraphicsEngine::GetBgLayer(0).ActivateTextLayer();
 			//printf("Testing text on bg layer 0!\n\");

@@ -1,3 +1,4 @@
+#include "gslib/Core/Core.h"
 #include "MovementModel.h"
 
 namespace MovementModel
