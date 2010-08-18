@@ -13,10 +13,9 @@
 #include "Enemy.h"
 #include "MovementModel.h"
 #include "WorldMapTile.h"
+#include "GameFlowMgr.h"
 
 // Player HSM
-
-extern bool gHackLeaveMap;
 
 struct PlayerSharedStateData : CharacterSharedStateData
 {
@@ -231,7 +230,8 @@ struct PlayerStates
 	{
 		virtual void OnEnter()
 		{
-			gHackLeaveMap = true;
+			//@TODO: Read this value from the WorldMap
+			GameFlowMgr::Instance().SetTargetWorldMap("Maps/TestMap2.map");
 		}
 	};
 

@@ -218,6 +218,14 @@
 						>
 					</File>
 					<File
+						RelativePath=".\ZeldaDS\arm9\source\gslib\Game\GameFlowMgr.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\ZeldaDS\arm9\source\gslib\Game\GameFlowMgr.h"
+						>
+					</File>
+					<File
 						RelativePath=".\ZeldaDS\arm9\source\gslib\Game\GameHelpers.cpp"
 						>
 					</File>
