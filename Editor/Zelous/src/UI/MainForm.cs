@@ -13,8 +13,11 @@ namespace Zelous
 {
     public partial class MainForm : Form
     {
-        // Provide global access to the main form
-        public static MainForm Instance = null;
+        public static MainForm Instance = null; // Provides global access to the main form
+        private string mCurrMapFile = "";
+        private WorldMap mWorldMap;
+        private int[] mActiveTileIndex = new int[WorldMap.NumLayers];
+        CommandManager mCommandManager = new CommandManager();
 
         enum LayerType : int
         {
@@ -22,11 +25,6 @@ namespace Zelous
             Foreground,
             Collision
         }
-
-        private WorldMap mWorldMap;
-        private int[] mActiveTileIndex = new int[WorldMap.NumLayers];
-
-        CommandManager mCommandManager = new CommandManager();
        
         public MainForm()
         {
@@ -35,6 +33,11 @@ namespace Zelous
             //@TODO: Modify MainForm to only contain panels, and create all controls dynamically
             // and dock within panels
             InitializeComponent();
+
+            mCommandManager.OnCommand += new CommandManager.CommandEventHandler(OnCommandManagerCommand);
+
+            SetCurrMap(""); //@TODO: Reload last map?
+            mCommandManager.OnNewMap();
 
             Size tileSize = new Size(16, 16);
 
@@ -96,6 +99,12 @@ namespace Zelous
             set { mWorldMapView.ActiveLayer = value; }
         }
 
+        private void OnCommandManagerCommand(CommandManager sender, CommandAction action, Command command)
+        {
+            // On any command, we need to update the title to show the "modified" state of our file
+            UpdateTitle();
+        }
+
         private void OnTileSelected(TileMapView sender, TileMapView.TileSelectEventArgs e)
         {
             if (sender == mWorldMapView) // Paste tile
@@ -112,6 +121,48 @@ namespace Zelous
                 sender.LastTileSelectedPosition = e.TileMapPos;
             }
             sender.Refresh();
+        }
+
+        private void UpdateTitle()
+        {
+            string title = Application.ProductName + " (v" + Application.ProductVersion + ")";
+
+            if (mCurrMapFile.Length > 0)
+            {
+                title += " - " + mCurrMapFile;
+            }
+
+            if (mCommandManager.IsModified())
+            {
+                title += "*";
+            }
+
+            this.Text = title;
+        }
+
+        private void SetCurrMap(string file)
+        {
+            mCurrMapFile = file;
+            //UpdateTitle(); // Show the new map name (@NOTE: This is not needed! CommandManager lets us know when to update the title)
+        }
+
+        private void SaveCurrMap()
+        {
+            Debug.Assert(mCurrMapFile.Length > 0);
+
+            // No need to save unless we're modified
+            if (mCommandManager.IsModified())
+            {
+                mWorldMap.Serialize(SerializationType.Saving, mCurrMapFile);
+                mCommandManager.OnSaveMap();
+                //UpdateTitle(); // Show modified state
+            }
+            else
+            {
+                //@TODO: DEBUG ONLY, save the map to a temporary file, and compare it to the actual file,
+                // making sure they are exactly the same. If they are not, there's something wrong with
+                // how we track the modified state of a file.
+            }
         }
 
         private void UpdateUndoRedoToolStripItems()
@@ -138,18 +189,27 @@ namespace Zelous
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
+            //@TODO: Get rid of this junk and save/load our own settings file
+
             // Serialization test
             Properties.Settings.Default.WorldMapViewScale = mWorldMapView.RenderScale;
             Properties.Settings.Default.Save();
         }
 
+        // Save
         private void saveMapToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // For now, just do the same as Save As...
-            //@TODO: Store the current map path and save to it
-            saveMapAsToolStripMenuItem_Click(sender, e);
+            if (mCurrMapFile.Length > 0)
+            {
+                SaveCurrMap();                
+            }
+            else // Save as...
+            {
+                saveMapAsToolStripMenuItem_Click(sender, e);
+            }
         }
 
+        // Save As
         private void saveMapAsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             using (SaveFileDialog fileDlg = new SaveFileDialog())
@@ -160,11 +220,13 @@ namespace Zelous
 
                 if (dlgRes == DialogResult.OK)
                 {
-                    mWorldMap.Serialize(SerializationType.Saving, fileDlg.FileName);
+                    SetCurrMap(fileDlg.FileName);
+                    SaveCurrMap();
                 }
             }
         }
 
+        // Open
         private void openMapToolStripMenuItem_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog fileDlg = new OpenFileDialog())
@@ -177,8 +239,10 @@ namespace Zelous
                 {
                     mWorldMap.Serialize(SerializationType.Loading, fileDlg.FileName);
                     mWorldMapView.RedrawTileMap();
+                    
+                    SetCurrMap(fileDlg.FileName);
 
-                    mCommandManager.ClearCommandStacks();
+                    mCommandManager.OnLoadMap();
                     UpdateUndoRedoToolStripItems();
                 }
             }

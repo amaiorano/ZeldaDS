@@ -157,6 +157,7 @@ namespace Zelous
 
         public TileLayer[] TileLayers { get { return mTileLayers; } }
 
+        //@TODO: Return success status
         public void Serialize(SerializationType serializationType, string fileName)
         {
             // Note: When saving, we always save the latest version, but loading must be backwards
