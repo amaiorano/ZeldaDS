@@ -15,13 +15,12 @@ namespace Zelous
         private TileLayer[] mTileLayers;
         private bool[] mLayersToRender;
 
-        private Point mCameraPos = new Point(0, 0);
+        private Point mCameraPos;// = new Point(0, 0);
         private Size mTotalSizePixels = new Size(0, 0);
         private int mActiveLayer = 0;
         private bool mShowTileGrid = false;
         private bool mShowScreenGrid = false;
-
-        private Point mLastTileSelectedPos = new Point(-1, -1);
+        private Point mLastTileSelectedPos;// = new Point(-1, -1);
 
         public TileMapView()
         {
@@ -32,8 +31,13 @@ namespace Zelous
         // Public methods
         //////////////////////////
 
-        public void Init(string title, TileLayer[] tileLayers)
+        public void Reset(string title, TileLayer[] tileLayers)
         {
+            mCameraPos = new Point(0, 0);
+            mActiveLayer = 0;
+            mLastTileSelectedPos = new Point(-1, -1);
+            TileSelected = null;
+
             Title = title;
 
             Debug.Assert(tileLayers != null);
