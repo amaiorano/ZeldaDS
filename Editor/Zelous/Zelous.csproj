@@ -57,7 +57,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="src\Settings\Settings.cs" />
     <Compile Include="src\Source\Command.cs" />
     <Compile Include="src\Source\CommandManager.cs" />
     <Compile Include="src\UI\MainForm.cs">
@@ -87,7 +86,6 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <None Include="src\Settings\app.config" />
     <Compile Include="src\UI\TileMapView.cs">
       <SubType>UserControl</SubType>
     </Compile>
