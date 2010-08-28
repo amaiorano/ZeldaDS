@@ -7,24 +7,46 @@ using System.Data;
 using System.Text;
 using System.Windows.Forms;
 using System.Diagnostics;
+using System.Xml.Serialization;
 
 namespace Zelous
 {
-    public partial class TileMapView : UserControl
+    public partial class TileMapView : UserControl, ISerializationClient
     {
         private TileLayer[] mTileLayers;
         private bool[] mLayersToRender;
 
-        private Point mCameraPos;// = new Point(0, 0);
-        private Size mTotalSizePixels = new Size(0, 0);
+        private Point mCameraPos;
+        private Size mTotalSizePixels;
         private int mActiveLayer = 0;
         private bool mShowTileGrid = false;
         private bool mShowScreenGrid = false;
-        private Point mLastTileSelectedPos;// = new Point(-1, -1);
+        private Point mLastTileSelectedPos;
 
         public TileMapView()
         {
+            MainForm.Instance.AppSettingsMgr.RegisterSerializable(this, typeof(Settings));
             InitializeComponent();
+        }
+
+        [XmlRootAttribute(Namespace = "TileMapViewSettings")]
+        public class Settings
+        {
+            public decimal mScale;
+            public int mScrollBarX; //@TODO: If form is saved maximized, these get crushed due to HACK_ResetScrollAndCameraPositions()
+            public int mScrollBarY;
+            public bool mCheckBoxScreenGrid;
+            public bool mCheckBoxTileGrid;
+        }
+
+        void ISerializationClient.OnSerialize(Serializer serializer, ref object saveData)
+        {
+            Settings settings = (Settings)saveData;
+            serializer.AssignProperty(ref settings.mScale, "Value", mScaleCtrl);
+            serializer.AssignProperty(ref settings.mScrollBarX, "Value", mScrollBarX);
+            serializer.AssignProperty(ref settings.mScrollBarY, "Value", mScrollBarY);
+            serializer.AssignProperty(ref settings.mCheckBoxScreenGrid, "Checked", mCheckBoxScreenGrid);
+            serializer.AssignProperty(ref settings.mCheckBoxTileGrid, "Checked", mCheckBoxTileGrid);          
         }
 
         //////////////////////////

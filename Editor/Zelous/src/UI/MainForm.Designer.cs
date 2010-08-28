@@ -331,6 +331,7 @@ namespace Zelous
             this.Name = "MainForm";
             this.Text = "Zelous 1.0";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
+            this.Load += new System.EventHandler(MainForm_Load);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.MainForm_KeyDown);
             this.mSplitContainer.Panel1.ResumeLayout(false);
             this.mSplitContainer.Panel1.PerformLayout();

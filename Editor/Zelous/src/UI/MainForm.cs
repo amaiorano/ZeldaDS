@@ -8,16 +8,20 @@ using System.Drawing.Drawing2D;
 using System.Text;
 using System.Windows.Forms;
 using System.Diagnostics;
+using System.IO;
+using System.Xml.Serialization;
 
 namespace Zelous
 {
-    public partial class MainForm : Form
+    public partial class MainForm : Form, ISerializationClient
     {
         public static MainForm Instance = null; // Provides global access to the main form
         private string mCurrMapFile = "";
         private WorldMap mWorldMap;
         private int[] mActiveTileIndex = new int[WorldMap.NumLayers];
         CommandManager mCommandManager = new CommandManager();
+        private string mAppSettingsFilePath = Path.GetDirectoryName(Application.ExecutablePath) + @"\ZelousSettings.xml";
+        private SerializationMgr mAppSettingsMgr = new SerializationMgr();
 
         enum LayerType : int
         {
@@ -26,9 +30,66 @@ namespace Zelous
             Collision
         }
 
+        ///////////////////////////////////////////////////////////////////////
+        // Settings
+        ///////////////////////////////////////////////////////////////////////
+
+        public SerializationMgr AppSettingsMgr { get { return mAppSettingsMgr; } }
+
+        [XmlRootAttribute(Namespace = "MainFormSettings")]
+        public class Settings
+        {
+            public string mMapFile = "";
+            public FormWindowState mWindowState;
+            public Point mLocation;
+            public Size mSize;
+            public int mSplitterDistance;
+        }
+
+        void ISerializationClient.OnSerialize(Serializer serializer, ref object saveData)
+        {
+            Settings settings = (Settings)saveData;
+
+            serializer.Assign(ref settings.mMapFile, ref mCurrMapFile);
+            serializer.AssignProperty(ref settings.mWindowState, "WindowState", this);
+
+            // Don't allow minimized
+            if (WindowState == FormWindowState.Minimized)
+            {
+                WindowState = FormWindowState.Normal;
+            }
+
+            // Saving or loading, we only care about location + size if we're normal
+            if (WindowState == FormWindowState.Normal)
+            {
+                serializer.AssignProperty(ref settings.mLocation, "Location", this);
+                serializer.AssignProperty(ref settings.mSize, "Size", this);
+            }
+
+            serializer.AssignProperty(ref settings.mSplitterDistance, "SplitterDistance", mSplitContainer);
+
+            if (serializer.IsLoading)
+            {
+                if (settings.mMapFile.Length > 0)
+                {
+                    LoadMap(settings.mMapFile);
+                }
+                else
+                {
+                    NewMap();
+                }
+            }
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+        // Implementation
+        ///////////////////////////////////////////////////////////////////////
+
         public MainForm()
         {
             Instance = this;
+
+            AppSettingsMgr.RegisterSerializable(this, typeof(Settings));
 
             //@TODO: Modify MainForm to only contain panels, and create all controls dynamically
             // and dock within panels
@@ -39,6 +100,7 @@ namespace Zelous
 
             mCommandManager.OnCommand += new CommandManager.CommandEventHandler(OnCommandManagerCommand);
 
+            // Always start with a "new map", which initializes all controls
             NewMap();
         }
 
@@ -185,6 +247,17 @@ namespace Zelous
             GC.Collect();
         }
 
+        private void LoadMap(string fileName)
+        {
+            mWorldMap.Serialize(SerializationType.Loading, fileName);
+            mWorldMapView.RedrawTileMap();
+
+            SetCurrMap(fileName);
+
+            mCommandManager.OnLoadMap();
+            UpdateUndoRedoToolStripItems();
+        }
+
         private void SaveCurrMap()
         {
             Debug.Assert(mCurrMapFile.Length > 0);
@@ -247,6 +320,13 @@ namespace Zelous
         // Control Events
         ///////////////////////////////////////////////////////////////////////
 
+        private void MainForm_Load(object sender, EventArgs e)
+        {
+            // We load our settings here, right before the MainForm is displayed, so that
+            // all controls are created and positioned, and can have their values modified.
+            AppSettingsMgr.Load(mAppSettingsFilePath);
+        }
+
         private void mTabControl_SelectedIndexChanged(object sender, EventArgs e)
         {
             ActiveLayer = mTabControl.SelectedIndex;
@@ -272,6 +352,8 @@ namespace Zelous
                 e.Cancel = true;
                 return;
             }
+
+            AppSettingsMgr.Save(mAppSettingsFilePath);
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -317,13 +399,7 @@ namespace Zelous
 
                 if (dlgRes == DialogResult.OK)
                 {
-                    mWorldMap.Serialize(SerializationType.Loading, fileDlg.FileName);
-                    mWorldMapView.RedrawTileMap();
-                    
-                    SetCurrMap(fileDlg.FileName);
-
-                    mCommandManager.OnLoadMap();
-                    UpdateUndoRedoToolStripItems();
+                    LoadMap(fileDlg.FileName);
                 }
             }
         }
