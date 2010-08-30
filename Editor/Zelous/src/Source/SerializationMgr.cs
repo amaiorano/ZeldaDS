@@ -90,6 +90,10 @@ namespace Zelous
             XmlReader xmlReader = XmlReader.Create(filePath);
             XmlSerializer xmlSerializer = CreateSerializer();
 
+            //@TODO: If we load an older file version that's missing a new field, currently the field will
+            // be default-initialized; this is no good if we need the new field to have some default value.
+            // Need to figure out a way to communicate that; perhaps construct a save data object that contains
+            // default values, and for new fields, keep those defaults?
             SaveDataRoot root = (SaveDataRoot)xmlSerializer.Deserialize(xmlReader);
             xmlReader.Close();
 

@@ -20,7 +20,24 @@ namespace Zelous
         private WorldMap mWorldMap;
         private int[] mActiveTileIndex = new int[WorldMap.NumLayers];
         CommandManager mCommandManager = new CommandManager();
-        private string mAppSettingsFilePath = Path.GetDirectoryName(Application.ExecutablePath) + @"\ZelousSettings.xml";
+
+        public struct ShellCommandArgs
+        {
+            public ShellCommandArgs(string cmd, string args)
+            {
+                mCmd = cmd;
+                mArgs = args;
+            }
+            public string mCmd;
+            public string mArgs;
+        }
+
+        // This build script will rebuild the NDS file with the updates files in nitrofiles directory (which includes the map files, for example)
+        private ShellCommandArgs mBuildGameShellCommandArgs = new ShellCommandArgs(@"%NDSGAMEROOT%\Game\ZeldaDS\build.bat", @"build DEBUG");
+        // This commmand runs the emulator with the game
+        private ShellCommandArgs mRunGameShellCommandArgs = new ShellCommandArgs(@"%NDSGAMEROOT%\Tools\desmume\desmume_dev.exe", @"%NDSGAMEROOT%\Game\ZeldaDS\ZeldaDS_d.nds");
+        
+        private string mAppSettingsFilePath = Directory.GetCurrentDirectory() + @"\ZelousSettings.xml";
         private SerializationMgr mAppSettingsMgr = new SerializationMgr();
 
         enum LayerType : int
@@ -40,6 +57,8 @@ namespace Zelous
         public class Settings
         {
             public string mMapFile = "";
+            public ShellCommandArgs mBuildGameShellCommandArgs;
+            public ShellCommandArgs mRunGameShellCommandArgs;
             public FormWindowState mWindowState;
             public Point mLocation;
             public Size mSize;
@@ -51,6 +70,8 @@ namespace Zelous
             Settings settings = (Settings)saveData;
 
             serializer.Assign(ref settings.mMapFile, ref mCurrMapFile);
+            serializer.Assign(ref settings.mBuildGameShellCommandArgs, ref mBuildGameShellCommandArgs);
+            serializer.Assign(ref settings.mRunGameShellCommandArgs, ref mRunGameShellCommandArgs);
             serializer.AssignProperty(ref settings.mWindowState, "WindowState", this);
 
             // Don't allow minimized
@@ -249,6 +270,8 @@ namespace Zelous
 
         private void LoadMap(string fileName)
         {
+            //@TODO: Check if file exists, if it doesn't we should return false. Calling code should handle this.
+
             mWorldMap.Serialize(SerializationType.Loading, fileName);
             mWorldMapView.RedrawTileMap();
 
@@ -409,20 +432,8 @@ namespace Zelous
         {
             if (!AttemptSaveCurrMap(false))
                 return;
-
-            //@TODO: Make these paths configurable
-
-            // This build script will rebuild the NDS file with the updates files in nitrofiles
-            // directory (which includes the map files, for example)
-            string buildCmd = @"%NDSGAMEROOT%\Game\ZeldaDS\build.bat";
-            string buildArgs = @"build DEBUG";
-
-            // Run the emulator
-            string runCmd = @"%NDSGAMEROOT%\Tools\desmume\desmume_dev.exe";
-            string runArgs = @"%NDSGAMEROOT%\Game\ZeldaDS\ZeldaDS_d.nds";
-
-            ProcessHelpers.RunCommand(buildCmd, buildArgs);
-            ProcessHelpers.RunCommand(runCmd, runArgs);
+            ProcessHelpers.RunCommand(mBuildGameShellCommandArgs.mCmd, mBuildGameShellCommandArgs.mArgs);
+            ProcessHelpers.RunCommand(mRunGameShellCommandArgs.mCmd, mRunGameShellCommandArgs.mArgs);
         }
 
         // Exit
@@ -498,10 +509,10 @@ namespace Zelous
         public static void RunCommand(string cmd, string args)
         {
             cmd = Environment.ExpandEnvironmentVariables(cmd);
-            args = Environment.ExpandEnvironmentVariables(args);
+            cmd = Path.GetFullPath(cmd);
 
+            args = Environment.ExpandEnvironmentVariables(args);
             string path = System.IO.Path.GetDirectoryName(cmd);
-            path = Environment.ExpandEnvironmentVariables(path);
 
             ProcessStartInfo psi = new ProcessStartInfo(cmd);
             psi.Arguments = args;
