@@ -113,8 +113,6 @@ namespace Zelous
         {
             mTileSet = tileSet;
 
-            //Random rand = new Random(0); //@TEMP TEMP TEMP
-
             mTileMap = new int[numTilesX, numTilesY];
             for (int x = 0; x < mTileMap.GetLength(0); ++x)
             {

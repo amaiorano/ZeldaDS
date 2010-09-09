@@ -75,20 +75,34 @@ namespace Zelous
 
             public void PasteBrush(Point targetTilePos, TileMapView.Brush brush, ref TileMapView.Brush oldBrush)
             {
-                if (oldBrush != null)
+                // Clip brush to right/bottom edge of the TileMapView
+
+                //@TODO: Add a property to TileMapView to make this easier
+                Size tileMapViewNumTiles = new Size(
+                    mTileMapView.mTileLayers[0].TileMap.GetLength(0),
+                    mTileMapView.mTileLayers[0].TileMap.GetLength(1)
+                    );
+
+                Size brushNumTiles = new Size(); // We now use this var instead of brush.NumTiles
+                brushNumTiles.Width = Math.Min(brush.NumTiles.Width, tileMapViewNumTiles.Width - targetTilePos.X);
+                brushNumTiles.Height = Math.Min(brush.NumTiles.Height, tileMapViewNumTiles.Height - targetTilePos.Y);
+
+                // Save the undo brush if requested
+                if (oldBrush != null) //@TODO: rename 'oldBrush' to 'undoBrush'
                 {
                     //@TODO: Save/Set/Restore the currently active layers to match the ones from the input brush
                     // so that we create a brush with the right layers
-                    Rectangle dstRect = new Rectangle(targetTilePos, brush.NumTiles);
+                    Rectangle dstRect = new Rectangle(targetTilePos, brushNumTiles);
                     oldBrush = CreateBrushFromSelection(dstRect);
                 }
 
+                // Now paste the brush
                 foreach (Brush.LayerData layerData in brush.Layers)
                 {
                     TileLayer targetLayer = mTileMapView.mTileLayers[layerData.LayerIndex];
 
                     // Technically, this srcRect should be the same for all layers
-                    Rectangle srcRect = new Rectangle(0, 0, layerData.TileMap.GetLength(0), layerData.TileMap.GetLength(1));
+                    Rectangle srcRect = new Rectangle(new Point(0, 0), brushNumTiles);
                     int[,] targetTileMap = targetLayer.TileMap;
 
                     ArrayHelpers.CopyArray2d<int>(layerData.TileMap, srcRect, ref targetTileMap, targetTilePos);
