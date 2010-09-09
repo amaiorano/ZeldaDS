@@ -155,9 +155,9 @@ namespace Zelous
             mViewPanel.Invalidate();
         }
 
-        public void PasteBrush(Point targetTilePos, TileMapView.Brush brush, ref TileMapView.Brush oldBrush)
+        public void PasteBrush(Point targetTilePos, TileMapView.Brush brush, ref TileMapView.Brush undoBrush)
         {
-            mBrushManager.PasteBrush(targetTilePos, brush, ref oldBrush);
+            mBrushManager.PasteBrush(targetTilePos, brush, ref undoBrush);
         }
 
         //////////////////////////

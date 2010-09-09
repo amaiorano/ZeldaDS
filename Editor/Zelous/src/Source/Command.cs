@@ -20,32 +20,32 @@ namespace Zelous
     {
         TileMapView mTargetTileMapView;
         Point mTargetTilePos;
-        TileMapView.Brush mNewBrush;
-        TileMapView.Brush mOldBrush;
+        TileMapView.Brush mDoBrush;
+        TileMapView.Brush mUndoBrush;
 
         public PasteBrushCommand(TileMapView targetTileMapView, Point targetTilePos, TileMapView.Brush brush)
         {
             mTargetTileMapView = targetTileMapView;
             mTargetTilePos = targetTilePos;
-            mNewBrush = brush;
+            mDoBrush = brush;
         }
 
         public override void Do()
         {
-            mOldBrush = new TileMapView.Brush();
-            mTargetTileMapView.PasteBrush(mTargetTilePos, mNewBrush, ref mOldBrush);
+            mUndoBrush = new TileMapView.Brush();
+            mTargetTileMapView.PasteBrush(mTargetTilePos, mDoBrush, ref mUndoBrush);
         }
 
         public override void Undo()
         {
             TileMapView.Brush brush = null;
-            mTargetTileMapView.PasteBrush(mTargetTilePos, mOldBrush, ref brush);
+            mTargetTileMapView.PasteBrush(mTargetTilePos, mUndoBrush, ref brush);
         }
 
         public override void Redo()
         {
             TileMapView.Brush brush = null;
-            mTargetTileMapView.PasteBrush(mTargetTilePos, mNewBrush, ref brush);
+            mTargetTileMapView.PasteBrush(mTargetTilePos, mDoBrush, ref brush);
         }
     }
 }

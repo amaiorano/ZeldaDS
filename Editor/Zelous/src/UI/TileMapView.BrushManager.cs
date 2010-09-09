@@ -73,7 +73,7 @@ namespace Zelous
                 return brush;
             }
 
-            public void PasteBrush(Point targetTilePos, TileMapView.Brush brush, ref TileMapView.Brush oldBrush)
+            public void PasteBrush(Point targetTilePos, TileMapView.Brush brush, ref TileMapView.Brush undoBrush)
             {
                 // Clip brush to right/bottom edge of the TileMapView
 
@@ -88,12 +88,12 @@ namespace Zelous
                 brushNumTiles.Height = Math.Min(brush.NumTiles.Height, tileMapViewNumTiles.Height - targetTilePos.Y);
 
                 // Save the undo brush if requested
-                if (oldBrush != null) //@TODO: rename 'oldBrush' to 'undoBrush'
+                if (undoBrush != null)
                 {
                     //@TODO: Save/Set/Restore the currently active layers to match the ones from the input brush
                     // so that we create a brush with the right layers
                     Rectangle dstRect = new Rectangle(targetTilePos, brushNumTiles);
-                    oldBrush = CreateBrushFromSelection(dstRect);
+                    undoBrush = CreateBrushFromSelection(dstRect);
                 }
 
                 // Now paste the brush
