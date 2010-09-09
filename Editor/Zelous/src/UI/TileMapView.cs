@@ -121,6 +121,10 @@ namespace Zelous
             // HACK HACK HACK : temporary until I figure out a better way
             ActiveEditMode = NumLayers == 1 ? EditMode.SelectBrush : EditMode.PasteBrush;
 
+            // Clear events
+            OnBrushCreated = null;
+            OnBrushPasteRequested = null;
+
             ResetSelection(true);
         }
 
