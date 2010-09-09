@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SaveDataRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="Root">
+    <mSaveDataObjects>
+        <anyType xmlns:q1="MainFormSettings"
+            xsi:type="q1:Settings">
+            <q1:mMapFile></q1:mMapFile>
+            <q1:mBuildGameShellCommandArgs>
+                <q1:mCmd>.\game\buildrom.bat</q1:mCmd>
+                <q1:mArgs />
+            </q1:mBuildGameShellCommandArgs>
+            <q1:mRunGameShellCommandArgs>
+                <q1:mCmd>.\desmume\desmume.exe</q1:mCmd>
+                <q1:mArgs>--gbaslot-rom=..\game\ZeldaDS.nds ..\game\ZeldaDS.nds</q1:mArgs>
+            </q1:mRunGameShellCommandArgs>
+            <q1:mWindowState>Normal</q1:mWindowState>
+            <q1:mLocation>
+                <q1:X>69</q1:X>
+                <q1:Y>69</q1:Y>
+            </q1:mLocation>
+            <q1:mSize>
+                <q1:Width>697</q1:Width>
+                <q1:Height>540</q1:Height>
+            </q1:mSize>
+            <q1:mSplitterDistance>300</q1:mSplitterDistance>
+        </anyType>
+        <anyType xmlns:q2="TileMapViewSettings"
+            xsi:type="q2:Settings">
+            <q2:mScale>1</q2:mScale>
+            <q2:mScrollBarX>0</q2:mScrollBarX>
+            <q2:mScrollBarY>0</q2:mScrollBarY>
+            <q2:mCheckBoxScreenGrid>false</q2:mCheckBoxScreenGrid>
+            <q2:mCheckBoxTileGrid>false</q2:mCheckBoxTileGrid>
+        </anyType>
+        <anyType xmlns:q3="TileMapViewSettings"
+            xsi:type="q3:Settings">
+            <q3:mScale>1</q3:mScale>
+            <q3:mScrollBarX>0</q3:mScrollBarX>
+            <q3:mScrollBarY>0</q3:mScrollBarY>
+            <q3:mCheckBoxScreenGrid>false</q3:mCheckBoxScreenGrid>
+            <q3:mCheckBoxTileGrid>false</q3:mCheckBoxTileGrid>
+        </anyType>
+        <anyType xmlns:q4="TileMapViewSettings"
+            xsi:type="q4:Settings">
+            <q4:mScale>1</q4:mScale>
+            <q4:mScrollBarX>0</q4:mScrollBarX>
+            <q4:mScrollBarY>0</q4:mScrollBarY>
+            <q4:mCheckBoxScreenGrid>false</q4:mCheckBoxScreenGrid>
+            <q4:mCheckBoxTileGrid>false</q4:mCheckBoxTileGrid>
+        </anyType>
+        <anyType xmlns:q5="TileMapViewSettings"
+            xsi:type="q5:Settings">
+            <q5:mScale>1</q5:mScale>
+            <q5:mScrollBarX>0</q5:mScrollBarX>
+            <q5:mScrollBarY>0</q5:mScrollBarY>
+            <q5:mCheckBoxScreenGrid>false</q5:mCheckBoxScreenGrid>
+            <q5:mCheckBoxTileGrid>false</q5:mCheckBoxTileGrid>
+        </anyType>
+        <anyType xmlns:q6="TileMapViewSettings"
+            xsi:type="q6:Settings">
+            <q6:mScale>1</q6:mScale>
+            <q6:mScrollBarX>0</q6:mScrollBarX>
+            <q6:mScrollBarY>0</q6:mScrollBarY>
+            <q6:mCheckBoxScreenGrid>false</q6:mCheckBoxScreenGrid>
+            <q6:mCheckBoxTileGrid>false</q6:mCheckBoxTileGrid>
+        </anyType>
+    </mSaveDataObjects>
+</SaveDataRoot>
