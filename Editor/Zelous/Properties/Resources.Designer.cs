@@ -59,5 +59,19 @@ namespace Zelous.Properties {
                 resourceCulture = value;
             }
         }
+        
+        internal static System.Drawing.Bitmap PaintBrush {
+            get {
+                object obj = ResourceManager.GetObject("PaintBrush", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap RectangleSelection {
+            get {
+                object obj = ResourceManager.GetObject("RectangleSelection", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
     }
 }

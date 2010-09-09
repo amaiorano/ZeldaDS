@@ -84,13 +84,10 @@ namespace Zelous
             // 
             // mWorldMapView
             // 
-            this.mWorldMapView.ActiveLayer = 0;
             this.mWorldMapView.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.mWorldMapView.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.mWorldMapView.LastTileSelectedPosition = new System.Drawing.Point(-1, -1);
             this.mWorldMapView.Location = new System.Drawing.Point(0, 24);
             this.mWorldMapView.Name = "mWorldMapView";
-            this.mWorldMapView.RenderScale = 1;
             this.mWorldMapView.Size = new System.Drawing.Size(681, 276);
             this.mWorldMapView.TabIndex = 0;
             this.mWorldMapView.Title = "TileMapView Title";
@@ -237,13 +234,10 @@ namespace Zelous
             // 
             // mTileSetView1
             // 
-            this.mTileSetView1.ActiveLayer = 0;
             this.mTileSetView1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.mTileSetView1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.mTileSetView1.LastTileSelectedPosition = new System.Drawing.Point(-1, -1);
             this.mTileSetView1.Location = new System.Drawing.Point(3, 3);
             this.mTileSetView1.Name = "mTileSetView1";
-            this.mTileSetView1.RenderScale = 1;
             this.mTileSetView1.Size = new System.Drawing.Size(667, 168);
             this.mTileSetView1.TabIndex = 0;
             this.mTileSetView1.Title = "TileMapView Title";
@@ -261,13 +255,10 @@ namespace Zelous
             // 
             // mTileSetView2
             // 
-            this.mTileSetView2.ActiveLayer = 0;
             this.mTileSetView2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.mTileSetView2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.mTileSetView2.LastTileSelectedPosition = new System.Drawing.Point(-1, -1);
             this.mTileSetView2.Location = new System.Drawing.Point(3, 3);
             this.mTileSetView2.Name = "mTileSetView2";
-            this.mTileSetView2.RenderScale = 1;
             this.mTileSetView2.Size = new System.Drawing.Size(667, 168);
             this.mTileSetView2.TabIndex = 2;
             this.mTileSetView2.Title = "TileMapView Title";
@@ -285,13 +276,10 @@ namespace Zelous
             // 
             // mCollisionView
             // 
-            this.mCollisionView.ActiveLayer = 0;
             this.mCollisionView.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.mCollisionView.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.mCollisionView.LastTileSelectedPosition = new System.Drawing.Point(-1, -1);
             this.mCollisionView.Location = new System.Drawing.Point(3, 3);
             this.mCollisionView.Name = "mCollisionView";
-            this.mCollisionView.RenderScale = 1;
             this.mCollisionView.Size = new System.Drawing.Size(667, 168);
             this.mCollisionView.TabIndex = 3;
             this.mCollisionView.Title = "TileMapView Title";
@@ -309,13 +297,10 @@ namespace Zelous
             // 
             // mCharacterView
             // 
-            this.mCharacterView.ActiveLayer = 0;
             this.mCharacterView.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.mCharacterView.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.mCharacterView.LastTileSelectedPosition = new System.Drawing.Point(-1, -1);
             this.mCharacterView.Location = new System.Drawing.Point(3, 3);
             this.mCharacterView.Name = "mCharacterView";
-            this.mCharacterView.RenderScale = 1;
             this.mCharacterView.Size = new System.Drawing.Size(667, 168);
             this.mCharacterView.TabIndex = 4;
             this.mCharacterView.Title = "TileMapView Title";

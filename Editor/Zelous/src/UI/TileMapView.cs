@@ -13,22 +13,62 @@ namespace Zelous
 {
     public partial class TileMapView : UserControl, ISerializationClient
     {
+        private static Point InvalidPoint = new Point(-1, -1);
+
+        // Consider grouping layer-specific data together (array of struct)
         private TileLayer[] mTileLayers;
         private bool[] mLayersToRender;
+        private bool[] mLayersToSelect;
 
         private Point mCameraPos;
         private Size mTotalSizePixels;
-        private int mActiveLayer = 0;
         private bool mShowTileGrid = false;
         private bool mShowScreenGrid = false;
-        private Point mLastTileSelectedPos;
+        private EditMode mEditMode = EditMode.SelectBrush;
+        private BrushManager mBrushManager;
+
+        // This inner class is implemented in a separate file
+        private partial class BrushManager
+        {
+        }
+
+        public enum EditMode
+        {
+            PasteBrush,
+            SelectBrush
+        }
+
+        public EditMode ActiveEditMode
+        {
+            private set
+            {
+                mEditMode = value;
+                OnEditModeChanged();
+            }
+            get
+            {
+                return mEditMode;
+            }
+        }
+
+        public int NumLayers
+        {
+            get { Debug.Assert(mTileLayers != null); return mTileLayers.Length; }
+        }
 
         public TileMapView()
         {
-            MainForm.Instance.AppSettingsMgr.RegisterSerializable(this, typeof(Settings));
+            //@TODO: Replace with "is design time" check, happens only from designer.
+            // This stupid check is required for the designer to display this control
+            if (MainForm.Instance != null)
+            {
+                MainForm.Instance.AppSettingsMgr.RegisterSerializable(this, typeof(Settings));
+            }
+            mBrushManager = new BrushManager(this);
             InitializeComponent();
         }
 
+        //@TODO: Move to TileMapView.Settings.cs (along with ISerializationClient)
         [XmlRootAttribute(Namespace = "TileMapViewSettings")]
         public class Settings
         {
@@ -56,19 +96,20 @@ namespace Zelous
         public void Reset(string title, TileLayer[] tileLayers)
         {
             mCameraPos = new Point(0, 0);
-            mActiveLayer = 0;
-            mLastTileSelectedPos = new Point(-1, -1);
-            TileSelected = null;
 
             Title = title;
 
             Debug.Assert(tileLayers != null);
             Debug.Assert(tileLayers.Length > 0);
-            mTileLayers = tileLayers;
+            mTileLayers = tileLayers; // Can now use NumLayers property
 
-            mLayersToRender = new bool[mTileLayers.Length];
+            mLayersToRender = new bool[NumLayers];
+            mLayersToSelect = new bool[NumLayers];
             for (int i = 0; i < mLayersToRender.Length; ++i)
+            {
                 mLayersToRender[i] = true;
+                mLayersToSelect[i] = true;
+            }
 
             mTotalSizePixels = mTileLayers[0].SizePixels; //@TODO: assert that all layers return this same value
 
@@ -76,6 +117,11 @@ namespace Zelous
             mCheckBoxTileGrid.Checked = mShowTileGrid;
 
             UpdateScrollBarValues();
+
+            // HACK HACK HACK : temporary until I figure out a better way
+            ActiveEditMode = NumLayers == 1 ? EditMode.SelectBrush : EditMode.PasteBrush;
+
+            ResetSelection(true);
         }
 
         public string Title
@@ -84,27 +130,14 @@ namespace Zelous
             get { return mTitle.Text; }
         }
 
-        public int ActiveLayer
-        {
-            set { mActiveLayer = value; }
-            get { return mActiveLayer; }
-        }
-
         public int RenderScale
         {
-            set { mScaleCtrl.Value = value; }
             get { return (int)mScaleCtrl.Value; }
         }
 
         public bool ShowScreenGridOption
         {
             set { mCheckBoxScreenGrid.Visible = value; }
-        }
-
-        public Point LastTileSelectedPosition
-        {
-            set { mLastTileSelectedPos = value; }
-            get { return mLastTileSelectedPos; }
         }
 
         public void SetLayerRenderable(int layer, bool render)
@@ -118,24 +151,31 @@ namespace Zelous
             mViewPanel.Invalidate();
         }
 
+        public void PasteBrush(Point targetTilePos, TileMapView.Brush brush, ref TileMapView.Brush oldBrush)
+        {
+            mBrushManager.PasteBrush(targetTilePos, brush, ref oldBrush);
+        }
+
         //////////////////////////
         // Public events
         //////////////////////////
 
-        public class TileSelectEventArgs : EventArgs
+        // BrushCreated event
+        public class BrushCreatedEventArgs : EventArgs
         {
-            public Point TileMapPos; // 2d index into tile map
-            public TileLayer TileLayer; // which layer this tile is on
-
-            // Helper property to get/set the selected tile index
-            public int TileIndex
-            {
-                get { return TileLayer.TileMap[TileMapPos.X, TileMapPos.Y]; }
-            }
+            public Brush Brush { get; set; }
         }
+        public delegate void BrushCreatedEventHandler(TileMapView sender, BrushCreatedEventArgs e);
+        public event BrushCreatedEventHandler OnBrushCreated;
 
-        public delegate void TileSelectEventHandler(TileMapView sender, TileSelectEventArgs e);
-        public event TileSelectEventHandler TileSelected;
+        // BrushPasteRequested event
+        public class BrushPasteRequestedEventArgs : EventArgs
+        {
+            public Point TargetTilePos { get; set; } // Where to paste to
+        }
+        public delegate void BrushPasteRequestedEventHandler(TileMapView sender, BrushPasteRequestedEventArgs e);
+        public event BrushPasteRequestedEventHandler OnBrushPasteRequested;
+        
         
         //////////////////////////
         // Private methods
@@ -196,9 +236,11 @@ namespace Zelous
         }
 
         // Returns false if mouse position is out of map bounds
-        private bool MousePosToTileMapPos(Point pt, TileLayer layer, out Point tileMapPos)
+        private bool MousePosToTileMapPos(Point pt, out Point tileMapPos)
         {
-            // Compute map-space (world) position (remove scale and offset by camera pos)
+            TileLayer layer = mTileLayers[0]; // Assume all layers have same dimensions and tile size
+
+            // Compute map-space (world) position (remove scale and firstTileOffsetCS by camera pos)
             Point finalPos = MathEx.Div(pt, RenderScaleAsSize) + (Size)mCameraPos;
 
             if (finalPos.X < 0 || finalPos.Y < 0 || finalPos.X >= layer.SizePixels.Width || finalPos.Y >= layer.SizePixels.Height)
@@ -222,7 +264,6 @@ namespace Zelous
 
             Rectangle dstRect = new Rectangle();
             Rectangle srcRect = new Rectangle();
-            Rectangle selectedRect = new Rectangle();
 
             Graphics tgtGfx = e.Graphics;
             GraphicsHelpers.PrepareGraphics(tgtGfx);
@@ -234,9 +275,10 @@ namespace Zelous
             // true, but it simplifies a lot of stuff, like drawing the grid (below)
             Size tileSize = mTileLayers[0].TileSet.TileSize;
 
+            // CS = client (or view panel) space, otherwise all values assume tile space
             Point firstTile = MathEx.Div(mCameraPos, tileSize);
-            Point offset = MathEx.Mod(mCameraPos, tileSize);
-            Point startPos = new Point(-offset.X, -offset.Y);
+            Point firstTileOffsetCS = MathEx.Mod(mCameraPos, tileSize); // Offset of first tile from client window's top-left corner
+            Point firstTilePosCS = new Point(-firstTileOffsetCS.X, -firstTileOffsetCS.Y); // Start position of first tile in client window
             dstRect.Size = tileSize;
 
             // Draw only enough tiles to fit the client view. Note that since the client area is not
@@ -245,7 +287,7 @@ namespace Zelous
             numTilesToDraw.X = (int)Math.Ceiling((double)mViewPanel.ClientSize.Width / RenderScale / tileSize.Width) + 1;
             numTilesToDraw.Y = (int)Math.Ceiling((double)mViewPanel.ClientSize.Height / RenderScale / tileSize.Height) + 1;
 
-            for (int layerIndex = 0; layerIndex < mTileLayers.Length; ++layerIndex)
+            for (int layerIndex = 0; layerIndex < NumLayers; ++layerIndex)
             {
                 if (!mLayersToRender[layerIndex])
                     continue;
@@ -255,61 +297,54 @@ namespace Zelous
                 Debug.Assert(tileSet.TileSize == tileSize);
 
                 // Draw tiles
-                for (int x = 0; x < numTilesToDraw.X; ++x)
+                for (int tileX = 0; tileX < numTilesToDraw.X; ++tileX)
                 {
-                    for (int y = 0; y < numTilesToDraw.Y; ++y)
+                    for (int tileY = 0; tileY < numTilesToDraw.Y; ++tileY)
                     {
                         // If client area is larger than entire map, this condition will be true. Note that we could
                         // also just clamp numTilesToDraw above (but this is easier)
-                        if (firstTile.X + x >= layer.TileMap.GetLength(0) || firstTile.Y + y >= layer.TileMap.GetLength(1))
+                        if (firstTile.X + tileX >= layer.TileMap.GetLength(0) || firstTile.Y + tileY >= layer.TileMap.GetLength(1))
                             break;
 
-                        int tileIndex = layer.TileMap[firstTile.X + x, firstTile.Y + y];
+                        int tileIndex = layer.TileMap[firstTile.X + tileX, firstTile.Y + tileY];
                         tileSet.GetTileRect(tileIndex, ref srcRect);
 
-                        dstRect.X = startPos.X + (x * dstRect.Size.Width);
-                        dstRect.Y = startPos.Y + (y * dstRect.Size.Height);
+                        dstRect.X = firstTilePosCS.X + (tileX * dstRect.Size.Width);
+                        dstRect.Y = firstTilePosCS.Y + (tileY * dstRect.Size.Height);
 
                         tgtGfx.DrawImage(tileSet.Image, dstRect, srcRect, GraphicsUnit.Pixel);
-
-                        //If we're currently in the active layer, and drawing the last selected tile
-                        if (layerIndex == mActiveLayer && 
-                            (mLastTileSelectedPos.X == (firstTile.X + x) && mLastTileSelectedPos.Y == (firstTile.Y + y)) )
-                        {
-                            selectedRect = dstRect;
-                        }
                     }
                 }
             } // for each layer
 
             if (mShowTileGrid || mShowScreenGrid)
             {
-                Pen tileGridPen = new Pen(Color.DarkSlateGray, 1);
-                Pen screenGridPen = new Pen(Color.Black, 1);
+                Pen tileGridPen = new Pen(Color.DarkSlateGray, 1.0f);
+                Pen screenGridPen = new Pen(Color.Black, 1.0f);
 
                 TileLayer layer = mTileLayers[0]; // Only use the first tile layer
 
-                for (int x = 0; x < numTilesToDraw.X; ++x)
+                for (int tileX = 0; tileX < numTilesToDraw.X; ++tileX)
                 {
-                    for (int y = 0; y < numTilesToDraw.Y; ++y)
+                    for (int tileY = 0; tileY < numTilesToDraw.Y; ++tileY)
                     {
-                        int currTileX = firstTile.X + x;
-                        int currTileY = firstTile.Y + y;
+                        int currTileX = firstTile.X + tileX;
+                        int currTileY = firstTile.Y + tileY;
 
                         if (currTileX >= layer.TileMap.GetLength(0) || currTileY >= layer.TileMap.GetLength(1))
                             break;
 
-                        dstRect.X = startPos.X + (x * dstRect.Size.Width);
-                        dstRect.Y = startPos.Y + (y * dstRect.Size.Height);
+                        dstRect.X = firstTilePosCS.X + (tileX * dstRect.Size.Width);
+                        dstRect.Y = firstTilePosCS.Y + (tileY * dstRect.Size.Height);
 
                         if (mShowTileGrid)
                         {
-                            if (x == 0)
+                            if (tileX == 0)
                             {
                                 tgtGfx.DrawLine(tileGridPen, dstRect.Left + 0.1f, dstRect.Top, dstRect.Left + 0.1f, dstRect.Bottom);
                             }
 
-                            if (y == 0)
+                            if (tileY == 0)
                             {
                                 tgtGfx.DrawLine(tileGridPen, dstRect.Left, dstRect.Top + 0.1f, dstRect.Right, dstRect.Top + 0.1f);
                             }
@@ -337,14 +372,19 @@ namespace Zelous
                 screenGridPen.Dispose();
             } // end draw grids
 
-            //Draw box around currently selected tile
-            if (mLastTileSelectedPos.X > -1 && mLastTileSelectedPos.Y > -1)
+            // Draw box around selection region
+            if (mMouseSelectionRegion.IsValid())
             {
-                Pen tileGridPen = new Pen(Color.Red, 1);
-                tgtGfx.DrawRectangle(tileGridPen, selectedRect);
+                // Convert tile-space selection rect to client space
+                Rectangle selectionRectCS = mMouseSelectionRegion.ToNormalizeRect();
+                selectionRectCS.Location = MathEx.Sub(selectionRectCS.Location, firstTile); // offset to top-left visible tile
+                selectionRectCS = MathEx.Mul(selectionRectCS, tileSize); // transform to client-space
+                selectionRectCS.Location = MathEx.Sub(selectionRectCS.Location, firstTileOffsetCS); // apply sub-tile offset
+
+                Pen tileGridPen = new Pen(Color.Red, 2.0f);
+                tgtGfx.DrawRectangle(tileGridPen, selectionRectCS);
                 tileGridPen.Dispose();
             }
-            
         }
 
         private void mScaleCtrl_ValueChanged(object sender, EventArgs e)
@@ -371,44 +411,112 @@ namespace Zelous
             RedrawTileMap();
         }
 
-        private int mLastTileSelectedIndex = -1;
-        
+        //@TODO: Move all this mouse code to a TileMapView.MouseHandling.cs
+
+        private Point mLastBrushPastePos = InvalidPoint;
+        private MouseSelectionRegion mMouseSelectionRegion = new MouseSelectionRegion();
+
+        private void ResetSelection(bool force)
+        {
+            // Avoid needless refreshing
+            if (!force && !mMouseSelectionRegion.IsValid())
+                return;
+
+            mLastBrushPastePos = InvalidPoint;
+            mMouseSelectionRegion.Reset();
+            RedrawTileMap();
+        }
+
+        private void SendBrushPasteRequestedEvent(Point tileMapPos)
+        {
+            Debug.Assert(OnBrushPasteRequested != null);
+
+            BrushPasteRequestedEventArgs args = new BrushPasteRequestedEventArgs();
+            args.TargetTilePos = tileMapPos;
+            OnBrushPasteRequested(this, args);
+        }
+
         private void mViewPanel_MouseDown(object sender, MouseEventArgs e)
         {
+            Point tileMapPos;
+            if (!MousePosToTileMapPos(e.Location, out tileMapPos))
+                return; // Happens if mouse location is out of map bounds
+
             if (e.Button == MouseButtons.Left)
             {
-                if (TileSelected == null)
-                    return;
-
-                TileLayer layer = mTileLayers[mActiveLayer];
-                Point tileMapPos;
-                if (!MousePosToTileMapPos(e.Location, layer, out tileMapPos))
-                    return; // Happens if mouse location is out of map bounds
-
-                TileSelectEventArgs args = new TileSelectEventArgs();
-                args.TileLayer = layer;
-                args.TileMapPos = tileMapPos;
-
-                if (args.TileIndex != mLastTileSelectedIndex)
+                if (ActiveEditMode == EditMode.SelectBrush)
                 {
-                    TileSelected(this, args);
-                    //Console.WriteLine("MouseDown: " + e.Location + ", TileMapPos: " + tileMapPos + ", TileIndex: " + args.TileIndex);
-                    mLastTileSelectedIndex = args.TileIndex;
+                    Debug.Assert(OnBrushCreated != null);
+
+                    mMouseSelectionRegion.StartPoint = tileMapPos;
+                    mMouseSelectionRegion.StopPoint = tileMapPos;
+                    RedrawTileMap();
+                }
+                else if (ActiveEditMode == EditMode.PasteBrush)
+                {
+                    SendBrushPasteRequestedEvent(tileMapPos);
+                    mLastBrushPastePos = tileMapPos;
                 }
             }
         }
 
         private void mViewPanel_MouseMove(object sender, MouseEventArgs e)
         {
-            if (mLastTileSelectedIndex != -1)
+            Point tileMapPos;
+            if (!MousePosToTileMapPos(e.Location, out tileMapPos))
+                return; // Happens if mouse location is out of map bounds
+
+            if (e.Button == MouseButtons.Left)
             {
-                mViewPanel_MouseDown(sender, e);
+                if (ActiveEditMode == EditMode.SelectBrush)
+                {
+                    mMouseSelectionRegion.StopPoint = tileMapPos;
+                    RedrawTileMap();
+                }
+                else if (ActiveEditMode == EditMode.PasteBrush)
+                {
+                    if (mLastBrushPastePos != InvalidPoint && mLastBrushPastePos != tileMapPos)
+                    {
+                        SendBrushPasteRequestedEvent(tileMapPos);
+                        mLastBrushPastePos = tileMapPos;
+                    }
+                }
+            }
+            else if (e.Button == MouseButtons.None)
+            {
+                // In case MouseUp is never received (happens if user alt+tabs away while click & dragging)
+                // we make sure to clear the selection on next MouseMove
+                ResetSelection(false);
             }
         }
 
         private void mViewPanel_MouseUp(object sender, MouseEventArgs e)
         {
-            mLastTileSelectedIndex = -1;
+            Point tileMapPos;
+            if (!MousePosToTileMapPos(e.Location, out tileMapPos))
+                return; // Happens if mouse location is out of map bounds
+
+            if (e.Button == MouseButtons.Left)
+            {
+                if (ActiveEditMode == EditMode.SelectBrush)
+                {
+                    Debug.Assert(OnBrushCreated != null);
+
+                    mMouseSelectionRegion.StopPoint = tileMapPos;
+
+                    if (mMouseSelectionRegion.IsValid())
+                    {
+                        // Callback client with selected tiles
+                        Brush brush = mBrushManager.CreateBrushFromSelection(mMouseSelectionRegion.ToNormalizeRect());
+
+                        BrushCreatedEventArgs args = new BrushCreatedEventArgs();
+                        args.Brush = brush;
+                        OnBrushCreated(this, args);
+                    }
+
+                    ResetSelection(false);
+                }
+            }
         }
 
         private void mCheckBoxScreenGrid_CheckedChanged(object sender, EventArgs e)
@@ -422,6 +530,38 @@ namespace Zelous
             mShowTileGrid = mCheckBoxTileGrid.Checked;
             RedrawTileMap();
         }
+
+        private void EditModeRadioButton_CheckedChanged(object sender, EventArgs e)
+        {
+            //@TODO: Binding radio controls to an enum manually is crap. Look into generalizing
+            // this (class with an array of radio buttons, indexed by enum?)
+            if (mRadioButton_PasteBrush.Checked)
+            {
+                mEditMode = EditMode.PasteBrush;
+            }
+            else if (mRadioButton_SelectBrush.Checked)
+            {
+                mEditMode = EditMode.SelectBrush;
+            }
+            else
+            {
+                Debug.Assert(false, "Unhandled!");
+            }
+        }
+
+        private void OnEditModeChanged()
+        {
+            switch (ActiveEditMode)
+            {
+                case EditMode.PasteBrush:
+                    mRadioButton_PasteBrush.Checked = true;
+                    break;
+
+                case EditMode.SelectBrush:
+                    mRadioButton_SelectBrush.Checked = true;
+                    break;
+            }
+        }
     }
 
     // Use this Panel when you want to handle the painting of the panel
@@ -433,6 +573,54 @@ namespace Zelous
             SetStyle(ControlStyles.DoubleBuffer, true);
             SetStyle(ControlStyles.AllPaintingInWmPaint, true);
             SetStyle(ControlStyles.UserPaint, true); // Probably unnecessary
+        }
+    }
+
+    // Helper for tracking mouse-driven region selections
+    public class MouseSelectionRegion
+    {
+        private static Point InvalidPoint = new Point(-1, -1);
+
+        public Point StartPoint { get; set; }
+        public Point StopPoint { get; set; }
+
+        public MouseSelectionRegion()
+        {
+            Reset();
+        }
+
+        public void Reset()
+        {
+            StartPoint = InvalidPoint;
+            StopPoint = InvalidPoint;
+        }
+
+        public bool IsValid()
+        {
+            return StartPoint != InvalidPoint && StopPoint != InvalidPoint;
+        }
+
+        public Rectangle ToNormalizeRect()
+        {
+            Point start = StartPoint;
+            Point stop = StopPoint;
+
+            if (start.X > stop.X)
+            {
+                int temp = start.X;
+                start.X = stop.X;
+                stop.X = temp;
+            }
+
+            if (StartPoint.Y > StopPoint.Y)
+            {
+                int temp = start.Y;
+                start.Y = stop.Y;
+                stop.Y = temp;
+            }
+
+            Size size = new Size(stop.X - start.X + 1, stop.Y - start.Y + 1);
+            return new Rectangle(start, size);
         }
     }
 }

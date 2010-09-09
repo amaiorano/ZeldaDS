@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Drawing;
 using System.Windows.Forms;
+using System.Diagnostics;
 
 namespace Zelous
 {
@@ -15,45 +16,36 @@ namespace Zelous
         public virtual void Redo() { }
     };
 
-    //Command to set a tile on the world map
-    class SetTileCommand : Command
+    class PasteBrushCommand : Command
     {
-        //Some of these data members might be common to all Commands.
-        //I'll leave them here until we know the other commands we'll have
-        private int mTileLayerIndex;
-        private TileLayer mTileLayer;
-        private Point mTileMapPos;
-        private int mNewTileIndex;
-        private int mOldTileIndex; //used in Undo()
-        private TabControl mTabControl;
+        TileMapView mTargetTileMapView;
+        Point mTargetTilePos;
+        TileMapView.Brush mNewBrush;
+        TileMapView.Brush mOldBrush;
 
-        public SetTileCommand( int tileLayerIndex, TileLayer tileLayer, Point tileMapPos, 
-            int newTileIndex, int oldTileIndex, TabControl tabControl )
+        public PasteBrushCommand(TileMapView targetTileMapView, Point targetTilePos, TileMapView.Brush brush)
         {
-            mTileLayerIndex = tileLayerIndex;
-            mTileLayer = tileLayer;
-            mTileMapPos = tileMapPos;
-            mNewTileIndex = newTileIndex;
-            mOldTileIndex = oldTileIndex;
-            mTabControl = tabControl;
+            mTargetTileMapView = targetTileMapView;
+            mTargetTilePos = targetTilePos;
+            mNewBrush = brush;
         }
 
         public override void Do()
         {
-            mTabControl.SelectedIndex = mTileLayerIndex;
-            mTileLayer.TileMap[mTileMapPos.X, mTileMapPos.Y] = mNewTileIndex;
+            mOldBrush = new TileMapView.Brush();
+            mTargetTileMapView.PasteBrush(mTargetTilePos, mNewBrush, ref mOldBrush);
         }
 
         public override void Undo()
         {
-            mTabControl.SelectedIndex = mTileLayerIndex;
-            mTileLayer.TileMap[mTileMapPos.X, mTileMapPos.Y] = mOldTileIndex;
+            TileMapView.Brush brush = null;
+            mTargetTileMapView.PasteBrush(mTargetTilePos, mOldBrush, ref brush);
         }
 
         public override void Redo()
         {
-            mTabControl.SelectedIndex = mTileLayerIndex;
-            Do();
+            TileMapView.Brush brush = null;
+            mTargetTileMapView.PasteBrush(mTargetTilePos, mNewBrush, ref brush);
         }
-    };
+    }
 }

@@ -18,7 +18,24 @@ namespace Zelous
         public static MainForm Instance = null; // Provides global access to the main form
         private string mCurrMapFile = "";
         private WorldMap mWorldMap;
-        private int[] mActiveTileIndex = new int[WorldMap.NumLayers];
+        
+        enum LayerType : int // Do we really need this?
+        {
+            Background,
+            Foreground,
+            Collision,
+            Character
+        }
+
+        public struct GuiTileLayer
+        {
+            public int mActiveTileIndex; // Index of actively selected tile on this layer
+            public TileMapView mTileMapView; // This layer's associated TileMapView (tile set control)
+        }
+        private GuiTileLayer[] mGuiTileLayers = new GuiTileLayer[WorldMap.NumLayers];
+
+        private TileMapView.Brush mActiveBrush;
+
         CommandManager mCommandManager = new CommandManager();
 
         public struct ShellCommandArgs
@@ -40,16 +57,11 @@ namespace Zelous
         private string mAppSettingsFilePath = Directory.GetCurrentDirectory() + @"\ZelousSettings.xml";
         private SerializationMgr mAppSettingsMgr = new SerializationMgr();
 
-        enum LayerType : int
-        {
-            Background,
-            Foreground,
-            Collision
-        }
 
         ///////////////////////////////////////////////////////////////////////
         // Settings
         ///////////////////////////////////////////////////////////////////////
+        //@TODO: Move to MainForm.Settings.cs (along with ISerializationClient)
 
         public SerializationMgr AppSettingsMgr { get { return mAppSettingsMgr; } }
 
@@ -150,14 +162,7 @@ namespace Zelous
 
             tileMapView.Reset(title, new TileLayer[] { tileSetLayer });
             tileMapView.ShowScreenGridOption = false;
-            tileMapView.LastTileSelectedPosition = new Point(0, 0);
-            tileMapView.TileSelected += new TileMapView.TileSelectEventHandler(this.OnTileSelected);
-        }
-
-        private int ActiveLayer
-        {
-            get { return mWorldMapView.ActiveLayer; }
-            set { mWorldMapView.ActiveLayer = value; }
+            tileMapView.OnBrushCreated += new TileMapView.BrushCreatedEventHandler(this.OnBrushCreated);
         }
 
         private void OnCommandManagerCommand(CommandManager sender, CommandAction action, Command command)
@@ -165,22 +170,27 @@ namespace Zelous
             OnModifiedStateChanged(mCommandManager.IsModified());
         }
 
-        private void OnTileSelected(TileMapView sender, TileMapView.TileSelectEventArgs e)
+        private void OnBrushCreated(TileMapView sender, TileMapView.BrushCreatedEventArgs e)
         {
-            if (sender == mWorldMapView) // Paste tile
+            if (sender != mWorldMapView)
             {
-                mCommandManager.DoCommand(new SetTileCommand(ActiveLayer, e.TileLayer, e.TileMapPos, 
-                                            mActiveTileIndex[ActiveLayer], e.TileIndex, mTabControl));
-                UpdateUndoRedoToolStripItems();
+                // Remap the brush's single layer to the layer it represents on the world map view
+                Debug.Assert(e.Brush.Layers.Length == 1);
+                e.Brush.Layers[0].LayerIndex = mTabControl.TabPages.IndexOf((TabPage)sender.Parent);
             }
-            else // Copy tile
-            {
-                Debug.Assert(sender.Parent is TabPage);
-                mActiveTileIndex[ActiveLayer] = e.TileIndex;
 
-                sender.LastTileSelectedPosition = e.TileMapPos;
-            }
-            sender.Refresh();
+            mActiveBrush = e.Brush;
+        }
+
+        private void OnBrushPasteRequested(TileMapView sender, TileMapView.BrushPasteRequestedEventArgs e)
+        {
+            Debug.Assert(sender == mWorldMapView); // Pasting only allowed on the world map view
+
+            if (mActiveBrush == null) // No active brush selected, bail
+                return;
+
+            mCommandManager.DoCommand(new PasteBrushCommand(sender, e.TargetTilePos, mActiveBrush));
+            UpdateUndoRedoToolStripItems();
         }
 
         private void OnModifiedStateChanged(bool isModified)
@@ -238,28 +248,38 @@ namespace Zelous
             //@TODO: Ask user what type of map (overworld, underworld) to determine what tilesets we need,
             // how large the map should be (in screens), etc.
 
+            // Map each TileSetView instance into an array so we can index them
+            mGuiTileLayers[0].mTileMapView = mTileSetView1;
+            mGuiTileLayers[1].mTileMapView = mTileSetView2;
+            mGuiTileLayers[2].mTileMapView = mCollisionView;
+            mGuiTileLayers[3].mTileMapView = mCharacterView;
+
             Size tileSize = new Size(16, 16);
 
-            TileSet bgTileSet = new TileSet("overworld_bg.bmp", tileSize.Width, tileSize.Height);
-            TileSet fgTileSet = new TileSet("overworld_fg.bmp", tileSize.Width, tileSize.Height);
-            TileSet colTileSet = new TileSet("collision_tileset.bmp", tileSize.Width, tileSize.Height);
-            TileSet charTileSet = new TileSet("editor_characters.bmp", tileSize.Width, tileSize.Height);
+            string[] tileSetFiles = new string[] {"overworld_bg.bmp", "overworld_fg.bmp", "collision_tileset.bmp", "editor_characters.bmp"};
+            string[] tileSetViewTitles = new string[] { "Background", "Foreground", "Collision", "Characters" };
+
+            Debug.Assert(tileSetFiles.Length == mGuiTileLayers.Length);
+            Debug.Assert(tileSetFiles.Length == tileSetViewTitles.Length);
+
+            // Create TileSets and init TileSetViews with them
+            TileSet[] tileSets = new TileSet[mGuiTileLayers.Length];
+            for (int i = 0; i < tileSets.Length; ++i)
+            {
+                tileSets[i] = new TileSet(tileSetFiles[i], tileSize.Width, tileSize.Height);
+                InitTileSetView(mGuiTileLayers[i].mTileMapView, tileSetViewTitles[i], tileSets[i]);
+            }
 
             // Init world map view
             {
                 mWorldMap = new WorldMap();
-                mWorldMap.Init(20, 10, new TileSet[] { bgTileSet, fgTileSet, colTileSet, charTileSet });
+                mWorldMap.Init(20, 10, tileSets);
 
                 mWorldMapView.Reset("World Map", mWorldMap.TileLayers);
                 mWorldMapView.SetLayerRenderable((int)LayerType.Collision, false);
-                mWorldMapView.TileSelected += new TileMapView.TileSelectEventHandler(this.OnTileSelected);
+                mWorldMapView.OnBrushCreated += new TileMapView.BrushCreatedEventHandler(this.OnBrushCreated);
+                mWorldMapView.OnBrushPasteRequested += new TileMapView.BrushPasteRequestedEventHandler(this.OnBrushPasteRequested);
             }
-
-            // Init tile set views
-            InitTileSetView(mTileSetView1, "Background Tiles", bgTileSet);
-            InitTileSetView(mTileSetView2, "Foreground Tiles", fgTileSet);
-            InitTileSetView(mCollisionView, "Collision Tiles", colTileSet);
-            InitTileSetView(mCharacterView, "Character Spawners", charTileSet);
 
             SetCurrMap("");
             mCommandManager.OnNewMap();
@@ -352,9 +372,7 @@ namespace Zelous
 
         private void mTabControl_SelectedIndexChanged(object sender, EventArgs e)
         {
-            ActiveLayer = mTabControl.SelectedIndex;
-
-            bool showCollisionTiles = ActiveLayer == (int)LayerType.Collision;
+            bool showCollisionTiles = mTabControl.SelectedIndex == (int)LayerType.Collision;
             Debug.Assert(showCollisionTiles ? mTabControl.SelectedTab.Contains(mCollisionView) : true);
             mWorldMapView.SetLayerRenderable((int)LayerType.Collision, showCollisionTiles);
         }
@@ -530,6 +548,21 @@ namespace Zelous
             MainForm.Instance.UseWaitCursor = false;
             //@TODO: When user exits process, the cursor will remain in waiting state until
             // it's moved, for some reason. Investigate this.
+        }
+    }
+
+    //@TODO: Move into own file
+    public class ArrayHelpers
+    {
+        public static void CopyArray2d<T>(T[,] srcTileMap, Rectangle srcRect, ref T[,] dstTileMap, Point dstPos)
+        {
+            for (int x = 0; x < srcRect.Width; ++x)
+            {
+                for (int y = 0; y < srcRect.Height; ++y)
+                {
+                    dstTileMap[dstPos.X + x, dstPos.Y + y] = srcTileMap[srcRect.X + x, srcRect.Y + y];
+                }
+            }
         }
     }
 }

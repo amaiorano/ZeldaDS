@@ -87,6 +87,9 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <Compile Include="src\UI\TileMapView.BrushManager.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="src\UI\TileMapView.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -97,6 +100,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="docs\todo.txt" />
+    <Content Include="icons\PaintBrush.bmp" />
+    <Content Include="icons\RectangleSelection.bmp" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">

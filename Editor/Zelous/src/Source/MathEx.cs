@@ -9,7 +9,22 @@ namespace Zelous
     {
         public static Point Add(Point lhs, Point rhs)
         {
-            return new Point(lhs.X + rhs.X, lhs.Y + lhs.Y);
+            return new Point(lhs.X + rhs.X, lhs.Y + rhs.Y);
+        }
+
+        public static Point Sub(Point lhs, Point rhs)
+        {
+            return new Point(lhs.X - rhs.X, lhs.Y - rhs.Y);
+        }
+
+        public static Rectangle Mul(Rectangle lhs, Size rhs)
+        {
+            return new Rectangle(
+                lhs.X * rhs.Width,
+                lhs.Y * rhs.Height,
+                lhs.Width * rhs.Width,
+                lhs.Height * rhs.Height
+                );                
         }
 
         public static Point Div(Point lhs, Point rhs)
