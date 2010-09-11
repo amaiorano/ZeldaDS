@@ -100,8 +100,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="docs\todo.txt" />
-    <Content Include="icons\PaintBrush.bmp" />
-    <Content Include="icons\RectangleSelection.bmp" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">

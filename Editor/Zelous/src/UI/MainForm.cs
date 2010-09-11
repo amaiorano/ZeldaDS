@@ -29,7 +29,6 @@ namespace Zelous
 
         public struct GuiTileLayer
         {
-            public int mActiveTileIndex; // Index of actively selected tile on this layer
             public TileMapView mTileMapView; // This layer's associated TileMapView (tile set control)
         }
         private GuiTileLayer[] mGuiTileLayers = new GuiTileLayer[WorldMap.NumLayers];

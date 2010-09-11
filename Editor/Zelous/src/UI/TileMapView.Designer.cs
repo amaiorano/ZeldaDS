@@ -29,6 +29,7 @@ namespace Zelous
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TileMapView));
             this.mScaleCtrl = new System.Windows.Forms.NumericUpDown();
             this.label1 = new System.Windows.Forms.Label();
             this.mTitle = new System.Windows.Forms.Label();
@@ -36,9 +37,10 @@ namespace Zelous
             this.mScrollBarY = new System.Windows.Forms.VScrollBar();
             this.mCheckBoxScreenGrid = new System.Windows.Forms.CheckBox();
             this.mCheckBoxTileGrid = new System.Windows.Forms.CheckBox();
-            this.mRadioButton_PasteBrush = new System.Windows.Forms.RadioButton();
-            this.mRadioButton_SelectBrush = new System.Windows.Forms.RadioButton();
             this.TileMapViewToolTips = new System.Windows.Forms.ToolTip(this.components);
+            this.mRadioButton_SelectBrush = new System.Windows.Forms.RadioButton();
+            this.mIcons = new System.Windows.Forms.ImageList(this.components);
+            this.mRadioButton_PasteBrush = new System.Windows.Forms.RadioButton();
             this.mViewPanel = new Zelous.NoFlickerPanel();
             ((System.ComponentModel.ISupportInitialize)(this.mScaleCtrl)).BeginInit();
             this.SuspendLayout();
@@ -133,35 +135,42 @@ namespace Zelous
             this.mCheckBoxTileGrid.UseVisualStyleBackColor = true;
             this.mCheckBoxTileGrid.CheckedChanged += new System.EventHandler(this.mCheckBoxTileGrid_CheckedChanged);
             // 
-            // mRadioButton_PasteBrush
-            // 
-            this.mRadioButton_PasteBrush.Appearance = System.Windows.Forms.Appearance.Button;
-            this.mRadioButton_PasteBrush.AutoSize = true;
-            this.mRadioButton_PasteBrush.FlatAppearance.CheckedBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(192)))), ((int)(((byte)(255)))));
-            this.mRadioButton_PasteBrush.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.mRadioButton_PasteBrush.Image = global::Zelous.Properties.Resources.PaintBrush;
-            this.mRadioButton_PasteBrush.Location = new System.Drawing.Point(0, 26);
-            this.mRadioButton_PasteBrush.Name = "mRadioButton_PasteBrush";
-            this.mRadioButton_PasteBrush.Size = new System.Drawing.Size(24, 24);
-            this.mRadioButton_PasteBrush.TabIndex = 7;
-            this.TileMapViewToolTips.SetToolTip(this.mRadioButton_PasteBrush, "Paint Active Brush");
-            this.mRadioButton_PasteBrush.UseVisualStyleBackColor = true;
-            this.mRadioButton_PasteBrush.CheckedChanged += new System.EventHandler(this.EditModeRadioButton_CheckedChanged);
-            // 
             // mRadioButton_SelectBrush
             // 
             this.mRadioButton_SelectBrush.Appearance = System.Windows.Forms.Appearance.Button;
             this.mRadioButton_SelectBrush.AutoSize = true;
             this.mRadioButton_SelectBrush.FlatAppearance.CheckedBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(192)))), ((int)(((byte)(255)))));
-            this.mRadioButton_SelectBrush.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.mRadioButton_SelectBrush.Image = global::Zelous.Properties.Resources.RectangleSelection;
-            this.mRadioButton_SelectBrush.Location = new System.Drawing.Point(0, 54);
+            this.mRadioButton_SelectBrush.ImageKey = "RectangleSelection.bmp";
+            this.mRadioButton_SelectBrush.ImageList = this.mIcons;
+            this.mRadioButton_SelectBrush.Location = new System.Drawing.Point(0, 49);
             this.mRadioButton_SelectBrush.Name = "mRadioButton_SelectBrush";
-            this.mRadioButton_SelectBrush.Size = new System.Drawing.Size(24, 24);
+            this.mRadioButton_SelectBrush.Size = new System.Drawing.Size(22, 22);
             this.mRadioButton_SelectBrush.TabIndex = 8;
             this.TileMapViewToolTips.SetToolTip(this.mRadioButton_SelectBrush, "Create Active Brush");
             this.mRadioButton_SelectBrush.UseVisualStyleBackColor = true;
             this.mRadioButton_SelectBrush.CheckedChanged += new System.EventHandler(this.EditModeRadioButton_CheckedChanged);
+            // 
+            // mIcons
+            // 
+            this.mIcons.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("mIcons.ImageStream")));
+            this.mIcons.TransparentColor = System.Drawing.Color.White;
+            this.mIcons.Images.SetKeyName(0, "PaintBrush.bmp");
+            this.mIcons.Images.SetKeyName(1, "RectangleSelection.bmp");
+            // 
+            // mRadioButton_PasteBrush
+            // 
+            this.mRadioButton_PasteBrush.Appearance = System.Windows.Forms.Appearance.Button;
+            this.mRadioButton_PasteBrush.AutoSize = true;
+            this.mRadioButton_PasteBrush.FlatAppearance.CheckedBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(192)))), ((int)(((byte)(255)))));
+            this.mRadioButton_PasteBrush.ImageKey = "PaintBrush.bmp";
+            this.mRadioButton_PasteBrush.ImageList = this.mIcons;
+            this.mRadioButton_PasteBrush.Location = new System.Drawing.Point(0, 26);
+            this.mRadioButton_PasteBrush.Name = "mRadioButton_PasteBrush";
+            this.mRadioButton_PasteBrush.Size = new System.Drawing.Size(22, 22);
+            this.mRadioButton_PasteBrush.TabIndex = 7;
+            this.TileMapViewToolTips.SetToolTip(this.mRadioButton_PasteBrush, "Paint Active Brush");
+            this.mRadioButton_PasteBrush.UseVisualStyleBackColor = true;
+            this.mRadioButton_PasteBrush.CheckedChanged += new System.EventHandler(this.EditModeRadioButton_CheckedChanged);
             // 
             // mViewPanel
             // 
@@ -213,5 +222,6 @@ namespace Zelous
         private System.Windows.Forms.RadioButton mRadioButton_PasteBrush;
         private System.Windows.Forms.RadioButton mRadioButton_SelectBrush;
         private System.Windows.Forms.ToolTip TileMapViewToolTips;
+        private System.Windows.Forms.ImageList mIcons;
     }
 }

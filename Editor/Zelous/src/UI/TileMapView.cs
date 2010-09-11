@@ -53,7 +53,7 @@ namespace Zelous
 
         public int NumLayers
         {
-            get { Debug.Assert(mTileLayers != null); return mTileLayers.Length; }
+            get { return (mTileLayers == null ? 0 : mTileLayers.Length); }
         }
 
         public TileMapView()
@@ -120,6 +120,10 @@ namespace Zelous
 
             // HACK HACK HACK : temporary until I figure out a better way
             ActiveEditMode = NumLayers == 1 ? EditMode.SelectBrush : EditMode.PasteBrush;
+            if (NumLayers == 1)
+            {
+                mRadioButton_PasteBrush.Enabled = false;
+            }
 
             // Clear events
             OnBrushCreated = null;
@@ -148,6 +152,11 @@ namespace Zelous
         {
             mLayersToRender[layer] = render;
             RedrawTileMap();
+        }
+
+        public bool[] RenderableLayers
+        {
+            get { return mLayersToRender; }
         }
 
         public void RedrawTileMap()
