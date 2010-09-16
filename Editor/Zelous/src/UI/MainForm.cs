@@ -51,7 +51,7 @@ namespace Zelous
         // This build script will rebuild the NDS file with the updates files in nitrofiles directory (which includes the map files, for example)
         private ShellCommandArgs mBuildGameShellCommandArgs = new ShellCommandArgs(@"%NDSGAMEROOT%\Game\ZeldaDS\build.bat", @"build DEBUG");
         // This commmand runs the emulator with the game
-        private ShellCommandArgs mRunGameShellCommandArgs = new ShellCommandArgs(@"%NDSGAMEROOT%\Tools\desmume\desmume_dev.exe", @"%NDSGAMEROOT%\Game\ZeldaDS\ZeldaDS_d.nds");
+        private ShellCommandArgs mRunGameShellCommandArgs = new ShellCommandArgs(@"%NDSGAMEROOT%\Tools\desmume\desmume_dev.exe", @"--gbaslot-rom=%NDSGAMEROOT%\Game\ZeldaDS\ZeldaDS_d.nds %NDSGAMEROOT%\Game\ZeldaDS\ZeldaDS_d.nds");
         
         private string mAppSettingsFilePath = Directory.GetCurrentDirectory() + @"\ZelousSettings.xml";
         private SerializationMgr mAppSettingsMgr = new SerializationMgr();
