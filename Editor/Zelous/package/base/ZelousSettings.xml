@@ -3,7 +3,7 @@
     <mSaveDataObjects>
         <anyType xmlns:q1="MainFormSettings"
             xsi:type="q1:Settings">
-            <q1:mMapFile></q1:mMapFile>
+            <q1:mMapFile />
             <q1:mBuildGameShellCommandArgs>
                 <q1:mCmd>.\game\buildrom.bat</q1:mCmd>
                 <q1:mArgs />
@@ -22,6 +22,12 @@
                 <q1:Height>540</q1:Height>
             </q1:mSize>
             <q1:mSplitterDistance>300</q1:mSplitterDistance>
+            <q1:mTabPageIconIndices>
+                <q1:int>1</q1:int>
+                <q1:int>1</q1:int>
+                <q1:int>1</q1:int>
+                <q1:int>1</q1:int>
+            </q1:mTabPageIconIndices>
         </anyType>
         <anyType xmlns:q2="TileMapViewSettings"
             xsi:type="q2:Settings">
