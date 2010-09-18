@@ -60,6 +60,9 @@
     <Compile Include="src\Source\SerializationMgr.cs" />
     <Compile Include="src\Source\Command.cs" />
     <Compile Include="src\Source\CommandManager.cs" />
+    <Compile Include="src\UI\IconToggleTabControl.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="src\UI\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>

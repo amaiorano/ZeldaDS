@@ -28,6 +28,8 @@ namespace Zelous
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.mSplitContainer = new System.Windows.Forms.SplitContainer();
             this.mWorldMapView = new Zelous.TileMapView();
             this.mMenuStrip = new System.Windows.Forms.MenuStrip();
@@ -43,7 +45,7 @@ namespace Zelous
             this.redoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutZelousToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.mTabControl = new System.Windows.Forms.TabControl();
+            this.mTabControl = new Zelous.IconToggleTabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.mTileSetView1 = new Zelous.TileMapView();
             this.tabPage2 = new System.Windows.Forms.TabPage();
@@ -52,6 +54,7 @@ namespace Zelous
             this.mCollisionView = new Zelous.TileMapView();
             this.tabPage4 = new System.Windows.Forms.TabPage();
             this.mCharacterView = new Zelous.TileMapView();
+            this.mTabControlImages = new System.Windows.Forms.ImageList(this.components);
             this.mSplitContainer.Panel1.SuspendLayout();
             this.mSplitContainer.Panel2.SuspendLayout();
             this.mSplitContainer.SuspendLayout();
@@ -214,12 +217,12 @@ namespace Zelous
             this.mTabControl.Controls.Add(this.tabPage3);
             this.mTabControl.Controls.Add(this.tabPage4);
             this.mTabControl.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.mTabControl.ImageList = this.mTabControlImages;
             this.mTabControl.Location = new System.Drawing.Point(0, 0);
             this.mTabControl.Name = "mTabControl";
             this.mTabControl.SelectedIndex = 0;
             this.mTabControl.Size = new System.Drawing.Size(681, 200);
             this.mTabControl.TabIndex = 0;
-            this.mTabControl.SelectedIndexChanged += new System.EventHandler(this.mTabControl_SelectedIndexChanged);
             // 
             // tabPage1
             // 
@@ -305,6 +308,13 @@ namespace Zelous
             this.mCharacterView.TabIndex = 4;
             this.mCharacterView.Title = "TileMapView Title";
             // 
+            // mTabControlImages
+            // 
+            this.mTabControlImages.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("mTabControlImages.ImageStream")));
+            this.mTabControlImages.TransparentColor = System.Drawing.Color.Transparent;
+            this.mTabControlImages.Images.SetKeyName(0, "NotVisible.bmp");
+            this.mTabControlImages.Images.SetKeyName(1, "Visible.bmp");
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -315,8 +325,8 @@ namespace Zelous
             this.MainMenuStrip = this.mMenuStrip;
             this.Name = "MainForm";
             this.Text = "Zelous 1.0";
+            this.Load += new System.EventHandler(this.MainForm_Load);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
-            this.Load += new System.EventHandler(MainForm_Load);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.MainForm_KeyDown);
             this.mSplitContainer.Panel1.ResumeLayout(false);
             this.mSplitContainer.Panel1.PerformLayout();
@@ -344,7 +354,7 @@ namespace Zelous
         private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openMapToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem aboutZelousToolStripMenuItem;
-        private System.Windows.Forms.TabControl mTabControl;
+        private IconToggleTabControl mTabControl;
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.TabPage tabPage2;
         private TileMapView mTileSetView2;
@@ -359,6 +369,7 @@ namespace Zelous
         private System.Windows.Forms.TabPage tabPage4;
         private TileMapView mCharacterView;
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
+        private System.Windows.Forms.ImageList mTabControlImages;
 
     }
 }

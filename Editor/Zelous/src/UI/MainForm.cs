@@ -74,6 +74,7 @@ namespace Zelous
             public Point mLocation;
             public Size mSize;
             public int mSplitterDistance;
+            public int[] mTabPageIconIndices;
         }
 
         void ISerializationClient.OnSerialize(Serializer serializer, ref object saveData)
@@ -99,16 +100,27 @@ namespace Zelous
             }
 
             serializer.AssignProperty(ref settings.mSplitterDistance, "SplitterDistance", mSplitContainer);
+            
+            // Serialize the visibility icon on the tab controls. This is a bit more complicated
+            // because the tab control doesn't natively support sending out a "image index changed"
+            // event.
+            if (serializer.IsSaving)
+            {
+                int[] iconIndices = mTabControl.GetTabPageIconIndices();
+                serializer.Assign(ref settings.mTabPageIconIndices, ref iconIndices);
+            }
+            else
+            {
+                int[] iconIndices = null;
+                serializer.Assign(ref settings.mTabPageIconIndices, ref iconIndices);
+                mTabControl.SetTabPageIconIndices(iconIndices);
+            }
 
             if (serializer.IsLoading)
             {
                 if (settings.mMapFile.Length > 0)
                 {
                     LoadMap(settings.mMapFile);
-                }
-                else
-                {
-                    NewMap();
                 }
             }
         }
@@ -131,15 +143,43 @@ namespace Zelous
             //Application.AddMessageFilter(new AppMessageFilter());
 
             mCommandManager.OnCommand += new CommandManager.CommandEventHandler(OnCommandManagerCommand);
+            mTabControl.OnIconToggled += new IconToggleTabControl.IconToggledEventHandler(mTabControl_OnIconToggled);
+
+            // Once-time initialization of controls
+            {
+                // Map each TileSetView instance into an array so we can index them
+                mGuiTileLayers[0].mTileMapView = mTileSetView1;
+                mGuiTileLayers[1].mTileMapView = mTileSetView2;
+                mGuiTileLayers[2].mTileMapView = mCollisionView;
+                mGuiTileLayers[3].mTileMapView = mCharacterView;
+
+                // Call Init() on all TileMapViews
+                foreach (GuiTileLayer guiTileLayer in mGuiTileLayers)
+                {
+                    guiTileLayer.mTileMapView.Init(1); // These contain exactly 1 layer
+                }
+                mWorldMapView.Init(WorldMap.NumLayers);
+
+                // Initialize the visibility icon on the tab pages from the world map view
+                {
+                    bool[] renderableLayers = mWorldMapView.RenderableLayers;
+                    int[] iconIndices = new int[renderableLayers.Length];
+                    for (int i = 0; i < renderableLayers.Length; ++i)
+                    {
+                        iconIndices[i] = renderableLayers[i] ? 1 : 0;
+                    }
+                    mTabControl.SetTabPageIconIndices(iconIndices);
+                }
+            }
 
             // Always start with a "new map", which initializes all controls
             NewMap();
         }
 
-        // Used to init a TileMapView used for viewing/selecting from a TileSet
-        private void InitTileSetView(TileMapView tileMapView, string title, TileSet tileSet)
+        // Used to reset a TileMapView used for viewing/selecting from a TileSet
+        private void ResetTileSetView(TileMapView tileMapView, string title, TileSet tileSet)
         {
-            // Init tile set view - we create a layer that simply displays all the tiles
+            // Reset tile set view - we create a layer that simply displays all the tiles
             // in the tile set (same dimensions)
             TileLayer tileSetLayer = new TileLayer();
             tileSetLayer.Init(tileSet.NumTiles.X, tileSet.NumTiles.Y, tileSet);
@@ -153,15 +193,44 @@ namespace Zelous
                 }
             }
 
-            if (tileMapView.Parent is System.Windows.Forms.TabPage)
-            {
-                tileMapView.Parent.Text = title;
-                title = "";
-            }
-
-            tileMapView.Reset(title, new TileLayer[] { tileSetLayer });
+            tileMapView.Reset("", new TileLayer[] { tileSetLayer }); // Title set on tab page (below)
             tileMapView.ShowScreenGridOption = false;
             tileMapView.OnBrushCreated += new TileMapView.BrushCreatedEventHandler(this.OnBrushCreated);
+
+            // Initialize the tab page (we must be on one!)
+            TabPage tabPage = (TabPage)tileMapView.Parent;
+            tabPage.Text = title;
+        }
+
+        // Used to reset all the TileMapViews (for the main map view and the tile sets).
+        // Eventually this function will take args telling it what tile sets we need to load (overworld, underworld, etc.)
+        private void ResetTileMapViews()
+        {
+            Size tileSize = new Size(16, 16);
+
+            string[] tileSetFiles = new string[] { "overworld_bg.bmp", "overworld_fg.bmp", "collision_tileset.bmp", "editor_characters.bmp" };
+            string[] tileSetViewTitles = new string[] { "Background", "Foreground", "Collision", "Characters" };
+
+            Debug.Assert(tileSetFiles.Length == mGuiTileLayers.Length);
+            Debug.Assert(tileSetFiles.Length == tileSetViewTitles.Length);
+
+            // Create TileSets and reset TileSetViews with them
+            TileSet[] tileSets = new TileSet[mGuiTileLayers.Length];
+            for (int i = 0; i < tileSets.Length; ++i)
+            {
+                tileSets[i] = new TileSet(tileSetFiles[i], tileSize.Width, tileSize.Height);
+                ResetTileSetView(mGuiTileLayers[i].mTileMapView, tileSetViewTitles[i], tileSets[i]);
+            }
+
+            // Reset world map view
+            {
+                mWorldMap = new WorldMap();
+                mWorldMap.Init(20, 10, tileSets);
+
+                mWorldMapView.Reset("World Map", mWorldMap.TileLayers);
+                mWorldMapView.OnBrushCreated += new TileMapView.BrushCreatedEventHandler(this.OnBrushCreated);
+                mWorldMapView.OnBrushPasteRequested += new TileMapView.BrushPasteRequestedEventHandler(this.OnBrushPasteRequested);
+            }
         }
 
         private void OnCommandManagerCommand(CommandManager sender, CommandAction action, Command command)
@@ -247,57 +316,31 @@ namespace Zelous
             //@TODO: Ask user what type of map (overworld, underworld) to determine what tilesets we need,
             // how large the map should be (in screens), etc.
 
-            // Map each TileSetView instance into an array so we can index them
-            mGuiTileLayers[0].mTileMapView = mTileSetView1;
-            mGuiTileLayers[1].mTileMapView = mTileSetView2;
-            mGuiTileLayers[2].mTileMapView = mCollisionView;
-            mGuiTileLayers[3].mTileMapView = mCharacterView;
-
-            Size tileSize = new Size(16, 16);
-
-            string[] tileSetFiles = new string[] {"overworld_bg.bmp", "overworld_fg.bmp", "collision_tileset.bmp", "editor_characters.bmp"};
-            string[] tileSetViewTitles = new string[] { "Background", "Foreground", "Collision", "Characters" };
-
-            Debug.Assert(tileSetFiles.Length == mGuiTileLayers.Length);
-            Debug.Assert(tileSetFiles.Length == tileSetViewTitles.Length);
-
-            // Create TileSets and init TileSetViews with them
-            TileSet[] tileSets = new TileSet[mGuiTileLayers.Length];
-            for (int i = 0; i < tileSets.Length; ++i)
-            {
-                tileSets[i] = new TileSet(tileSetFiles[i], tileSize.Width, tileSize.Height);
-                InitTileSetView(mGuiTileLayers[i].mTileMapView, tileSetViewTitles[i], tileSets[i]);
-            }
-
-            // Init world map view
-            {
-                mWorldMap = new WorldMap();
-                mWorldMap.Init(20, 10, tileSets);
-
-                mWorldMapView.Reset("World Map", mWorldMap.TileLayers);
-                mWorldMapView.SetLayerRenderable((int)LayerType.Collision, false);
-                mWorldMapView.OnBrushCreated += new TileMapView.BrushCreatedEventHandler(this.OnBrushCreated);
-                mWorldMapView.OnBrushPasteRequested += new TileMapView.BrushPasteRequestedEventHandler(this.OnBrushPasteRequested);
-            }
-
+            ResetTileMapViews();
+            
             SetCurrMap("");
-            mCommandManager.OnNewMap();
 
-            // Clean up any references left behind
-            GC.Collect();
+            mCommandManager.OnNewMap();
+            UpdateUndoRedoToolStripItems();
+            
+            GC.Collect(); // Good time to clean up any references left behind
         }
 
         private void LoadMap(string fileName)
         {
             //@TODO: Check if file exists, if it doesn't we should return false. Calling code should handle this.
 
+            ResetTileMapViews();
+
             mWorldMap.Serialize(SerializationType.Loading, fileName);
             mWorldMapView.RedrawTileMap();
 
             SetCurrMap(fileName);
-
+            
             mCommandManager.OnLoadMap();
             UpdateUndoRedoToolStripItems();
+
+            GC.Collect(); // Good time to clean up any references left behind
         }
 
         private void SaveCurrMap()
@@ -347,15 +390,8 @@ namespace Zelous
 
         private void UpdateUndoRedoToolStripItems()
         {
-            if (mCommandManager.NumUndoCommands == 0)
-                undoToolStripMenuItem.Enabled = false;
-            else
-                undoToolStripMenuItem.Enabled = true;
-
-            if (mCommandManager.NumRedoCommands == 0)
-                redoToolStripMenuItem.Enabled = false;
-            else
-                redoToolStripMenuItem.Enabled = true;
+            undoToolStripMenuItem.Enabled = mCommandManager.NumUndoCommands > 0;
+            redoToolStripMenuItem.Enabled = mCommandManager.NumRedoCommands > 0;
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -367,13 +403,6 @@ namespace Zelous
             // We load our settings here, right before the MainForm is displayed, so that
             // all controls are created and positioned, and can have their values modified.
             AppSettingsMgr.Load(mAppSettingsFilePath);
-        }
-
-        private void mTabControl_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            bool showCollisionTiles = mTabControl.SelectedIndex == (int)LayerType.Collision;
-            Debug.Assert(showCollisionTiles ? mTabControl.SelectedTab.Contains(mCollisionView) : true);
-            mWorldMapView.SetLayerRenderable((int)LayerType.Collision, showCollisionTiles);
         }
 
         private void MainForm_KeyDown(object sender, KeyEventArgs e)
@@ -395,6 +424,18 @@ namespace Zelous
 
             AppSettingsMgr.Save(mAppSettingsFilePath);
         }
+
+        private void mTabControl_OnIconToggled(IconToggleTabControl sender, IconToggleTabControl.IconToggledEventArgs e)
+        {
+            bool layerVisible = e.IconIndex != 0;
+            mWorldMapView.RenderableLayers[e.TabPageIndex] = layerVisible;
+
+            // What you see is what you select
+            mWorldMapView.SelectableLayers[e.TabPageIndex] = layerVisible;
+
+            mWorldMapView.RedrawTileMap();
+        }
+
 
         ///////////////////////////////////////////////////////////////////////
         // Menu Events

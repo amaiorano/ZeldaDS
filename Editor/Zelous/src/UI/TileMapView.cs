@@ -18,12 +18,10 @@ namespace Zelous
         // Consider grouping layer-specific data together (array of struct)
         private TileLayer[] mTileLayers;
         private bool[] mLayersToRender;
-        private bool[] mLayersToSelect;
+        private bool[] mLayersToSelect; //@NOTE: Technically we don't need this, can just make SelectableLayers return mLayersToRender
 
-        private Point mCameraPos;
+        private Point mCameraPos = new Point(0, 0);
         private Size mTotalSizePixels;
-        private bool mShowTileGrid = false;
-        private bool mShowScreenGrid = false;
         private EditMode mEditMode = EditMode.SelectBrush;
         private BrushManager mBrushManager;
 
@@ -51,10 +49,7 @@ namespace Zelous
             }
         }
 
-        public int NumLayers
-        {
-            get { return (mTileLayers == null ? 0 : mTileLayers.Length); }
-        }
+        public int NumLayers { get; private set; }
 
         public TileMapView()
         {
@@ -86,44 +81,47 @@ namespace Zelous
             serializer.AssignProperty(ref settings.mScrollBarX, "Value", mScrollBarX);
             serializer.AssignProperty(ref settings.mScrollBarY, "Value", mScrollBarY);
             serializer.AssignProperty(ref settings.mCheckBoxScreenGrid, "Checked", mCheckBoxScreenGrid);
-            serializer.AssignProperty(ref settings.mCheckBoxTileGrid, "Checked", mCheckBoxTileGrid);          
+            serializer.AssignProperty(ref settings.mCheckBoxTileGrid, "Checked", mCheckBoxTileGrid);
         }
 
         //////////////////////////
         // Public methods
         //////////////////////////
 
-        public void Reset(string title, TileLayer[] tileLayers)
+        // Called only once at start up
+        public void Init(int numLayers)
         {
-            mCameraPos = new Point(0, 0);
-
-            Title = title;
-
-            Debug.Assert(tileLayers != null);
-            Debug.Assert(tileLayers.Length > 0);
-            mTileLayers = tileLayers; // Can now use NumLayers property
+            Debug.Assert(numLayers > 0);
+            NumLayers = numLayers;
 
             mLayersToRender = new bool[NumLayers];
             mLayersToSelect = new bool[NumLayers];
             for (int i = 0; i < mLayersToRender.Length; ++i)
             {
                 mLayersToRender[i] = true;
-                mLayersToSelect[i] = true;
+                mLayersToSelect[i] = mLayersToRender[i];
             }
 
-            mTotalSizePixels = mTileLayers[0].SizePixels; //@TODO: assert that all layers return this same value
-
-            mCheckBoxScreenGrid.Checked = mShowScreenGrid;
-            mCheckBoxTileGrid.Checked = mShowTileGrid;
-
-            UpdateScrollBarValues();
-
-            // HACK HACK HACK : temporary until I figure out a better way
+            //@HACK: Temporary until I figure out a better way
             ActiveEditMode = NumLayers == 1 ? EditMode.SelectBrush : EditMode.PasteBrush;
             if (NumLayers == 1)
             {
                 mRadioButton_PasteBrush.Enabled = false;
             }
+        }
+
+        // Called multiple times (new map, load map) - avoid resetting GUI vars
+        // to preserve user settings (i.e. state of checkboxes, etc)
+        public void Reset(string title, TileLayer[] tileLayers)
+        {
+            Title = title;
+
+            Debug.Assert(tileLayers != null);
+            Debug.Assert(tileLayers.Length == NumLayers);
+            mTileLayers = tileLayers; // Can now use NumLayers property
+
+            mTotalSizePixels = mTileLayers[0].SizePixels; //@TODO: assert that all layers return this same value
+            UpdateScrollBarValues();
 
             // Clear events
             OnBrushCreated = null;
@@ -148,15 +146,24 @@ namespace Zelous
             set { mCheckBoxScreenGrid.Visible = value; }
         }
 
-        public void SetLayerRenderable(int layer, bool render)
+        public bool ShowTileGrid
         {
-            mLayersToRender[layer] = render;
-            RedrawTileMap();
+            get { return mCheckBoxTileGrid.Checked; }
+        }
+
+        public bool ShowScreenGrid
+        {
+            get { return mCheckBoxScreenGrid.Checked; }
         }
 
         public bool[] RenderableLayers
         {
             get { return mLayersToRender; }
+        }
+
+        public bool[] SelectableLayers
+        {
+            get { return mLayersToSelect; }
         }
 
         public void RedrawTileMap()
@@ -330,7 +337,7 @@ namespace Zelous
                 }
             } // for each layer
 
-            if (mShowTileGrid || mShowScreenGrid)
+            if (ShowTileGrid || ShowScreenGrid)
             {
                 Pen tileGridPen = new Pen(Color.DarkSlateGray, 1.0f);
                 Pen screenGridPen = new Pen(Color.Black, 1.0f);
@@ -350,7 +357,7 @@ namespace Zelous
                         dstRect.X = firstTilePosCS.X + (tileX * dstRect.Size.Width);
                         dstRect.Y = firstTilePosCS.Y + (tileY * dstRect.Size.Height);
 
-                        if (mShowTileGrid)
+                        if (ShowTileGrid)
                         {
                             if (tileX == 0)
                             {
@@ -366,7 +373,7 @@ namespace Zelous
                             tgtGfx.DrawLine(tileGridPen, dstRect.Right, dstRect.Top, dstRect.Right, dstRect.Bottom);
                         }
 
-                        if (mShowScreenGrid)
+                        if (ShowScreenGrid)
                         {
                             if (currTileX % GameConstants.GameNumScreenMetaTilesX == 0)
                             {
@@ -520,7 +527,7 @@ namespace Zelous
                     if (mMouseSelectionRegion.IsValid())
                     {
                         // Callback client with selected tiles
-                        Brush brush = mBrushManager.CreateBrushFromSelection(mMouseSelectionRegion.ToNormalizeRect());
+                        Brush brush = mBrushManager.CreateBrushFromSelection(mMouseSelectionRegion.ToNormalizeRect(), SelectableLayers);
 
                         BrushCreatedEventArgs args = new BrushCreatedEventArgs();
                         args.Brush = brush;
@@ -534,13 +541,11 @@ namespace Zelous
 
         private void mCheckBoxScreenGrid_CheckedChanged(object sender, EventArgs e)
         {
-            mShowScreenGrid = mCheckBoxScreenGrid.Checked;
             RedrawTileMap();
         }
 
         private void mCheckBoxTileGrid_CheckedChanged(object sender, EventArgs e)
         {
-            mShowTileGrid = mCheckBoxTileGrid.Checked;
             RedrawTileMap();
         }
 

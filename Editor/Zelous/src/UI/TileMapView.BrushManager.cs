@@ -34,10 +34,10 @@ namespace Zelous
                 mTileMapView = tileMapView;
             }
 
-            private int GetNumSelectableLayers()
+            private int GetNumSelectableLayers(bool[] selectableLayers)
             {
                 int numSelectableLayers = 0;
-                foreach (bool isSeletableLayer in mTileMapView.mLayersToSelect)
+                foreach (bool isSeletableLayer in selectableLayers)
                 {
                     if (isSeletableLayer)
                         ++numSelectableLayers;
@@ -45,15 +45,15 @@ namespace Zelous
                 return numSelectableLayers;
             }
 
-            public Brush CreateBrushFromSelection(Rectangle selectedRect)
+            public Brush CreateBrushFromSelection(Rectangle selectedRect, bool[] selectableLayers)
             {
                 Brush brush = new Brush();
-                brush.Layers = new Brush.LayerData[GetNumSelectableLayers()];
+                brush.Layers = new Brush.LayerData[GetNumSelectableLayers(selectableLayers)];
 
                 int currBrushLayerIndex = 0;
                 for (int layerIndex = 0; layerIndex < mTileMapView.NumLayers; ++layerIndex)
                 {
-                    if (!mTileMapView.mLayersToSelect[layerIndex])
+                    if (!selectableLayers[layerIndex])
                         continue;
 
                     // Create the layer data and add it
@@ -90,10 +90,17 @@ namespace Zelous
                 // Save the undo brush if requested
                 if (undoBrush != null)
                 {
-                    //@TODO: Save/Set/Restore the currently active layers to match the ones from the input brush
-                    // so that we create a brush with the right layers
+                    // Create brush with layers that match those of the input brush, which don't necessarily
+                    // match the actively selectable layers of our owner TileMapView
+                    var layersToSelect = new bool[mTileMapView.SelectableLayers.Length]; // All false by default
+
+                    foreach (Brush.LayerData layerData in brush.Layers)
+                    {
+                        layersToSelect[layerData.LayerIndex] = true;
+                    }
+
                     Rectangle dstRect = new Rectangle(targetTilePos, brushNumTiles);
-                    undoBrush = CreateBrushFromSelection(dstRect);
+                    undoBrush = CreateBrushFromSelection(dstRect, layersToSelect);
                 }
 
                 // Now paste the brush
