@@ -207,8 +207,9 @@ namespace Zelous
             // aboutZelousToolStripMenuItem
             // 
             this.aboutZelousToolStripMenuItem.Name = "aboutZelousToolStripMenuItem";
-            this.aboutZelousToolStripMenuItem.Size = new System.Drawing.Size(145, 22);
+            this.aboutZelousToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.aboutZelousToolStripMenuItem.Text = "About Zelous";
+            this.aboutZelousToolStripMenuItem.Click += new System.EventHandler(this.aboutZelousToolStripMenuItem_Click);
             // 
             // mTabControl
             // 
@@ -325,9 +326,9 @@ namespace Zelous
             this.Name = "MainForm";
             this.Text = "Zelous";
             this.Load += new System.EventHandler(this.MainForm_Load);
+            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.MainForm_KeyUp);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.MainForm_KeyDown);
-            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.MainForm_KeyUp);
             this.mSplitContainer.Panel1.ResumeLayout(false);
             this.mSplitContainer.Panel1.PerformLayout();
             this.mSplitContainer.Panel2.ResumeLayout(false);

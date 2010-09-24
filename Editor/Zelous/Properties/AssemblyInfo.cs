@@ -8,8 +8,8 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Zelous")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Zelous")]
+[assembly: AssemblyCompany("Antonio Maiorano")]
+[assembly: AssemblyProduct("Zelous")] // Corresponds to Application.ProductName
 [assembly: AssemblyCopyright("Copyright ©  2010")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -30,4 +30,4 @@ using System.Runtime.InteropServices;
 //      Revision
 //
 [assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("1.0.0.0")] // Corresponds to Application.ProductVersion

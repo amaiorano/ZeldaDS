@@ -562,6 +562,15 @@ namespace Zelous
             UpdateUndoRedoToolStripItems();
             mWorldMapView.Refresh();
         }
+
+        // About
+        private void aboutZelousToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (AboutBox aboutBox = new AboutBox())
+            {
+                aboutBox.ShowDialog(this);
+            }
+        }
     }
 
     public class AppMessageFilter : IMessageFilter
