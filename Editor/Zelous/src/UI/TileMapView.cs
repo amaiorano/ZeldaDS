@@ -22,7 +22,11 @@ namespace Zelous
 
         private Point mCameraPos = new Point(0, 0);
         private Size mTotalSizePixels;
+        
         private EditMode mEditMode = EditMode.SelectBrush;
+        private bool mAltEditModeActive = false;
+        private Dictionary<EditMode, EditMode> mEditModeAltMap; // Maps EditMode to it's Alt EditMode (mode that is selected while Alt is being held)
+        
         private BrushManager mBrushManager;
 
         // This inner class is implemented in a separate file
@@ -60,6 +64,10 @@ namespace Zelous
                 MainForm.Instance.AppSettingsMgr.RegisterSerializable(this, typeof(Settings));
             }
             mBrushManager = new BrushManager(this);
+
+            mEditModeAltMap = new Dictionary<EditMode, EditMode>();
+            mEditModeAltMap[EditMode.PasteBrush] = EditMode.SelectBrush;
+
             InitializeComponent();
         }
 
@@ -89,8 +97,10 @@ namespace Zelous
         //////////////////////////
 
         // Called only once at start up
-        public void Init(int numLayers)
+        public void Init(string title, int numLayers)
         {
+            Title = title;
+
             Debug.Assert(numLayers > 0);
             NumLayers = numLayers;
 
@@ -112,10 +122,8 @@ namespace Zelous
 
         // Called multiple times (new map, load map) - avoid resetting GUI vars
         // to preserve user settings (i.e. state of checkboxes, etc)
-        public void Reset(string title, TileLayer[] tileLayers)
+        public void Reset(TileLayer[] tileLayers)
         {
-            Title = title;
-
             Debug.Assert(tileLayers != null);
             Debug.Assert(tileLayers.Length == NumLayers);
             mTileLayers = tileLayers; // Can now use NumLayers property
@@ -174,6 +182,41 @@ namespace Zelous
         public void PasteBrush(Point targetTilePos, TileMapView.Brush brush, ref TileMapView.Brush undoBrush)
         {
             mBrushManager.PasteBrush(targetTilePos, brush, ref undoBrush);
+        }
+
+        public void OnGlobalKeyDown(KeyEventArgs e)
+        {
+            // Handle changing to alternate edit mode
+            Point mousePos = PointToClient(Control.MousePosition);
+            bool isMouseOverPanel = mViewPanel.Bounds.Contains(mousePos);
+
+            if (e.Modifiers == Keys.Alt && isMouseOverPanel && mEditModeAltMap.ContainsKey(ActiveEditMode))
+            {
+                ActiveEditMode = mEditModeAltMap[ActiveEditMode];
+                mAltEditModeActive = true;
+                OnEditModeChanged();
+                e.SuppressKeyPress = true;
+            }
+        }
+
+        public void OnGlobalKeyUp(KeyEventArgs e)
+        {
+            // Handle going back from alternate edit mode
+            if (!e.Alt && mAltEditModeActive)
+            {
+                // Find current alt edit mode in values, and go back to its key
+                foreach (KeyValuePair<EditMode, EditMode> entry in mEditModeAltMap)
+                {
+                    if (entry.Value == ActiveEditMode)
+                    {
+                        ActiveEditMode = entry.Key;
+                        mAltEditModeActive = false;
+                        OnEditModeChanged();
+                        e.SuppressKeyPress = true;
+                        return;
+                    }                    
+                }
+            }
         }
 
         //////////////////////////
@@ -555,11 +598,11 @@ namespace Zelous
             // this (class with an array of radio buttons, indexed by enum?)
             if (mRadioButton_PasteBrush.Checked)
             {
-                mEditMode = EditMode.PasteBrush;
+                ActiveEditMode = EditMode.PasteBrush;
             }
             else if (mRadioButton_SelectBrush.Checked)
             {
-                mEditMode = EditMode.SelectBrush;
+                ActiveEditMode = EditMode.SelectBrush;
             }
             else
             {
@@ -573,10 +616,12 @@ namespace Zelous
             {
                 case EditMode.PasteBrush:
                     mRadioButton_PasteBrush.Checked = true;
+                    mViewPanel.Cursor = Cursors.Default;
                     break;
 
                 case EditMode.SelectBrush:
                     mRadioButton_SelectBrush.Checked = true;
+                    mViewPanel.Cursor = Cursors.Cross;
                     break;
             }
         }

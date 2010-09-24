@@ -41,6 +41,12 @@ namespace Zelous
             }
         }
 
+        public void ToggleTabPageIconIndex(int tabPageIndex)
+        {
+            TabPage tabPage = TabPages[tabPageIndex];
+            SetTabPageImageIndex(tabPageIndex, (tabPage.ImageIndex + 1) % 2);
+        }
+
         // Gets called when current tab is about to be deselected. We handle toggling the icon
         // on the non-selected tab here so that we can cancel the deselect without any flicker
         // problems. Doing this on OnSelecting() causes the selecting tab to be repainted, even
@@ -53,7 +59,7 @@ namespace Zelous
                 int selectingTabPageIndex = GetTabPageIndexAtCurrMousePos();
                 TabPage selectingTabPage = TabPages[selectingTabPageIndex];
 
-                if (AttempToggleIcon(this, selectingTabPage, selectingTabPageIndex))
+                if (AttempToggleIconAtCurrMousePos(this, selectingTabPage, selectingTabPageIndex))
                 {
                     e.Cancel = true;
                 }
@@ -66,7 +72,7 @@ namespace Zelous
         {
             if (!mIconToggleHandled)
             {
-                AttempToggleIcon(this, SelectedTab, SelectedIndex);
+                AttempToggleIconAtCurrMousePos(this, SelectedTab, SelectedIndex);
             }
 
             mIconToggleHandled = false;
@@ -88,7 +94,7 @@ namespace Zelous
             return -1;
         }
 
-        private bool AttempToggleIcon(TabControl tabControl, TabPage tabPage, int tabPageIndex)
+        private bool AttempToggleIconAtCurrMousePos(TabControl tabControl, TabPage tabPage, int tabPageIndex)
         {
             Debug.Assert(ImageList != null);
             Debug.Assert(ImageList.Images.Count == 2);

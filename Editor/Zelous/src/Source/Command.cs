@@ -7,13 +7,18 @@ using System.Diagnostics;
 
 namespace Zelous
 {
-    class Command
+    abstract class Command
     {
         public Command(){}
 
-        public virtual void Do() {}
-        public virtual void Undo() {}
-        public virtual void Redo() { }
+        // Returns whether the command was successful; if not, command is not added to the undo stack
+        public abstract bool Do();
+
+        // Undoes the command (must be successful)
+        public abstract void Undo();
+
+        // We separate Do from Redo since the former often needs to save Undo information
+        public abstract void Redo();
     };
 
     class PasteBrushCommand : Command
@@ -30,10 +35,17 @@ namespace Zelous
             mDoBrush = brush;
         }
 
-        public override void Do()
+        public override bool Do()
         {
             mUndoBrush = new TileMapView.Brush();
             mTargetTileMapView.PasteBrush(mTargetTilePos, mDoBrush, ref mUndoBrush);
+
+            if (mUndoBrush == mDoBrush) // Don't paste if target tiles match what we're pasting
+            {
+                return false;                
+            }
+
+            return true;
         }
 
         public override void Undo()

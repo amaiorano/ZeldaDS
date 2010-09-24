@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Drawing;
+using System.Diagnostics;
 
 namespace Zelous
 {
@@ -10,6 +11,41 @@ namespace Zelous
         // Populated and returned via event when client has selected tiles (multi-tile and multi-layer).
         public class Brush
         {
+            // Boiler-plate equality code (annoying)
+            public override bool Equals(Object obj) { return obj is Brush && this == (Brush)obj; }
+            public override int GetHashCode() { Debug.Assert(false, "Not implemented yet"); return 0;  }
+            public static bool operator !=(Brush lhs, Brush rhs) { return !(lhs == rhs); }
+
+            public static bool operator ==(Brush lhs, Brush rhs)
+            {
+                if (Equals(lhs, null) && Equals(rhs, null))
+                    return true;
+
+                if (Equals(lhs, null) || Equals(rhs, null))
+                    return false;
+
+                if (lhs.NumTiles != rhs.NumTiles)
+                    return false;
+
+                if (lhs.Layers.Length != rhs.Layers.Length)
+                    return false;
+
+                //@TODO: More reason to create data types for layers of tile maps (each can have their own equality
+                // functions)
+                for (int layer = 0; layer < lhs.Layers.Length; ++layer)
+                {
+                    for (int tileX = 0; tileX < lhs.NumTiles.Width; ++tileX)
+                    {
+                        for (int tileY = 0; tileY < lhs.NumTiles.Height; ++tileY)
+                        {
+                            if (lhs.Layers[layer].TileMap[tileX, tileY] != rhs.Layers[layer].TileMap[tileX, tileY])
+                                return false;
+                        }
+                    }
+                }
+                return true;
+            }
+
             public class LayerData
             {
                 // The source layer index of the tile indices. Note that for the "tile set views", this

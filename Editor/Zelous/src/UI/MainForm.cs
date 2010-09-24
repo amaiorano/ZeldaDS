@@ -139,13 +139,16 @@ namespace Zelous
             // and dock within panels
             InitializeComponent();
 
+            // Set KeyPreview to true to allow the form to process the key before the control with focus processes it (MainForm_KeyDown)
+            this.KeyPreview = true;
+
             // Use to hook into windows messages the application level before they are processed
             //Application.AddMessageFilter(new AppMessageFilter());
 
             mCommandManager.OnCommand += new CommandManager.CommandEventHandler(OnCommandManagerCommand);
             mTabControl.OnIconToggled += new IconToggleTabControl.IconToggledEventHandler(mTabControl_OnIconToggled);
 
-            // Once-time initialization of controls
+            // One-time initialization of controls
             {
                 // Map each TileSetView instance into an array so we can index them
                 mGuiTileLayers[0].mTileMapView = mTileSetView1;
@@ -153,12 +156,18 @@ namespace Zelous
                 mGuiTileLayers[2].mTileMapView = mCollisionView;
                 mGuiTileLayers[3].mTileMapView = mCharacterView;
 
-                // Call Init() on all TileMapViews
-                foreach (GuiTileLayer guiTileLayer in mGuiTileLayers)
+                // Initialize the TileSetViews
+                string[] tileSetViewTitles = new string[] { "Background", "Foreground", "Collision", "Characters" }; // Move into GuiTileLayers?
+
+                for (int layer = 0; layer < mGuiTileLayers.Length; ++layer)
                 {
-                    guiTileLayer.mTileMapView.Init(1); // These contain exactly 1 layer
+                    mGuiTileLayers[layer].mTileMapView.Init("", 1); // These contain exactly 1 layer
+
+                    // Initialize the tab page (we must be on one!)
+                    TabPage tabPage = (TabPage)mGuiTileLayers[layer].mTileMapView.Parent;
+                    tabPage.Text = tileSetViewTitles[layer];
                 }
-                mWorldMapView.Init(WorldMap.NumLayers);
+                mWorldMapView.Init("World Map", WorldMap.NumLayers);
 
                 // Initialize the visibility icon on the tab pages from the world map view
                 {
@@ -177,7 +186,7 @@ namespace Zelous
         }
 
         // Used to reset a TileMapView used for viewing/selecting from a TileSet
-        private void ResetTileSetView(TileMapView tileMapView, string title, TileSet tileSet)
+        private void ResetTileSetView(TileMapView tileMapView, TileSet tileSet)
         {
             // Reset tile set view - we create a layer that simply displays all the tiles
             // in the tile set (same dimensions)
@@ -193,13 +202,9 @@ namespace Zelous
                 }
             }
 
-            tileMapView.Reset("", new TileLayer[] { tileSetLayer }); // Title set on tab page (below)
+            tileMapView.Reset(new TileLayer[] { tileSetLayer }); // Title set on tab page (below)
             tileMapView.ShowScreenGridOption = false;
             tileMapView.OnBrushCreated += new TileMapView.BrushCreatedEventHandler(this.OnBrushCreated);
-
-            // Initialize the tab page (we must be on one!)
-            TabPage tabPage = (TabPage)tileMapView.Parent;
-            tabPage.Text = title;
         }
 
         // Used to reset all the TileMapViews (for the main map view and the tile sets).
@@ -207,19 +212,16 @@ namespace Zelous
         private void ResetTileMapViews()
         {
             Size tileSize = new Size(16, 16);
-
             string[] tileSetFiles = new string[] { "overworld_bg.bmp", "overworld_fg.bmp", "collision_tileset.bmp", "editor_characters.bmp" };
-            string[] tileSetViewTitles = new string[] { "Background", "Foreground", "Collision", "Characters" };
 
             Debug.Assert(tileSetFiles.Length == mGuiTileLayers.Length);
-            Debug.Assert(tileSetFiles.Length == tileSetViewTitles.Length);
 
             // Create TileSets and reset TileSetViews with them
             TileSet[] tileSets = new TileSet[mGuiTileLayers.Length];
             for (int i = 0; i < tileSets.Length; ++i)
             {
                 tileSets[i] = new TileSet(tileSetFiles[i], tileSize.Width, tileSize.Height);
-                ResetTileSetView(mGuiTileLayers[i].mTileMapView, tileSetViewTitles[i], tileSets[i]);
+                ResetTileSetView(mGuiTileLayers[i].mTileMapView, tileSets[i]);
             }
 
             // Reset world map view
@@ -227,7 +229,7 @@ namespace Zelous
                 mWorldMap = new WorldMap();
                 mWorldMap.Init(20, 10, tileSets);
 
-                mWorldMapView.Reset("World Map", mWorldMap.TileLayers);
+                mWorldMapView.Reset(mWorldMap.TileLayers);
                 mWorldMapView.OnBrushCreated += new TileMapView.BrushCreatedEventHandler(this.OnBrushCreated);
                 mWorldMapView.OnBrushPasteRequested += new TileMapView.BrushPasteRequestedEventHandler(this.OnBrushPasteRequested);
             }
@@ -407,11 +409,56 @@ namespace Zelous
 
         private void MainForm_KeyDown(object sender, KeyEventArgs e)
         {
+            // Control + [Shift + ] Tab switches tile set tab
             if (e.Control && e.KeyCode == Keys.Tab)
             {
                 ControlHelpers.TabControl_SelectAdjacentTab(mTabControl, !e.Shift);
-                e.Handled = true;
+                e.SuppressKeyPress = true;
             }
+
+            // <Number> selects a tab, Alt + <Number> toggles visibility on that tab
+            if (Char.IsNumber((char)e.KeyValue) && !(e.Control || e.Shift))
+            {
+                int numberPressed = e.KeyValue - (int)Keys.D0;
+                
+                // For the user, the layer number is 1-based
+                if (numberPressed >= 1 && numberPressed <= mGuiTileLayers.Length)
+                {
+                    int layer = numberPressed - 1;
+
+                    // For the user, the layer number is 1-based
+                    if (layer < mGuiTileLayers.Length)
+                    {
+                        if (e.Alt)
+                        {
+                            mTabControl.ToggleTabPageIconIndex(layer);                            
+                        }
+                        else
+                        {
+                            mTabControl.SelectedIndex = layer;                            
+                        }
+
+                        e.SuppressKeyPress = true;
+                    }
+                }
+            }
+
+            // V toggles visibiliy of current tab
+            if (e.KeyCode == Keys.V)
+            {
+                mTabControl.ToggleTabPageIconIndex(mTabControl.SelectedIndex);
+                e.SuppressKeyPress = true;
+            }
+
+            // Give TileMapViews a chance to handle global key presses without requiring focus
+            //@TODO: Iterate all TileMapViews here, and if e.Handled is true after call, break the loop
+            mWorldMapView.OnGlobalKeyDown(e);
+        }
+
+        private void MainForm_KeyUp(object sender, KeyEventArgs e)
+        {
+            //@TODO: Iterate all TileMapViews here, and if e.Handled is true after call, break the loop
+            mWorldMapView.OnGlobalKeyUp(e);
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)

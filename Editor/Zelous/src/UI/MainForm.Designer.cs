@@ -227,10 +227,10 @@ namespace Zelous
             // tabPage1
             // 
             this.tabPage1.Controls.Add(this.mTileSetView1);
-            this.tabPage1.Location = new System.Drawing.Point(4, 22);
+            this.tabPage1.Location = new System.Drawing.Point(4, 23);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(673, 174);
+            this.tabPage1.Size = new System.Drawing.Size(673, 173);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "TileSet 1";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -241,17 +241,17 @@ namespace Zelous
             this.mTileSetView1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.mTileSetView1.Location = new System.Drawing.Point(3, 3);
             this.mTileSetView1.Name = "mTileSetView1";
-            this.mTileSetView1.Size = new System.Drawing.Size(667, 168);
+            this.mTileSetView1.Size = new System.Drawing.Size(667, 167);
             this.mTileSetView1.TabIndex = 0;
             this.mTileSetView1.Title = "TileMapView Title";
             // 
             // tabPage2
             // 
             this.tabPage2.Controls.Add(this.mTileSetView2);
-            this.tabPage2.Location = new System.Drawing.Point(4, 22);
+            this.tabPage2.Location = new System.Drawing.Point(4, 23);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(673, 174);
+            this.tabPage2.Size = new System.Drawing.Size(673, 173);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "TileSet 2";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -262,17 +262,17 @@ namespace Zelous
             this.mTileSetView2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.mTileSetView2.Location = new System.Drawing.Point(3, 3);
             this.mTileSetView2.Name = "mTileSetView2";
-            this.mTileSetView2.Size = new System.Drawing.Size(667, 168);
+            this.mTileSetView2.Size = new System.Drawing.Size(667, 167);
             this.mTileSetView2.TabIndex = 2;
             this.mTileSetView2.Title = "TileMapView Title";
             // 
             // tabPage3
             // 
             this.tabPage3.Controls.Add(this.mCollisionView);
-            this.tabPage3.Location = new System.Drawing.Point(4, 22);
+            this.tabPage3.Location = new System.Drawing.Point(4, 23);
             this.tabPage3.Name = "tabPage3";
             this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage3.Size = new System.Drawing.Size(673, 174);
+            this.tabPage3.Size = new System.Drawing.Size(673, 173);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "Collision";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -283,17 +283,17 @@ namespace Zelous
             this.mCollisionView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.mCollisionView.Location = new System.Drawing.Point(3, 3);
             this.mCollisionView.Name = "mCollisionView";
-            this.mCollisionView.Size = new System.Drawing.Size(667, 168);
+            this.mCollisionView.Size = new System.Drawing.Size(667, 167);
             this.mCollisionView.TabIndex = 3;
             this.mCollisionView.Title = "TileMapView Title";
             // 
             // tabPage4
             // 
             this.tabPage4.Controls.Add(this.mCharacterView);
-            this.tabPage4.Location = new System.Drawing.Point(4, 22);
+            this.tabPage4.Location = new System.Drawing.Point(4, 23);
             this.tabPage4.Name = "tabPage4";
             this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage4.Size = new System.Drawing.Size(673, 174);
+            this.tabPage4.Size = new System.Drawing.Size(673, 173);
             this.tabPage4.TabIndex = 3;
             this.tabPage4.Text = "Characters";
             this.tabPage4.UseVisualStyleBackColor = true;
@@ -304,7 +304,7 @@ namespace Zelous
             this.mCharacterView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.mCharacterView.Location = new System.Drawing.Point(3, 3);
             this.mCharacterView.Name = "mCharacterView";
-            this.mCharacterView.Size = new System.Drawing.Size(667, 168);
+            this.mCharacterView.Size = new System.Drawing.Size(667, 167);
             this.mCharacterView.TabIndex = 4;
             this.mCharacterView.Title = "TileMapView Title";
             // 
@@ -321,13 +321,13 @@ namespace Zelous
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(681, 504);
             this.Controls.Add(this.mSplitContainer);
-            this.KeyPreview = true;
             this.MainMenuStrip = this.mMenuStrip;
             this.Name = "MainForm";
-            this.Text = "Zelous 1.0";
+            this.Text = "Zelous";
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.MainForm_KeyDown);
+            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.MainForm_KeyUp);
             this.mSplitContainer.Panel1.ResumeLayout(false);
             this.mSplitContainer.Panel1.PerformLayout();
             this.mSplitContainer.Panel2.ResumeLayout(false);

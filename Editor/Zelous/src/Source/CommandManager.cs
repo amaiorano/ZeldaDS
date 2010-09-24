@@ -29,8 +29,12 @@ namespace Zelous
 
         public void DoCommand(Command newCommand)
         {
+            if (!newCommand.Do())
+            {
+                return;
+            }
+
             mUndoCommands.Push(newCommand);
-            newCommand.Do();
 
             // Clear the redo stack
             if (mRedoCommands.Count > 0)
