@@ -24,8 +24,13 @@ namespace Zelous
         private Size mTotalSizePixels;
         
         private EditMode mEditMode = EditMode.SelectBrush;
-        private bool mAltEditModeActive = false;
-        private Dictionary<EditMode, EditMode> mEditModeAltMap; // Maps EditMode to it's Alt EditMode (mode that is selected while Alt is being held)
+        private bool mSubEditModeActive = false;
+        private struct SubEditMode
+        {
+            public EditMode mAlt;
+            public EditMode mCtrl;
+        }
+        private Dictionary<EditMode, SubEditMode> mSubEditModeMap; // Maps EditMode to it's Sub EditMode (mode that is selected while Alt/Ctrl is being held)
         
         private BrushManager mBrushManager;
 
@@ -36,8 +41,10 @@ namespace Zelous
 
         public enum EditMode
         {
+            Unset,
             PasteBrush,
-            SelectBrush
+            SelectBrush,
+            DragNavigation,
         }
 
         public EditMode ActiveEditMode
@@ -65,8 +72,12 @@ namespace Zelous
             }
             mBrushManager = new BrushManager(this);
 
-            mEditModeAltMap = new Dictionary<EditMode, EditMode>();
-            mEditModeAltMap[EditMode.PasteBrush] = EditMode.SelectBrush;
+            mSubEditModeMap = new Dictionary<EditMode, SubEditMode>();
+
+            SubEditMode pasteBrushSubEditMode = new SubEditMode();
+            pasteBrushSubEditMode.mAlt = EditMode.SelectBrush;
+            pasteBrushSubEditMode.mCtrl = EditMode.DragNavigation;
+            mSubEditModeMap[EditMode.PasteBrush] = pasteBrushSubEditMode;
 
             InitializeComponent();
         }
@@ -186,36 +197,42 @@ namespace Zelous
 
         public void OnGlobalKeyDown(KeyEventArgs e)
         {
-            // Handle changing to alternate edit mode
+            // Handle changing to sub edit mode
             Point mousePos = PointToClient(Control.MousePosition);
             bool isMouseOverPanel = mViewPanel.Bounds.Contains(mousePos);
 
-            if (e.Modifiers == Keys.Alt && isMouseOverPanel && mEditModeAltMap.ContainsKey(ActiveEditMode))
+            if (isMouseOverPanel && (e.Modifiers == Keys.Alt || e.Modifiers == Keys.Control) && mSubEditModeMap.ContainsKey(ActiveEditMode))
             {
-                ActiveEditMode = mEditModeAltMap[ActiveEditMode];
-                mAltEditModeActive = true;
-                OnEditModeChanged();
-                e.SuppressKeyPress = true;
+                EditMode subEditMode = e.Modifiers == Keys.Alt ? mSubEditModeMap[ActiveEditMode].mAlt : mSubEditModeMap[ActiveEditMode].mCtrl;
+                if (subEditMode != EditMode.Unset)
+                {
+                    ActiveEditMode = subEditMode;
+                    mSubEditModeActive = true;
+                    OnEditModeChanged();
+                    e.SuppressKeyPress = true;
+                }
             }
         }
 
         public void OnGlobalKeyUp(KeyEventArgs e)
         {
-            // Handle going back from alternate edit mode
-            if (!e.Alt && mAltEditModeActive)
+            // Handle going back from sub edit mode
+            if (!e.Alt && mSubEditModeActive)
             {
                 // Find current alt edit mode in values, and go back to its key
-                foreach (KeyValuePair<EditMode, EditMode> entry in mEditModeAltMap)
+                foreach (KeyValuePair<EditMode, SubEditMode> entry in mSubEditModeMap)
                 {
-                    if (entry.Value == ActiveEditMode)
+                    if (entry.Value.mCtrl == ActiveEditMode || entry.Value.mAlt == ActiveEditMode)
                     {
                         ActiveEditMode = entry.Key;
-                        mAltEditModeActive = false;
+                        mSubEditModeActive = false;
                         OnEditModeChanged();
                         e.SuppressKeyPress = true;
                         return;
                     }                    
                 }
+
+                Debug.Fail("SubEditMode is active, but the current mode is not an SubEditMode");
             }
         }
 
@@ -479,6 +496,9 @@ namespace Zelous
         private Point mLastBrushPastePos = InvalidPoint;
         private MouseSelectionRegion mMouseSelectionRegion = new MouseSelectionRegion();
 
+        private Point mNavigationDragStartScrollBarValues = new Point();
+        private MouseSelectionRegion mNavigationDragOffset = new MouseSelectionRegion();
+
         private void ResetSelection(bool force)
         {
             // Avoid needless refreshing
@@ -488,6 +508,16 @@ namespace Zelous
             mLastBrushPastePos = InvalidPoint;
             mMouseSelectionRegion.Reset();
             RedrawTileMap();
+        }
+
+        private void ResetNavigationDragData()
+        {
+            mNavigationDragOffset.Reset();
+
+            if (ActiveEditMode == EditMode.DragNavigation)
+            {
+                mViewPanel.Cursor = EmbeddedResourceMgr.LoadCursor("Zelous.cursors.HandOpen.cur");
+            }
         }
 
         private void SendBrushPasteRequestedEvent(Point tileMapPos)
@@ -520,6 +550,14 @@ namespace Zelous
                     SendBrushPasteRequestedEvent(tileMapPos);
                     mLastBrushPastePos = tileMapPos;
                 }
+                else if (ActiveEditMode == EditMode.DragNavigation)
+                {
+                    mNavigationDragStartScrollBarValues.X = mScrollBarX.Value;
+                    mNavigationDragStartScrollBarValues.Y = mScrollBarY.Value;
+                    mNavigationDragOffset.StartPoint = e.Location;
+                    mNavigationDragOffset.StopPoint = e.Location;
+                    mViewPanel.Cursor = EmbeddedResourceMgr.LoadCursor("Zelous.cursors.HandClosed.cur");
+                }
             }
         }
 
@@ -544,12 +582,30 @@ namespace Zelous
                         mLastBrushPastePos = tileMapPos;
                     }
                 }
+                else if (ActiveEditMode == EditMode.DragNavigation)
+                {
+                    mNavigationDragOffset.StopPoint = e.Location;
+                    if (mNavigationDragOffset.IsValid())
+                    {
+                        int scrollBarX = mNavigationDragStartScrollBarValues.X - (mNavigationDragOffset.Offset.X / RenderScale);
+                        int scrollBarY = mNavigationDragStartScrollBarValues.Y - (mNavigationDragOffset.Offset.Y / RenderScale);
+
+                        scrollBarX = MathEx.Clamp(scrollBarX, mScrollBarX.Minimum, mScrollBarX.Maximum - mScrollBarX.LargeChange + 1);
+                        scrollBarY = MathEx.Clamp(scrollBarY, mScrollBarY.Minimum, mScrollBarY.Maximum - mScrollBarY.LargeChange + 1);
+
+                        SuspendLayout();
+                        mScrollBarX.Value = scrollBarX;
+                        mScrollBarY.Value = scrollBarY;
+                        ResumeLayout();
+                    }
+                }
             }
             else if (e.Button == MouseButtons.None)
             {
                 // In case MouseUp is never received (happens if user alt+tabs away while click & dragging)
                 // we make sure to clear the selection on next MouseMove
                 ResetSelection(false);
+                ResetNavigationDragData();
             }
         }
 
@@ -566,7 +622,6 @@ namespace Zelous
                     Debug.Assert(OnBrushCreated != null);
 
                     mMouseSelectionRegion.StopPoint = tileMapPos;
-
                     if (mMouseSelectionRegion.IsValid())
                     {
                         // Callback client with selected tiles
@@ -578,6 +633,10 @@ namespace Zelous
                     }
 
                     ResetSelection(false);
+                }
+                else if (ActiveEditMode == EditMode.DragNavigation)
+                {
+                    ResetNavigationDragData();
                 }
             }
         }
@@ -604,6 +663,10 @@ namespace Zelous
             {
                 ActiveEditMode = EditMode.SelectBrush;
             }
+            else if (mRadioButton_DragNavigation.Checked)
+            {
+                ActiveEditMode = EditMode.DragNavigation;
+            }
             else
             {
                 Debug.Assert(false, "Unhandled!");
@@ -621,7 +684,12 @@ namespace Zelous
 
                 case EditMode.SelectBrush:
                     mRadioButton_SelectBrush.Checked = true;
-                    mViewPanel.Cursor = Cursors.Cross;
+                    mViewPanel.Cursor = EmbeddedResourceMgr.LoadCursor("Zelous.cursors.CrossHair.cur");
+                    break;
+
+                case EditMode.DragNavigation:
+                    mRadioButton_DragNavigation.Checked = true;
+                    mViewPanel.Cursor = EmbeddedResourceMgr.LoadCursor("Zelous.cursors.HandOpen.cur");
                     break;
             }
         }
@@ -661,6 +729,11 @@ namespace Zelous
         public bool IsValid()
         {
             return StartPoint != InvalidPoint && StopPoint != InvalidPoint;
+        }
+
+        public Point Offset
+        {
+            get { return new Point(StopPoint.X - StartPoint.X, StopPoint.Y - StartPoint.Y); }
         }
 
         public Rectangle ToNormalizeRect()

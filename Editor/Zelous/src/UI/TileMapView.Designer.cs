@@ -41,6 +41,7 @@ namespace Zelous
             this.mRadioButton_SelectBrush = new System.Windows.Forms.RadioButton();
             this.mIcons = new System.Windows.Forms.ImageList(this.components);
             this.mRadioButton_PasteBrush = new System.Windows.Forms.RadioButton();
+            this.mRadioButton_DragNavigation = new System.Windows.Forms.RadioButton();
             this.mViewPanel = new Zelous.NoFlickerPanel();
             ((System.ComponentModel.ISupportInitialize)(this.mScaleCtrl)).BeginInit();
             this.SuspendLayout();
@@ -142,7 +143,7 @@ namespace Zelous
             this.mRadioButton_SelectBrush.FlatAppearance.CheckedBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(192)))), ((int)(((byte)(255)))));
             this.mRadioButton_SelectBrush.ImageKey = "RectangleSelection.bmp";
             this.mRadioButton_SelectBrush.ImageList = this.mIcons;
-            this.mRadioButton_SelectBrush.Location = new System.Drawing.Point(0, 49);
+            this.mRadioButton_SelectBrush.Location = new System.Drawing.Point(0, 50);
             this.mRadioButton_SelectBrush.Name = "mRadioButton_SelectBrush";
             this.mRadioButton_SelectBrush.Size = new System.Drawing.Size(22, 22);
             this.mRadioButton_SelectBrush.TabIndex = 8;
@@ -156,6 +157,7 @@ namespace Zelous
             this.mIcons.TransparentColor = System.Drawing.Color.White;
             this.mIcons.Images.SetKeyName(0, "PaintBrush.bmp");
             this.mIcons.Images.SetKeyName(1, "RectangleSelection.bmp");
+            this.mIcons.Images.SetKeyName(2, "HandOpen.bmp");
             // 
             // mRadioButton_PasteBrush
             // 
@@ -171,6 +173,21 @@ namespace Zelous
             this.TileMapViewToolTips.SetToolTip(this.mRadioButton_PasteBrush, "Paint Active Brush");
             this.mRadioButton_PasteBrush.UseVisualStyleBackColor = true;
             this.mRadioButton_PasteBrush.CheckedChanged += new System.EventHandler(this.EditModeRadioButton_CheckedChanged);
+            // 
+            // mRadioButton_DragNavigation
+            // 
+            this.mRadioButton_DragNavigation.Appearance = System.Windows.Forms.Appearance.Button;
+            this.mRadioButton_DragNavigation.AutoSize = true;
+            this.mRadioButton_DragNavigation.FlatAppearance.CheckedBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(192)))), ((int)(((byte)(255)))));
+            this.mRadioButton_DragNavigation.ImageKey = "HandOpen.bmp";
+            this.mRadioButton_DragNavigation.ImageList = this.mIcons;
+            this.mRadioButton_DragNavigation.Location = new System.Drawing.Point(0, 74);
+            this.mRadioButton_DragNavigation.Name = "mRadioButton_DragNavigation";
+            this.mRadioButton_DragNavigation.Size = new System.Drawing.Size(22, 22);
+            this.mRadioButton_DragNavigation.TabIndex = 9;
+            this.TileMapViewToolTips.SetToolTip(this.mRadioButton_DragNavigation, "Navigate with Click & Drag");
+            this.mRadioButton_DragNavigation.UseVisualStyleBackColor = true;
+            this.mRadioButton_DragNavigation.CheckedChanged += new System.EventHandler(this.EditModeRadioButton_CheckedChanged);
             // 
             // mViewPanel
             // 
@@ -191,6 +208,7 @@ namespace Zelous
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.mRadioButton_DragNavigation);
             this.Controls.Add(this.mRadioButton_SelectBrush);
             this.Controls.Add(this.mCheckBoxTileGrid);
             this.Controls.Add(this.mRadioButton_PasteBrush);
@@ -223,5 +241,6 @@ namespace Zelous
         private System.Windows.Forms.RadioButton mRadioButton_SelectBrush;
         private System.Windows.Forms.ToolTip TileMapViewToolTips;
         private System.Windows.Forms.ImageList mIcons;
+        private System.Windows.Forms.RadioButton mRadioButton_DragNavigation;
     }
 }

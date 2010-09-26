@@ -21,13 +21,12 @@ namespace Zelous
             string description =
 @"Shortcut Keys:
 
-Hold Alt             - Temporarily activates alternate tool if one exists
+Hold Alt / Control   - Temporarily activates alternate (sub) tool if one exists
 V                    - Toggle visibility of current layer (affects selection)
 Alt + <Number>       - Toggle visibility for layer number
 <Number>             - Select Tile Set tab for layer number
 Ctrl [+ Shift] + Tab - Switch to next/previous Tile Set tab
 ";
-
             
             this.textBoxDescription.Font = CreateFixedWidthFont();
 

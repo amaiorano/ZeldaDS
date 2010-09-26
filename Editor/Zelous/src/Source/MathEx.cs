@@ -46,5 +46,16 @@ namespace Zelous
         {
             return new Point(lhs.X % rhs.Width, lhs.Y % rhs.Height);
         }
+
+        public static T Clamp<T>(T value, T min, T max) where T : System.IComparable<T>
+        {
+            if (value.CompareTo(min) < 0)
+                return min;
+
+            if (value.CompareTo(max) > 0)
+                return max;
+
+            return value;
+        }
     }
 }

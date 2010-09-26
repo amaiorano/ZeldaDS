@@ -57,6 +57,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="src\Source\EmbeddedResourceMgr.cs" />
     <Compile Include="src\Source\SerializationMgr.cs" />
     <Compile Include="src\Source\Command.cs" />
     <Compile Include="src\Source\CommandManager.cs" />
@@ -112,6 +113,9 @@
     <Compile Include="src\Source\WorldMap.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="cursors\HandOpen.cur" />
+    <EmbeddedResource Include="cursors\HandClosed.cur" />
+    <EmbeddedResource Include="cursors\CrossHair.cur" />
     <Content Include="docs\todo.txt" />
   </ItemGroup>
   <ItemGroup>
