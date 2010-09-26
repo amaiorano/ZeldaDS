@@ -587,15 +587,17 @@ namespace Zelous
                     mNavigationDragOffset.StopPoint = e.Location;
                     if (mNavigationDragOffset.IsValid())
                     {
-                        int scrollBarX = mNavigationDragStartScrollBarValues.X - (mNavigationDragOffset.Offset.X / RenderScale);
-                        int scrollBarY = mNavigationDragStartScrollBarValues.Y - (mNavigationDragOffset.Offset.Y / RenderScale);
-
-                        scrollBarX = MathEx.Clamp(scrollBarX, mScrollBarX.Minimum, mScrollBarX.Maximum - mScrollBarX.LargeChange + 1);
-                        scrollBarY = MathEx.Clamp(scrollBarY, mScrollBarY.Minimum, mScrollBarY.Maximum - mScrollBarY.LargeChange + 1);
-
                         SuspendLayout();
-                        mScrollBarX.Value = scrollBarX;
-                        mScrollBarY.Value = scrollBarY;
+                        if (mScrollBarX.Visible)
+                        {
+                            int scrollBarX = mNavigationDragStartScrollBarValues.X - (mNavigationDragOffset.Offset.X / RenderScale);
+                            mScrollBarX.Value = MathEx.Clamp(scrollBarX, mScrollBarX.Minimum, mScrollBarX.Maximum - mScrollBarX.LargeChange + 1);
+                        }
+                        if (mScrollBarY.Visible)
+                        {
+                            int scrollBarY = mNavigationDragStartScrollBarValues.Y - (mNavigationDragOffset.Offset.Y / RenderScale);
+                            mScrollBarY.Value = MathEx.Clamp(scrollBarY, mScrollBarY.Minimum, mScrollBarY.Maximum - mScrollBarY.LargeChange + 1);
+                        }
                         ResumeLayout();
                     }
                 }
