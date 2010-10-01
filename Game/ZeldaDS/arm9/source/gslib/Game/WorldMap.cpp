@@ -314,17 +314,17 @@ void WorldMap::GetSpawnDataForScreen(const Vector2I& screen, SpawnDataList& spaw
 void WorldMap::FindPlayerSpawnData()
 {
 	// Find player spawner from data layer (slow!)
-	for (uint16 y = 0; y < mNumTilesY; ++y)
+	for (uint16 tileY = 0; tileY < mNumTilesY; ++tileY)
 	{
-		for (uint16 x = 0; x < mNumTilesX; ++x)
+		for (uint16 tileX = 0; tileX < mNumTilesX; ++tileX)
 		{
-			if (mDataLayer(x, y).SpawnActorType == GameActor::Hero)
+			if (mDataLayer(tileX, tileY).SpawnActorType == GameActor::Hero)
 			{
 				// Clear the value so we don't try to spawn the player when spawning enemies
-				mDataLayer(x, y).SpawnActorType = GameActor::None;
+				mDataLayer(tileX, tileY).SpawnActorType = GameActor::None;
 
-				mPlayerSpawnData.mPos.Reset(TileToWorldPos(x, y));
-				mPlayerSpawnData.mScreen.Reset(x / GameNumScreenMetaTilesX, y / GameNumBgMetaTilesY);
+				mPlayerSpawnData.mPos.Reset(TileToWorldPos(tileX, tileY));
+				mPlayerSpawnData.mScreen.Reset(tileX / GameNumScreenMetaTilesX, tileY / GameNumScreenMetaTilesY);
 
 				return;
 			}
