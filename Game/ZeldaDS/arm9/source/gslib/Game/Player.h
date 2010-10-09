@@ -14,6 +14,7 @@ public:
 
 	// Character interface
 	virtual void InitStateMachine();
+	virtual SharedStateData* CreateSharedStateData();
 	
 	// GameObject interface
 	virtual void GetGameObjectInfo(GameObjectInfo& gameObjectInfo);

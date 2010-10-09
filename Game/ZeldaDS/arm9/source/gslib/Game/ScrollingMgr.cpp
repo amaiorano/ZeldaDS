@@ -4,17 +4,17 @@
 #include "gslib/Hw/GraphicsEngine.h"
 #include "gslib/Hw/BackgroundLayer.h"
 
+struct ScrollingSharedStateData : SharedStateData
+{
+};
+
+typedef StateT<ScrollingSharedStateData, ScrollingMgr> ScrollingState;
+
 struct ScrollingStates
 {
-	struct ScrollingSharedStateData : SharedStateData
-	{
-	};
-
-	typedef StateT<ScrollingSharedStateData, ScrollingMgr> ScrollingState;
-	
 	struct Root : ScrollingState
 	{
-		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
+		virtual Transition EvaluateTransitions()
 		{
 			return InnerEntryTransition<NotScrolling>();
 		}
@@ -22,7 +22,7 @@ struct ScrollingStates
 
 	struct NotScrolling : ScrollingState
 	{
-		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
+		virtual Transition EvaluateTransitions()
 		{
 			if (Owner().mScrollDir != ScrollDir::None)
 			{
@@ -54,7 +54,7 @@ struct ScrollingStates
 			Owner().mScrollOffset.Reset(InitZero);
 		}
 
-		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
+		virtual Transition EvaluateTransitions()
 		{
 			if (IsInState<Scrolling_Done>())
 			{
@@ -131,7 +131,7 @@ struct ScrollingStates
 			}
 		}
 
-		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
+		virtual Transition EvaluateTransitions()
 		{
 			return SiblingTransition<Scrolling_Scroll>();
 		}
@@ -146,7 +146,7 @@ struct ScrollingStates
 			mIsDoneScrolling = false;
 		}
 
-		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
+		virtual Transition EvaluateTransitions()
 		{
 			if (mIsDoneScrolling)
 			{
@@ -235,7 +235,7 @@ struct ScrollingStates
 			pScrollingState->UpdateScrollState();
 		}
 
-		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
+		virtual Transition EvaluateTransitions()
 		{
 			return SiblingTransition<Scrolling_Done>();
 		}
@@ -263,7 +263,7 @@ void ScrollingMgr::Init()
 {
 	//mStateMachine.SetDebugLevel(1);
 	mStateMachine.SetOwner(this);
-	mStateMachine.SetSharedStateData(new ScrollingStates::ScrollingSharedStateData());
+	mStateMachine.SetSharedStateData(new ScrollingSharedStateData());
 	mStateMachine.SetInitialState<ScrollingStates::Root>();
 }
 

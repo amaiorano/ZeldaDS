@@ -1,7 +1,8 @@
-#ifndef ENEMY_SM_H
-#define ENEMY_SM_H
+#ifndef ENEMY_STATE_H
+#define ENEMY_STATE_H
 
 #include "CharacterState.h"
+#include "Enemy.h"
 #include "MovementModel.h"
 
 // Contains base and shared enemy state machine stuff, included by state machine
@@ -19,7 +20,7 @@ struct EnemySharedStateData : CharacterSharedStateData
 };
 
 // Base class for enemy states
-typedef CharacterState<EnemySharedStateData, Enemy> EnemyState;
+typedef StateT<EnemySharedStateData, Enemy, CharacterState> EnemyState;
 
 // Shared states for all enemies
 struct EnemySharedStates
@@ -121,5 +122,169 @@ struct EnemySharedStates
 	};
 };
 
+struct EnemyStates
+{
+	struct Root : EnemyState
+	{
+		virtual Transition EvaluateTransitions()
+		{
+			if (Owner().mHealth.IsDead())
+			{
+				return InnerTransition<Dead>();
+			}
 
-#endif // ENEMY_SM_H
+			return InnerTransition<Alive>();
+		}
+	};
+
+	struct Alive : EnemyState
+	{
+		virtual Transition EvaluateTransitions()
+		{
+			return InnerEntryTransition<Alive_Spawn>();
+		}
+	};
+
+	struct Alive_Spawn : EnemyState
+	{
+		virtual void OnEnter()
+		{
+			PlayGlobalAnim(BaseAnim::Spawn);
+		}
+
+		virtual Transition EvaluateTransitions()
+		{
+			if (IsAnimFinished())
+			{
+				return SiblingTransition<Alive_Main>();
+			}
+
+			return NoTransition();
+		}
+	};
+
+	// AI's main state
+	struct Alive_Main : EnemyState
+	{
+		virtual void OnEnter()
+		{
+			SetAttribute(Data().mAttribCanDamage, true);
+			SetAttribute(Data().mAttribCanTakeDamage, true);
+		}
+
+		virtual Transition EvaluateTransitions()
+		{
+			return InnerEntryTransition<Alive_Main_Locomotion>();
+		}
+	};
+
+	struct Alive_Main_Locomotion : EnemyState
+	{
+		virtual Transition EvaluateTransitions()
+		{
+			if (Owner().mDamageInfo.IsSet())
+			{
+				if (Owner().mDamageInfo.mEffect == DamageEffect::Stun)
+				{
+					return SiblingTransition<Alive_Main_Stunned>();
+				}
+
+				return SiblingTransition<Alive_Main_Hurt>();
+			}
+
+			//@TODO: Something along these lines...
+			//return Transition(Transition::InnerEntry, Owner().GetTargetState(GetStateTypeId(Alive_Main_Locomotion));
+			return Owner().GetRootTransition();
+		}
+	};
+
+	struct Alive_Main_Stunned : EnemyState
+	{
+		HsmTimeType mElapsedTime;
+
+		virtual void OnEnter()
+		{
+			mElapsedTime = 0;
+			ASSERT(Owner().mDamageInfo.mEffect == DamageEffect::Stun);
+			Owner().mDamageInfo.Reset();
+
+			PlayAnim(BaseAnim::Idle);
+		}
+
+		virtual Transition EvaluateTransitions()
+		{
+			// Not crazy about this, probably should have single outer state
+			// that transitions us to Hurt
+			DamageInfo& dmgInfo = Owner().mDamageInfo;
+			if (dmgInfo.IsSet() && dmgInfo.mEffect != DamageEffect::Stun)
+			{
+				return SiblingTransition<Alive_Main_Hurt>();
+			}
+
+			if (mElapsedTime > SEC_TO_FRAMES(2.0))
+			{
+				return SiblingTransition<Alive_Main_Locomotion>();
+			}
+
+			return NoTransition();
+		}
+
+		virtual void PerformStateActions(HsmTimeType deltaTime)
+		{
+			mElapsedTime += deltaTime;
+
+			// Keep resetting timer if re-stunned. Note that re-stunning happens a few times even
+			// on the initial stun since the boomerang continues to collide with the enemy for a
+			// few frames. This is ok, not much we can do about it.
+			DamageInfo& dmgInfo = Owner().mDamageInfo;
+
+			if (dmgInfo.IsSet())
+			{
+				// Other types of damage should bump us out of this state
+				ASSERT(dmgInfo.mEffect == DamageEffect::Stun);
+
+				mElapsedTime = 0;
+				dmgInfo.Reset();
+			}
+		}
+	};
+
+	struct Alive_Main_Hurt : EnemyState
+	{
+		virtual void OnEnter()
+		{
+			//@TODO: For now, just absorb the damage. Eventually, knockback and
+			// remain invincible for some time.
+			DamageInfo& dmgInfo = Owner().mDamageInfo;
+			ASSERT(dmgInfo.mEffect == DamageEffect::Hurt);
+			
+			Owner().mHealth.OffsetValue( -dmgInfo.mAmount );
+			dmgInfo.Reset();
+		}
+
+		virtual Transition EvaluateTransitions()
+		{
+			return SiblingTransition<Alive_Main_Locomotion>();
+		}
+	};	
+
+	struct Dead : EnemyState
+	{
+		virtual void OnEnter()
+		{
+			PlayGlobalAnim(BaseAnim::Spawn); // Play same anim as spawn
+			//@TODO: Tell someone we're dead
+		}
+
+		virtual void PerformStateActions(HsmTimeType deltaTime)
+		{
+			if (IsAnimFinished())
+			{
+				Owner().OnDead();
+			}
+		}
+	};
+
+}; // struct EnemyStates
+
+#endif // ENEMY_STATE_H

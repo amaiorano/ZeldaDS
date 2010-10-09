@@ -11,7 +11,7 @@ struct RopeStates
 
 	struct Main : EnemyState
 	{
-		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
+		virtual Transition EvaluateTransitions()
 		{
 			return InnerEntryTransition<Move>();
 		}
@@ -26,7 +26,7 @@ struct RopeStates
 		{
 		}
 
-		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
+		virtual Transition EvaluateTransitions()
 		{
 			if (mShouldStrike)
 			{
@@ -84,7 +84,7 @@ struct RopeStates
 
 	struct Attack : EnemyState
 	{
-		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
+		virtual Transition EvaluateTransitions()
 		{
 			// If we hit anything (player or world), stop attacking
 			if (Owner().mLastFrameCollision.mIsSet 
@@ -107,18 +107,23 @@ struct RopeStates
 
 		virtual void OnEnter()
 		{
+			mElapsedTime = 0;
 			PlayAnim(BaseAnim::Idle);
 		}
 
-		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
-		{
-			mElapsedTime += deltaTime;
+		virtual Transition EvaluateTransitions()
+		{			
 			if (mElapsedTime > SEC_TO_FRAMES(0.3f))
 			{
 				return SiblingTransition<Strike>();
 			}
 
 			return NoTransition();
+		}
+
+		virtual void PerformStateActions(HsmTimeType deltaTime)
+		{
+			mElapsedTime += deltaTime;
 		}
 	};
 
@@ -139,7 +144,7 @@ struct RopeStates
 
 }; // struct RopeStates
 
-Transition& Rope::GetRootTransition()
+Transition Rope::GetRootTransition()
 {
 	return InnerEntryTransition<RopeStates::Main>();
 }

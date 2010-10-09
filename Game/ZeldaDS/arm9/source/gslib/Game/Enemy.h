@@ -14,6 +14,7 @@ public:
 
 	// Character interface
 	virtual void InitStateMachine();
+	virtual SharedStateData* CreateSharedStateData();
 	virtual void OnDead();
 
 	// GameObject interface
@@ -31,10 +32,7 @@ public:
 	virtual void OnCollision(const CollisionInfo& collisionInfo);
 
 protected:
-	// Child class must override if extending EnemySharedStateData
-	virtual EnemySharedStateData* CreateSharedStateData();
-
-	virtual Transition& GetRootTransition() = 0;
+	virtual Transition GetRootTransition() = 0;
 
 	EnemySharedStateData* mpSharedStateData;
 	

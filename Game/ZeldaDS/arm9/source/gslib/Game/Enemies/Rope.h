@@ -14,7 +14,7 @@ protected:
 		gameObjectInfo.mGameActor = GameActor::Rope;
 	}
 
-	virtual Transition& GetRootTransition();
+	virtual Transition GetRootTransition();
 };
 
 

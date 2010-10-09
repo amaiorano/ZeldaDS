@@ -5,7 +5,7 @@ struct GenericEnemyStates
 {
 	struct Main : EnemyState
 	{
-		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
+		virtual Transition EvaluateTransitions()
 		{
 			return InnerEntryTransition<Move>();
 		}
@@ -64,7 +64,7 @@ void GenericEnemy::GetGameObjectInfo(GameObjectInfo& gameObjectInfo)
 	}
 }
 
-Transition& GenericEnemy::GetRootTransition()
+Transition GenericEnemy::GetRootTransition()
 {
 	return InnerEntryTransition<GenericEnemyStates::Main>();
 }

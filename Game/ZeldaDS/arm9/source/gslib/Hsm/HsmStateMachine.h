@@ -62,19 +62,19 @@ public:
 	void SetInitialState()
 	{
 		HSM_ASSERT( mStateStack.empty() );
-		State* pInitialState = SiblingTransition<ChildState>().CreateState(this);
+		State* pInitialState = GetStateFactory<ChildState>().CreateState(this);
 		PushInitialState(pInitialState);
 	}
 
 	// Update function (call once per frame)
 	void Update(HsmTimeType deltaTime)
 	{
-		EvaluateStateTransitions(deltaTime);
+		EvaluateStateTransitions();
 		PerformStateActions(deltaTime);
 	}
 
 	// Called by Update()
-	void EvaluateStateTransitions(HsmTimeType deltaTime);
+	void EvaluateStateTransitions();
 	void PerformStateActions(HsmTimeType deltaTime);
 
 	// Accessors
@@ -116,7 +116,7 @@ private:
 	void PopStatesToDepth(size_t depth);
 
 	// Returns true if a transition was made, meaning we must keep evaluating
-	bool EvaluateStateTransitionsOnce(HsmTimeType deltaTime);
+	bool EvaluateStateTransitionsOnce();
 
 private:
 	void* mpOwner; // Provided by client, accessed within states via Owner()
@@ -131,7 +131,7 @@ private:
 
 // Inline State member function implementations - implemented here because they depend on certain types
 // to be defined (StateMachine, Transitions, etc.)
-inline Transition& State::EvaluateTransitions(HsmTimeType deltaTime)
+inline Transition State::EvaluateTransitions()
 {
 	return NoTransition();
 }

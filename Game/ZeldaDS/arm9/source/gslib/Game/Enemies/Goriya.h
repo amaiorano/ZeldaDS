@@ -14,8 +14,8 @@ protected:
 		gameObjectInfo.mGameActor = GameActor::Goriya;
 	}
 
-	virtual EnemySharedStateData* CreateSharedStateData();
-	virtual Transition& GetRootTransition();
+	virtual SharedStateData* CreateSharedStateData();
+	virtual Transition GetRootTransition();
 	virtual void OnDead();
 	virtual void Update(GameTimeType deltaTime);
 };

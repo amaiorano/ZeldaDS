@@ -48,7 +48,7 @@ StateMachine::~StateMachine()
 	delete mpSharedStateData;
 }
 
-void StateMachine::EvaluateStateTransitions(HsmTimeType deltaTime)
+void StateMachine::EvaluateStateTransitions()
 {
 	HSM_ASSERT(mpSharedStateData); // Make sure to set state data
 	HSM_ASSERT(!mStateStack.empty()); // Make sure to set an initial state!
@@ -58,7 +58,7 @@ void StateMachine::EvaluateStateTransitions(HsmTimeType deltaTime)
 	bool keepEvaluating = true;
 	while (keepEvaluating)
 	{
-		keepEvaluating = EvaluateStateTransitionsOnce(deltaTime);
+		keepEvaluating = EvaluateStateTransitionsOnce();
 	}
 }
 
@@ -138,7 +138,7 @@ void StateMachine::PopStatesToDepth(size_t depth)
 }
 
 // Returns true if a transition was made (and next depth to start at), meaning we must keep evaluating
-bool StateMachine::EvaluateStateTransitionsOnce(HsmTimeType deltaTime)
+bool StateMachine::EvaluateStateTransitionsOnce()
 {
 	// Evaluate transitions from outer to inner states; if a valid sibling transition is returned,
 	// we must pop inners up to and including the state that returned the transition, then push the
@@ -147,7 +147,7 @@ bool StateMachine::EvaluateStateTransitionsOnce(HsmTimeType deltaTime)
 	for (size_t depth = 0; depth < mStateStack.size(); ++depth)
 	{
 		State* pCurrState = mStateStack[depth];
-		Transition& transition = pCurrState->EvaluateTransitions(deltaTime);
+		Transition transition = pCurrState->EvaluateTransitions();
 
 		switch (transition.GetTransitionType())
 		{
@@ -161,7 +161,7 @@ bool StateMachine::EvaluateStateTransitionsOnce(HsmTimeType deltaTime)
 			{
 				if (State* pInnerState = GetStateAtDepth(depth + 1))
 				{
-					if ( transition.GetStateType() == pInnerState->GetStateType() )
+					if ( transition.GetTargetStateType() == pInnerState->GetStateType() )
 					{
 						// Inner is already target state so keep going to next inner
 					}
@@ -170,7 +170,7 @@ bool StateMachine::EvaluateStateTransitionsOnce(HsmTimeType deltaTime)
 						// Pop all states under us and push target
 						PopStatesToDepth(depth + 1);
 
-						State* pTargetState = transition.CreateState(this);
+						State* pTargetState = transition.CreateTargetState(this);
 						HSM_LOG_TRANSITION(1, depth + 1, "Inner", pTargetState);
 						mStateStack.push_back(pTargetState);
 						return true;
@@ -179,7 +179,7 @@ bool StateMachine::EvaluateStateTransitionsOnce(HsmTimeType deltaTime)
 				else
 				{
 					// No state under us so just push target
-					State* pTargetState = transition.CreateState(this);
+					State* pTargetState = transition.CreateTargetState(this);
 					HSM_LOG_TRANSITION(1, depth + 1, "Inner", pTargetState);
 					mStateStack.push_back(pTargetState);
 					return true;
@@ -192,7 +192,7 @@ bool StateMachine::EvaluateStateTransitionsOnce(HsmTimeType deltaTime)
 				// If current state has no inner (is currently the innermost), then push the entry state
 				if ( !GetStateAtDepth(depth + 1) )
 				{
-					State* pTargetState = transition.CreateState(this);
+					State* pTargetState = transition.CreateTargetState(this);
 					HSM_LOG_TRANSITION(1, depth + 1, "Entry", pTargetState);
 					mStateStack.push_back(pTargetState);
 					return true;
@@ -204,7 +204,7 @@ bool StateMachine::EvaluateStateTransitionsOnce(HsmTimeType deltaTime)
 			{
 				PopStatesToDepth(depth);
 
-				State* pTargetState = transition.CreateState(this);
+				State* pTargetState = transition.CreateTargetState(this);
 				HSM_LOG_TRANSITION(1, depth, "Sibling", pTargetState);
 				mStateStack.push_back(pTargetState);
 				return true;

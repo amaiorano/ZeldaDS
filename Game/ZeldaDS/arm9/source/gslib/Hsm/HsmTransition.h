@@ -3,55 +3,107 @@
 
 #include "HsmState.h"
 
-// Transition hierarchy
-struct Transition
-{
-	enum Type { Sibling, Inner, InnerEntry, No };
+struct StateFactory;
 
-	virtual Transition::Type GetTransitionType() const = 0;
+// Returns the one StateFactory instance for the input state
+template <typename TargetState>
+StateFactory& GetStateFactory();
+
+// StateFactory is responsible for creating State instances
+struct StateFactory
+{
 	virtual StateTypeId GetStateType() const = 0;
 	virtual State* CreateState(StateMachine* pOwnerStateMachine) const = 0;
 };
 
-template <typename ChildState, Transition::Type transType>
-struct ConcreteTransition : public Transition
-{	
-	virtual Transition::Type GetTransitionType() const	{ return transType; }
-	virtual StateTypeId GetStateType() const			{ return GetStateTypeId(ChildState); }
+template <typename TargetState>
+struct ConcreteStateFactory : StateFactory
+{
+	virtual StateTypeId GetStateType() const { return GetStateTypeId(TargetState); }
 
 	virtual State* CreateState(StateMachine* pOwnerStateMachine) const
 	{
-		return ::CreateState<ChildState>(pOwnerStateMachine);
+		return ::CreateState<TargetState>(pOwnerStateMachine);
 	}
+
+private:
+	friend StateFactory& GetStateFactory<TargetState>();
+	ConcreteStateFactory() { }
 };
+
+template <typename TargetState>
+StateFactory& GetStateFactory()
+{
+	static ConcreteStateFactory<TargetState> instance;
+	return instance;
+}
+
+// Transitions are returned by EvaluateTransition(), and are most often constructed via
+// the generator functions below.
+struct Transition
+{
+	enum Type { Sibling, Inner, InnerEntry, No };
+
+	// Defaults to No transition
+	Transition()
+		: mTransitionType(Transition::No)
+		, mpStateFactory(0)
+	{
+	}
+
+	Transition(Transition::Type transitionType, StateFactory& stateFactory)
+		: mTransitionType(transitionType)
+		, mpStateFactory(&stateFactory)
+	{
+		HSM_ASSERT(transitionType != Transition::No);
+	}
+
+	Transition::Type GetTransitionType() const
+	{
+		return mTransitionType;
+	}
+
+	StateTypeId GetTargetStateType() const
+	{
+		HSM_ASSERT(mpStateFactory);
+		return mpStateFactory->GetStateType();
+	}
+
+	State* CreateTargetState(StateMachine* pOwnerStateMachine) const
+	{
+		HSM_ASSERT(mpStateFactory);
+		return mpStateFactory->CreateState(pOwnerStateMachine);
+	}
+
+private:
+	Transition::Type mTransitionType;
+	StateFactory* mpStateFactory; // Bald pointer because StateFactory instances are always statically allocated
+};
+
 
 // Transition generators - used to return from EvaluateTransition()
 
 template <typename TargetState>
-inline Transition& SiblingTransition()
+inline Transition SiblingTransition()
 {
-	static ConcreteTransition<TargetState, Transition::Sibling> transition;
-	return transition;
+	return Transition(Transition::Sibling, GetStateFactory<TargetState>());
 }
 
 template <typename TargetState>
-inline Transition& InnerTransition()
+inline Transition InnerTransition()
 {
-	static ConcreteTransition<TargetState, Transition::Inner> transition;
-	return transition;
+	return Transition(Transition::Inner, GetStateFactory<TargetState>());
 }
 
 template <typename TargetState>
-inline Transition& InnerEntryTransition()
+inline Transition InnerEntryTransition()
 {
-	static ConcreteTransition<TargetState, Transition::InnerEntry> transition;
-	return transition;
+	return Transition(Transition::InnerEntry, GetStateFactory<TargetState>());
 }
 
-inline Transition& NoTransition()
+inline Transition NoTransition()
 {
-	static ConcreteTransition<NullState, Transition::No> transition;
-	return transition;
+	return Transition();
 }
 
 #endif // HSM_TRANSITION_H

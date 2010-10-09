@@ -2,7 +2,6 @@
 #define ITREE_NODE
 
 #include "gslib/Core/Core.h"
-#include "gslib/Math/Vector2.h"
 #include <vector>
 #include <algorithm>
 

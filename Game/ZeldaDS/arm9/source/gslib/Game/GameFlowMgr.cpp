@@ -39,7 +39,7 @@ struct GameFlowStates
 {
 	struct Root : GameFlowState
 	{
-		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
+		virtual Transition EvaluateTransitions()
 		{
 			return InnerEntryTransition<InitGame>();
 		}
@@ -76,7 +76,7 @@ struct GameFlowStates
 			ScrollingMgr::Instance().Init();
 		}
 		
-		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
+		virtual Transition EvaluateTransitions()
 		{
 			return SiblingTransition<EnableRendering>();
 		}
@@ -92,7 +92,7 @@ struct GameFlowStates
 			GraphicsEngine::FadeScreen(FadeScreenDir::Out, 0);
 		}
 
-		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
+		virtual Transition EvaluateTransitions()
 		{
 			// Wait one frame for the faded out black screen to render once
 			// before showing the backgrounds (sucks that we have to do this)
@@ -143,7 +143,7 @@ struct GameFlowStates
 			//HEAP_CHECK_SIZE();
 		}
 
-		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
+		virtual Transition EvaluateTransitions()
 		{
 			return SiblingTransition<PlayingMap>();
 		}
@@ -172,7 +172,7 @@ struct GameFlowStates
 			RemoveAllNodesImmediately();
 		}
 
-		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
+		virtual Transition EvaluateTransitions()
 		{
 			//@TODO TEMP HACK: L+R toggle map loading between 2 test maps
 			if ((InputManager::GetKeysHeld() & (KEY_L|KEY_R)) == (KEY_L|KEY_R))
@@ -310,7 +310,7 @@ struct GameFlowStates
 			AudioEngine::SetMusicVolume(1.0f);
 		}
 
-		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
+		virtual Transition EvaluateTransitions()
 		{
 			if ( !GraphicsEngine::IsFadingScreen() )
 			{
@@ -333,7 +333,7 @@ struct GameFlowStates
 			WorldMap::Instance().Shutdown();
 		}
 
-		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
+		virtual Transition EvaluateTransitions()
 		{
 			return SiblingTransition<LoadMap>();
 		}

@@ -9,168 +9,6 @@
 #include "MovementModel.h"
 #include "EnemyState.h"
 
-struct EnemyStates
-{
-	struct Root : EnemyState
-	{
-		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
-		{
-			if (Owner().mHealth.IsDead())
-			{
-				return InnerTransition<Dead>();
-			}
-
-			return InnerTransition<Alive>();
-		}
-	};
-
-	struct Alive : EnemyState
-	{
-		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
-		{
-			return InnerEntryTransition<Alive_Spawn>();
-		}
-	};
-
-	struct Alive_Spawn : EnemyState
-	{
-		virtual void OnEnter()
-		{
-			PlayGlobalAnim(BaseAnim::Spawn);
-		}
-
-		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
-		{
-			if (IsAnimFinished())
-			{
-				return SiblingTransition<Alive_Main>();
-			}
-
-			return NoTransition();
-		}
-	};
-
-	// AI's main state
-	struct Alive_Main : EnemyState
-	{
-		virtual void OnEnter()
-		{
-			SetAttribute(Data().mAttribCanDamage, true);
-			SetAttribute(Data().mAttribCanTakeDamage, true);
-		}
-
-		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
-		{
-			return InnerEntryTransition<Alive_Main_Locomotion>();
-		}
-	};
-
-	struct Alive_Main_Locomotion : EnemyState
-	{
-		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
-		{
-			if (Owner().mDamageInfo.IsSet())
-			{
-				if (Owner().mDamageInfo.mEffect == DamageEffect::Stun)
-				{
-					return SiblingTransition<Alive_Main_Stunned>();
-				}
-
-				return SiblingTransition<Alive_Main_Hurt>();
-			}
-
-			return Owner().GetRootTransition();
-		}
-	};
-
-	struct Alive_Main_Stunned : EnemyState
-	{
-		HsmTimeType mElapsedTime;
-
-		virtual void OnEnter()
-		{
-			mElapsedTime = 0;
-			ASSERT(Owner().mDamageInfo.mEffect == DamageEffect::Stun);
-			Owner().mDamageInfo.Reset();
-
-			PlayAnim(BaseAnim::Idle);
-		}
-
-		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
-		{
-			// Not crazy about this, probably should have single outer state
-			// that transitions us to Hurt
-			DamageInfo& dmgInfo = Owner().mDamageInfo;
-			if (dmgInfo.IsSet() && dmgInfo.mEffect != DamageEffect::Stun)
-			{
-				return SiblingTransition<Alive_Main_Hurt>();
-			}
-
-			mElapsedTime += deltaTime;
-			if (mElapsedTime > SEC_TO_FRAMES(2.0))
-			{
-				return SiblingTransition<Alive_Main_Locomotion>();
-			}
-
-			return NoTransition();
-		}
-
-		virtual void PerformStateActions(HsmTimeType deltaTime)
-		{
-			// Keep resetting Alive_Main_Stunned timer if reAlive_Main_Stunned. Note that re-stunning happens
-			// a few times even on the initial stun since the boomerang continues to collide
-			// with the enemy for a few frames. This is ok, not much we can do about it.
-			DamageInfo& dmgInfo = Owner().mDamageInfo;
-
-			if (dmgInfo.IsSet())
-			{
-				// Other types of damage should bump us out of this state
-				ASSERT(dmgInfo.mEffect == DamageEffect::Stun);
-
-				mElapsedTime = 0;
-				dmgInfo.Reset();
-			}
-		}
-	};
-
-	struct Alive_Main_Hurt : EnemyState
-	{
-		virtual void OnEnter()
-		{
-			//@TODO: For now, just absorb the damage. Eventually, knockback and
-			// remain invincible for some time.
-			DamageInfo& dmgInfo = Owner().mDamageInfo;
-			ASSERT(dmgInfo.mEffect == DamageEffect::Hurt);
-			
-			Owner().mHealth.OffsetValue( -dmgInfo.mAmount );
-			dmgInfo.Reset();
-		}
-
-		virtual Transition& EvaluateTransitions(HsmTimeType deltaTime)
-		{
-			return SiblingTransition<Alive_Main_Locomotion>();
-		}
-	};	
-
-	struct Dead : EnemyState
-	{
-		virtual void OnEnter()
-		{
-			PlayGlobalAnim(BaseAnim::Spawn); // Play same anim as spawn
-			//@TODO: Tell someone we're dead
-		}
-
-		virtual void PerformStateActions(HsmTimeType deltaTime)
-		{
-			if (IsAnimFinished())
-			{
-				Owner().OnDead();
-			}
-		}
-	};
-
-}; // struct EnemyStates
-
 Enemy::Enemy()
 	: mpSharedStateData(0)
 {
@@ -178,12 +16,14 @@ Enemy::Enemy()
 
 void Enemy::InitStateMachine()
 {
-	mpSharedStateData = CreateSharedStateData();
-
-	//mStateMachine.SetDebugLevel(1);
-	mStateMachine.SetOwner(this);
-	mStateMachine.SetSharedStateData(mpSharedStateData);
+	Base::InitStateMachine();
 	mStateMachine.SetInitialState<EnemyStates::Root>();
+	mpSharedStateData = static_cast<EnemySharedStateData*>(&mStateMachine.GetSharedStateData());
+}
+
+SharedStateData* Enemy::CreateSharedStateData()
+{
+	return new EnemySharedStateData();
 }
 
 void Enemy::OnDead()
@@ -220,9 +60,4 @@ void Enemy::OnCollision(const CollisionInfo& collisionInfo)
 			pPlayer->OnDamage(dmgInfo);
 		}
 	}
-}
-
-EnemySharedStateData* Enemy::CreateSharedStateData()
-{
-	return new EnemySharedStateData();
 }

@@ -13,13 +13,18 @@ public:
 	typedef GameObject Base;
 
 	virtual void Init(const Vector2I& initPos);
-	virtual void InitStateMachine() = 0;
+	
+protected:
+	virtual void InitStateMachine();
+	virtual SharedStateData* CreateSharedStateData();
+
 	virtual void OnDead() { }
 
 	// ISceneNode interface
 	virtual void OnAddToScene();
 	virtual void Update(GameTimeType deltaTime);
 
+public:
 	// IDamageable interface
 	virtual void OnDamage(const DamageInfo& damageInfo);
 

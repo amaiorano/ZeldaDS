@@ -121,7 +121,7 @@ struct State
 	// Note: GetStateMachine() is valid in OnEnter(), but not in a state constructor
 	void OnEnter() { } // Doesn't need to be virtual - called directly on child state
 	virtual void OnExit() { }
-	virtual Transition& EvaluateTransitions(HsmTimeType deltaTime); // Called from outer to inner until settled on a state (no more transitions returned)
+	virtual Transition EvaluateTransitions(); // Called from outer to inner until settled on a state (no more transitions returned)
 	virtual void PerformStateActions(HsmTimeType deltaTime) { }; // Called from outer to inner once settled on a state (after StateMachine::EvaluateStateTransitions())
 
 	// Should be called from OnEnter() to override an attribute while in current state

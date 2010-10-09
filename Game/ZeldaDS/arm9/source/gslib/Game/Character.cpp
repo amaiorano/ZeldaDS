@@ -11,6 +11,21 @@ void Character::Init(const Vector2I& initPos)
 	ASSERT(mpSharedStateData); // If invalid, child class didn't init state machine properly
 }
 
+void Character::InitStateMachine()
+{
+	//mStateMachine.SetDebugLevel(1);
+	mStateMachine.SetOwner(this);
+	mStateMachine.SetSharedStateData(CreateSharedStateData());
+	mpSharedStateData = static_cast<CharacterSharedStateData*>(&mStateMachine.GetSharedStateData());
+
+	// No initial state set - child must set one...
+}
+
+SharedStateData* Character::CreateSharedStateData()
+{
+	return new CharacterSharedStateData();
+}
+
 void Character::OnAddToScene()
 {
 	Base::OnAddToScene();
@@ -26,7 +41,7 @@ struct CallPostAnimUpdateVisitor : public StateVisitor
 	virtual bool OnVisit(State* pState, void* pUserData = NULL)
 	{
 		HsmTimeType& deltaTime = *static_cast<HsmTimeType*>(pUserData);
-		static_cast<CharacterStateExt*>(pState)->PostAnimUpdate( deltaTime );
+		static_cast<CharacterState*>(pState)->PostAnimUpdate( deltaTime );
 		return true;
 	}
 } gCallPostAnimUpdateVisitor;
