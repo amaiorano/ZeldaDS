@@ -142,10 +142,6 @@ namespace Zelous
             mTotalSizePixels = mTileLayers[0].SizePixels; //@TODO: assert that all layers return this same value
             UpdateScrollBarValues();
 
-            // Clear events
-            OnBrushCreated = null;
-            OnBrushPasteRequested = null;
-
             ResetSelection(true);
         }
 

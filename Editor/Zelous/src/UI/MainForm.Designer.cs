@@ -31,7 +31,6 @@ namespace Zelous
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.mSplitContainer = new System.Windows.Forms.SplitContainer();
-            this.mWorldMapView = new Zelous.TileMapView();
             this.mMenuStrip = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -45,25 +44,12 @@ namespace Zelous
             this.redoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutZelousToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.mTabControl = new Zelous.IconToggleTabControl();
-            this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.mTileSetView1 = new Zelous.TileMapView();
-            this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.mTileSetView2 = new Zelous.TileMapView();
-            this.tabPage3 = new System.Windows.Forms.TabPage();
-            this.mCollisionView = new Zelous.TileMapView();
-            this.tabPage4 = new System.Windows.Forms.TabPage();
-            this.mCharacterView = new Zelous.TileMapView();
             this.mTabControlImages = new System.Windows.Forms.ImageList(this.components);
+            this.mTabControl = new Zelous.IconToggleTabControl();
             this.mSplitContainer.Panel1.SuspendLayout();
             this.mSplitContainer.Panel2.SuspendLayout();
             this.mSplitContainer.SuspendLayout();
             this.mMenuStrip.SuspendLayout();
-            this.mTabControl.SuspendLayout();
-            this.tabPage1.SuspendLayout();
-            this.tabPage2.SuspendLayout();
-            this.tabPage3.SuspendLayout();
-            this.tabPage4.SuspendLayout();
             this.SuspendLayout();
             // 
             // mSplitContainer
@@ -75,25 +61,13 @@ namespace Zelous
             // 
             // mSplitContainer.Panel1
             // 
-            this.mSplitContainer.Panel1.Controls.Add(this.mWorldMapView);
-            this.mSplitContainer.Panel1.Controls.Add(this.mMenuStrip);
             // 
             // mSplitContainer.Panel2
             // 
             this.mSplitContainer.Panel2.Controls.Add(this.mTabControl);
             this.mSplitContainer.Size = new System.Drawing.Size(681, 504);
-            this.mSplitContainer.SplitterDistance = 300;
+            this.mSplitContainer.SplitterDistance = 277;
             this.mSplitContainer.TabIndex = 1;
-            // 
-            // mWorldMapView
-            // 
-            this.mWorldMapView.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.mWorldMapView.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.mWorldMapView.Location = new System.Drawing.Point(0, 24);
-            this.mWorldMapView.Name = "mWorldMapView";
-            this.mWorldMapView.Size = new System.Drawing.Size(681, 276);
-            this.mWorldMapView.TabIndex = 0;
-            this.mWorldMapView.Title = "TileMapView Title";
             // 
             // mMenuStrip
             // 
@@ -207,107 +181,9 @@ namespace Zelous
             // aboutZelousToolStripMenuItem
             // 
             this.aboutZelousToolStripMenuItem.Name = "aboutZelousToolStripMenuItem";
-            this.aboutZelousToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.aboutZelousToolStripMenuItem.Size = new System.Drawing.Size(145, 22);
             this.aboutZelousToolStripMenuItem.Text = "About Zelous";
             this.aboutZelousToolStripMenuItem.Click += new System.EventHandler(this.aboutZelousToolStripMenuItem_Click);
-            // 
-            // mTabControl
-            // 
-            this.mTabControl.Controls.Add(this.tabPage1);
-            this.mTabControl.Controls.Add(this.tabPage2);
-            this.mTabControl.Controls.Add(this.tabPage3);
-            this.mTabControl.Controls.Add(this.tabPage4);
-            this.mTabControl.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.mTabControl.ImageList = this.mTabControlImages;
-            this.mTabControl.Location = new System.Drawing.Point(0, 0);
-            this.mTabControl.Name = "mTabControl";
-            this.mTabControl.SelectedIndex = 0;
-            this.mTabControl.Size = new System.Drawing.Size(681, 200);
-            this.mTabControl.TabIndex = 0;
-            // 
-            // tabPage1
-            // 
-            this.tabPage1.Controls.Add(this.mTileSetView1);
-            this.tabPage1.Location = new System.Drawing.Point(4, 23);
-            this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(673, 173);
-            this.tabPage1.TabIndex = 0;
-            this.tabPage1.Text = "TileSet 1";
-            this.tabPage1.UseVisualStyleBackColor = true;
-            // 
-            // mTileSetView1
-            // 
-            this.mTileSetView1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.mTileSetView1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.mTileSetView1.Location = new System.Drawing.Point(3, 3);
-            this.mTileSetView1.Name = "mTileSetView1";
-            this.mTileSetView1.Size = new System.Drawing.Size(667, 167);
-            this.mTileSetView1.TabIndex = 0;
-            this.mTileSetView1.Title = "TileMapView Title";
-            // 
-            // tabPage2
-            // 
-            this.tabPage2.Controls.Add(this.mTileSetView2);
-            this.tabPage2.Location = new System.Drawing.Point(4, 23);
-            this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(673, 173);
-            this.tabPage2.TabIndex = 1;
-            this.tabPage2.Text = "TileSet 2";
-            this.tabPage2.UseVisualStyleBackColor = true;
-            // 
-            // mTileSetView2
-            // 
-            this.mTileSetView2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.mTileSetView2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.mTileSetView2.Location = new System.Drawing.Point(3, 3);
-            this.mTileSetView2.Name = "mTileSetView2";
-            this.mTileSetView2.Size = new System.Drawing.Size(667, 167);
-            this.mTileSetView2.TabIndex = 2;
-            this.mTileSetView2.Title = "TileMapView Title";
-            // 
-            // tabPage3
-            // 
-            this.tabPage3.Controls.Add(this.mCollisionView);
-            this.tabPage3.Location = new System.Drawing.Point(4, 23);
-            this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage3.Size = new System.Drawing.Size(673, 173);
-            this.tabPage3.TabIndex = 2;
-            this.tabPage3.Text = "Collision";
-            this.tabPage3.UseVisualStyleBackColor = true;
-            // 
-            // mCollisionView
-            // 
-            this.mCollisionView.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.mCollisionView.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.mCollisionView.Location = new System.Drawing.Point(3, 3);
-            this.mCollisionView.Name = "mCollisionView";
-            this.mCollisionView.Size = new System.Drawing.Size(667, 167);
-            this.mCollisionView.TabIndex = 3;
-            this.mCollisionView.Title = "TileMapView Title";
-            // 
-            // tabPage4
-            // 
-            this.tabPage4.Controls.Add(this.mCharacterView);
-            this.tabPage4.Location = new System.Drawing.Point(4, 23);
-            this.tabPage4.Name = "tabPage4";
-            this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage4.Size = new System.Drawing.Size(673, 173);
-            this.tabPage4.TabIndex = 3;
-            this.tabPage4.Text = "Characters";
-            this.tabPage4.UseVisualStyleBackColor = true;
-            // 
-            // mCharacterView
-            // 
-            this.mCharacterView.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.mCharacterView.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.mCharacterView.Location = new System.Drawing.Point(3, 3);
-            this.mCharacterView.Name = "mCharacterView";
-            this.mCharacterView.Size = new System.Drawing.Size(667, 167);
-            this.mCharacterView.TabIndex = 4;
-            this.mCharacterView.Title = "TileMapView Title";
             // 
             // mTabControlImages
             // 
@@ -316,12 +192,23 @@ namespace Zelous
             this.mTabControlImages.Images.SetKeyName(0, "NotVisible.bmp");
             this.mTabControlImages.Images.SetKeyName(1, "Visible.bmp");
             // 
+            // mTabControl
+            // 
+            this.mTabControl.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.mTabControl.ImageList = this.mTabControlImages;
+            this.mTabControl.Location = new System.Drawing.Point(0, 0);
+            this.mTabControl.Name = "mTabControl";
+            this.mTabControl.SelectedIndex = 0;
+            this.mTabControl.Size = new System.Drawing.Size(681, 223);
+            this.mTabControl.TabIndex = 0;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(681, 504);
             this.Controls.Add(this.mSplitContainer);
+            this.Controls.Add(this.mMenuStrip);
             this.MainMenuStrip = this.mMenuStrip;
             this.Name = "MainForm";
             this.Text = "Zelous";
@@ -335,19 +222,14 @@ namespace Zelous
             this.mSplitContainer.ResumeLayout(false);
             this.mMenuStrip.ResumeLayout(false);
             this.mMenuStrip.PerformLayout();
-            this.mTabControl.ResumeLayout(false);
-            this.tabPage1.ResumeLayout(false);
-            this.tabPage2.ResumeLayout(false);
-            this.tabPage3.ResumeLayout(false);
-            this.tabPage4.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
 
         #endregion
 
-        private TileMapView mWorldMapView;
-        private TileMapView mTileSetView1;
+        private IconToggleTabControl mTabControl;
+        private System.Windows.Forms.ImageList mTabControlImages;
         private System.Windows.Forms.SplitContainer mSplitContainer;
         private System.Windows.Forms.MenuStrip mMenuStrip;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
@@ -355,23 +237,13 @@ namespace Zelous
         private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openMapToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem aboutZelousToolStripMenuItem;
-        private IconToggleTabControl mTabControl;
-        private System.Windows.Forms.TabPage tabPage1;
-        private System.Windows.Forms.TabPage tabPage2;
-        private TileMapView mTileSetView2;
-        private System.Windows.Forms.TabPage tabPage3;
-        private TileMapView mCollisionView;
         private System.Windows.Forms.ToolStripMenuItem saveMapToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem saveMapAsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem buildAndTestMapToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem editToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem undoToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem redoToolStripMenuItem;
-        private System.Windows.Forms.TabPage tabPage4;
-        private TileMapView mCharacterView;
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
-        private System.Windows.Forms.ImageList mTabControlImages;
-
     }
 }
 

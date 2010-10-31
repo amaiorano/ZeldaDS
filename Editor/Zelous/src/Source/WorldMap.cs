@@ -134,7 +134,7 @@ namespace Zelous
 
     public class WorldMap
     {
-        public const int NumLayers = 4;
+        public const int NumLayers = 5;
         private TileLayer[] mTileLayers = new TileLayer[NumLayers];
         int mNumScreensX, mNumScreensY;
         int mNumTilesX, mNumTilesY;

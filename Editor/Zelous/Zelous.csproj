@@ -57,7 +57,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="src\Source\DynamicDialog.cs" />
     <Compile Include="src\Source\EmbeddedResourceMgr.cs" />
+    <Compile Include="src\Source\GameEvent.cs" />
     <Compile Include="src\Source\SerializationMgr.cs" />
     <Compile Include="src\Source\Command.cs" />
     <Compile Include="src\Source\CommandManager.cs" />
