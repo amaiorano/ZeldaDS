@@ -234,7 +234,7 @@ namespace Zelous
             }
             else // Loading
             {
-                FileStream fs = new FileStream(fileName, FileMode.Open);
+                FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read);
                 BinaryReader r = new BinaryReader(fs);
 
                 // Header
