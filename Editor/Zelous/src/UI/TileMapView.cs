@@ -61,6 +61,8 @@ namespace Zelous
         }
 
         public int NumLayers { get; private set; }
+        public bool ContainsLayer(int layerIndex) { return layerIndex < NumLayers; }
+        public TileLayer[] TileLayers { get { return mTileLayers; } }
 
         public TileMapView()
         {
@@ -186,9 +188,14 @@ namespace Zelous
             mViewPanel.Invalidate();
         }
 
-        public void PasteBrush(Point targetTilePos, TileMapView.Brush brush, ref TileMapView.Brush undoBrush)
+        public TileMapView.Brush CreateUndoBrush(Point targetTilePos, TileMapView.Brush baseBrush)
         {
-            mBrushManager.PasteBrush(targetTilePos, brush, ref undoBrush);
+            return mBrushManager.CreateUndoBrush(targetTilePos, baseBrush);
+        }
+
+        public void PasteBrush(Point targetTilePos, TileMapView.Brush brush)
+        {
+            mBrushManager.PasteBrush(targetTilePos, brush);
         }
 
         public void OnGlobalKeyDown(KeyEventArgs e)
@@ -382,7 +389,7 @@ namespace Zelous
                         if (firstTile.X + tileX >= layer.TileMap.GetLength(0) || firstTile.Y + tileY >= layer.TileMap.GetLength(1))
                             break;
 
-                        int tileIndex = layer.TileMap[firstTile.X + tileX, firstTile.Y + tileY];
+                        int tileIndex = layer.TileMap[firstTile.X + tileX, firstTile.Y + tileY].Index;
                         tileSet.GetTileRect(tileIndex, ref srcRect);
 
                         dstRect.X = firstTilePosCS.X + (tileX * dstRect.Size.Width);
@@ -636,6 +643,13 @@ namespace Zelous
                 {
                     ResetNavigationDragData();
                 }
+            }
+            else if (e.Button == MouseButtons.Right)
+            {
+                //@TODO: Rework this code: if right-click means "edit metadata at this tile", then we should check if there's metadata,
+                // and if so, execute an event that Mainform is registered for (OnEditMetadata - maybe bound to a layer?)
+                MainForm.Instance.CommandManager.DoCommand(new EditGameEventCommand(this, tileMapPos));
+                MainForm.Instance.UpdateUndoRedoToolStripItems();
             }
         }
 

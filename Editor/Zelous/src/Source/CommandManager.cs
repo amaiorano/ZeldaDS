@@ -13,7 +13,7 @@ namespace Zelous
         SavePointChanged,
     }
 
-    class CommandManager
+    public class CommandManager
     {
         private Stack<Command> mUndoCommands = new Stack<Command>();
         private Stack<Command> mRedoCommands = new Stack<Command>();
@@ -23,6 +23,9 @@ namespace Zelous
 
         public int NumUndoCommands { get { return mUndoCommands.Count; } }
         public int NumRedoCommands { get { return mRedoCommands.Count; } }
+
+        public Command GetLastUndoCommand() { return mUndoCommands.Peek(); }
+        public Command GetLastRedoCommand() { return mRedoCommands.Peek(); }
 
         public delegate void CommandEventHandler(CommandManager sender, CommandAction action, Command command);
         public event CommandEventHandler OnCommand;

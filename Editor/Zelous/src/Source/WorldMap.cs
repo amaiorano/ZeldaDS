@@ -104,27 +104,43 @@ namespace Zelous
         Loading
     }
 
+    // Represents a single Tile
+    // It's a struct because we allocate large 2d arrays of these - consider making this a class,
+    // as it's a pain that we can't pass references to Tiles around.
+    public struct Tile : IEquatable<Tile>
+    {
+        // Index of this tile in the current tile set
+        public int Index { get; set; }
+
+        // Optional metadata tied to this Tile (ex: GameEvent).
+        public object Metadata { get; set; }
+
+        public override int GetHashCode()
+        {
+            Debug.Fail("not implemented");
+            return base.GetHashCode();
+        }
+
+        public bool Equals(Tile rhs)
+        {
+            return Index == rhs.Index
+                && ((Metadata != null && rhs.Metadata != null && Metadata.Equals(rhs.Metadata) || Metadata == rhs.Metadata));
+        }    
+    }
+
     public class TileLayer
     {
-        private int[,] mTileMap; // 2d array (C# is awesome)
+        private Tile[,] mTileMap;
         private TileSet mTileSet;
 
         public void Init(int numTilesX, int numTilesY, TileSet tileSet)
         {
             mTileSet = tileSet;
-
-            mTileMap = new int[numTilesX, numTilesY];
-            for (int x = 0; x < mTileMap.GetLength(0); ++x)
-            {
-                for (int y = 0; y < mTileMap.GetLength(1); ++y)
-                {
-                    mTileMap[x, y] = 0;
-                }
-            }
+            mTileMap = new Tile[numTilesX, numTilesY];
         }
 
         public TileSet TileSet { get { return mTileSet; } }
-        public int[,] TileMap { get { return mTileMap; } }
+        public Tile[,] TileMap { get { return mTileMap; } }
 
         public Size SizePixels
         {
@@ -201,7 +217,7 @@ namespace Zelous
                             if (layerIdx < 2)
                             {
                                 TileLayer tileLayer = TileLayers[layerIdx];
-                                int tileIndex = tileLayer.TileMap[x, y];
+                                int tileIndex = tileLayer.TileMap[x, y].Index;
                                 w.Write((UInt16)tileIndex);
                             }
                             else if (layerIdx == 2)
@@ -210,8 +226,8 @@ namespace Zelous
                                 TileLayer charLayer = TileLayers[layerIdx + 1];
 
                                 // Write out data layer (collisions + spawners)
-                                UInt16 collValue = (UInt16)collLayer.TileMap[x, y];
-                                UInt16 charValue = (UInt16)charLayer.TileMap[x, y];
+                                UInt16 collValue = (UInt16)collLayer.TileMap[x, y].Index;
+                                UInt16 charValue = (UInt16)charLayer.TileMap[x, y].Index;
 
                                 collValue <<= 0;
                                 charValue <<= 2;
@@ -266,7 +282,7 @@ namespace Zelous
                                 UInt16 tileIndex = r.ReadUInt16();
 
                                 TileLayer tileLayer = TileLayers[layerIdx];
-                                tileLayer.TileMap[x, y] = tileIndex;
+                                tileLayer.TileMap[x, y].Index = tileIndex;
                             }
                             else if (layerIdx == 2)
                             {
@@ -277,8 +293,8 @@ namespace Zelous
 
                                 TileLayer collLayer = TileLayers[layerIdx];
                                 TileLayer charLayer = TileLayers[layerIdx + 1];
-                                collLayer.TileMap[x, y] = collValue;
-                                charLayer.TileMap[x, y] = charValue;
+                                collLayer.TileMap[x, y].Index = collValue;
+                                charLayer.TileMap[x, y].Index = charValue;
                             }
                             else
                             {

@@ -1,92 +1,126 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Windows.Forms;
 using System.Diagnostics;
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
+using System.Linq;
 
 namespace Zelous
 {
-    // A single element of a GameEvent
-    public struct GameEventElement
+    // A single element of a GameEvent - immutable
+    //@TODO: Any point in this being a struct?
+    public struct GameEventElement : IEquatable<GameEventElement>
     {
-        public GameEventElement(string name, string friendlyName, Object value)
-            : this()
+        public GameEventElement(string name, string friendlyName, Object value) : this()
         {
             Name = name;
-            Value = value;
             FriendlyName = friendlyName;
-        }
-
-        public GameEventElement Clone()
-        {
-            object valueCopy = null;
-            if (Value.GetType().IsPrimitive) // Primitives support shallow copy
-            {
-                valueCopy = Value;
-            }
-            else // Must be an ICloneable
-            {
-                Debug.Assert(Value is ICloneable);
-                valueCopy = ((ICloneable)Value).Clone();
-            }
-
-            return new GameEventElement(Name, FriendlyName, valueCopy);
+            Value = value;
         }
 
         // Key used to lookup value from UI control
-        [XmlAttribute]
-        public string Name { get; set; }
-
+        [XmlIgnore]
+        public string Name { get; private set; }
+        
         // What gets shown on the UI
-        [XmlAttribute]
-        public string FriendlyName { get; set; }
+        [XmlIgnore]
+        public string FriendlyName { get; private set; }
 
         // The value of this element
-        public object Value { get; set; }
+        [XmlIgnore]
+        public object Value { get; private set; }
+
+        public bool Equals(GameEventElement rhs)
+        {
+            return Name == rhs.Name
+                && FriendlyName == rhs.FriendlyName
+                && Value.Equals(rhs.Value);
+        }
+
+        // Returns new GameEventElement input value set
+        public GameEventElement SetValue(object value)
+        {
+            return new GameEventElement(Name, FriendlyName, value);
+        }
+        
+        // Properties for XML serialization
+        [XmlAttribute(AttributeName="Name")]
+        public string __ForXml_Name { get { return Name; } set { Name = value; } }
+
+        [XmlAttribute(AttributeName = "FriendlyName")]
+        public string __ForXml_FriendlyName { get { return FriendlyName; } set { FriendlyName = value; } }
+
+        [XmlElement(ElementName = "Value")]
+        public object __ForXml_Value { get { return Value; } set { Value = value; } }
     }
 
-    // GameEvents are instantiated and tied to WorldMap tiles
-    public class GameEvent
+    // GameEvents are instantiated and tied to WorldMap tiles - immutable
+    public class GameEvent : IEquatable<GameEvent>
     {
+        private List<GameEventElement> mElements = new List<GameEventElement>();
+
         public GameEvent() // Default constructor required for xml serialization
         {
             TypeId = -1;
             FriendlyName = "UNSET";
         }
 
-        public GameEvent(int typeId, string friendlyName)
+        public GameEvent(int typeId, string friendlyName, List<GameEventElement> elements)
         {
             TypeId = typeId;
             FriendlyName = friendlyName;
-            Elements = new List<GameEventElement>();
+            mElements = elements;
         }
 
-        public GameEvent Clone()
+        public bool Equals(GameEvent rhs)
         {
-            GameEvent gameEvent = new GameEvent(TypeId, FriendlyName);
-            foreach (var elem in Elements)
-            {
-                gameEvent.Elements.Add(elem.Clone());
-            }
-            return gameEvent;
+            return TypeId == rhs.TypeId
+                && FriendlyName == rhs.FriendlyName
+                && mElements.SequenceEqual(rhs.mElements);
         }
 
-        public void AddElement(string name, string friendlyName, Object value)
+        public override bool Equals(object rhs)
         {
-            Elements.Add(new GameEventElement(name, friendlyName, value));
+            if (rhs == null || (rhs as GameEvent == null))
+                return false;
+
+            return Equals(rhs as GameEvent);
+        }
+
+        public override int GetHashCode()
+        {
+            Debug.Fail("not implemented");
+            return base.GetHashCode();
+        }
+
+        // Returns a new GameEvent with the input elements
+        public GameEvent SetElements(List<GameEventElement> elements)
+        {
+            return new GameEvent(TypeId, FriendlyName, elements);
         }
 
         // Unique type identifier (used to map to data-driven event description (file) and to tile index)
-        [XmlAttribute]
-        public int TypeId { get; set; }
+        [XmlIgnore]
+        public int TypeId { get; private set; }
 
-        [XmlAttribute]
-        public string FriendlyName { get; set; }
+        [XmlIgnore]
+        public string FriendlyName { get; private set; }
+
+        [XmlIgnore]
+        public ReadOnlyCollection<GameEventElement> Elements { get { return new ReadOnlyCollection<GameEventElement>(mElements); } }
+
+        // Properties for XML serialization
+        [XmlAttribute(AttributeName = "TypeId")]
+        public int __ForXml_TypeId { get { return TypeId; } set { TypeId = value; } }
+
+        [XmlAttribute(AttributeName="FriendlyName")]
+        public string __ForXml_FriendlyName { get { return FriendlyName; } set { FriendlyName = value; } }
 
         [XmlElementAttribute(ElementName = "Elem")]
-        public List<GameEventElement> Elements { get; set; }
+        public List<GameEventElement> __ForXml_Elements { get { return mElements; } set { mElements = value; } }
     }
 
     // GameEventFactory is an optional class that can be used to store GameEvent prototypes by integer id
@@ -103,8 +137,9 @@ namespace Zelous
 
         public GameEvent CreateNewGameEventFromPrototype(int typeId)
         {
+            // Since GameEvents are immutable, we just return the prototype directly (it cannot be modified)
             GameEvent prototype = mEventByTypeId[typeId];
-            return prototype.Clone();
+            return prototype;
         }
 
         public List<GameEvent> GameEventListForSerialization
@@ -129,7 +164,7 @@ namespace Zelous
         }
     }
 
-    class GameEventHelpers
+    public class GameEventHelpers
     {
         public static void SaveGameEventFactoryToXml(string filename, GameEventFactory gameEventFactory)
         {
@@ -145,7 +180,7 @@ namespace Zelous
             xmlWriter.Close();
         }
 
-        public static void LoadGameEventFactoryFromXml(string filename, ref GameEventFactory gameEventFactory)
+        public static void LoadGameEventFactoryFromXml(string filename, GameEventFactory gameEventFactory)
         {
             XmlReader xmlReader = XmlReader.Create(filename);
 
@@ -183,14 +218,20 @@ namespace Zelous
                 return false;
             }
 
-            // Update event from dialog
+            // Update GameEvent from dialog - note that because GameEvent is immutable, we build an external list
+            // of modified GameEventElements, then call GameEvent.SetElements() to get an updated copy of the
+            // GameEvent.
+            //@TODO: We could use a GameEventBuilder here (that is initialized to an existing GameEvent)
+            List<GameEventElement> elems = new List<GameEventElement>();
+
             for (int i = 0; i < gameEvent.Elements.Count; ++i)
             {
-                GameEventElement elem = gameEvent.Elements[i];
-                elem.Value = dlg.GetValue(elem.Name);
-
-                gameEvent.Elements[i] = elem; // Copy back value type
+                GameEventElement elem = gameEvent.Elements[i]; // Copy existing
+                elem = elem.SetValue(dlg.GetValue(elem.Name)); // Modify value
+                elems.Add(elem); // Add to local list
             }
+
+            gameEvent = gameEvent.SetElements(elems);
 
             return true;
         }

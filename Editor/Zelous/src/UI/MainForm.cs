@@ -17,14 +17,16 @@ namespace Zelous
     {
         public static MainForm Instance = null; // Provides global access to the main form
 
-        private WorldMap mWorldMap; // The map data (the "model" on which the TileMapViews "view")
+        private WorldMap mWorldMap; // The map data (the "model" on which the mWorldMapView "views")
         
-        private TileMapView mWorldMapView; // The main TileMapView for the world map (top pannel)
+        private TileMapView mWorldMapView; // The main TileMapView for the world map (top panel)
         private TileMapView[] mTileSetViews; // Array of TileMapViews used for tile sets (bottom panel)
 
         private string mCurrMapFile = "";
         private TileMapView.Brush mActiveBrush;
-        private CommandManager mCommandManager = new CommandManager();
+
+        private readonly CommandManager mCommandManager = new CommandManager();
+        private readonly GameEventFactory mGameEventFactory = new GameEventFactory();
 
         public struct ShellCommandArgs
         {
@@ -44,6 +46,10 @@ namespace Zelous
         
         private string mAppSettingsFilePath = Directory.GetCurrentDirectory() + @"\ZelousSettings.xml";
         private SerializationMgr mAppSettingsMgr = new SerializationMgr();
+
+        // Properties
+        public GameEventFactory GameEventFactory { get { return mGameEventFactory; } }
+        public CommandManager CommandManager { get { return mCommandManager; } }
 
 
         ///////////////////////////////////////////////////////////////////////
@@ -123,6 +129,8 @@ namespace Zelous
             Instance = this;
 
             AppSettingsMgr.RegisterSerializable(this, typeof(Settings));
+
+            GameEventHelpers.LoadGameEventFactoryFromXml("events.xml", mGameEventFactory);
 
             InitializeComponent(); // Initialize designer-controlled (static) components
             InitializeDynamicComponents(); // Initialize dynamically allocated components
@@ -237,7 +245,7 @@ namespace Zelous
             {
                 for (int x = 0; x < tileSetLayer.TileMap.GetLength(0); ++x)
                 {
-                    tileSetLayer.TileMap[x, y] = value++;
+                    tileSetLayer.TileMap[x, y].Index = value++;
                 }
             }
 
@@ -266,7 +274,7 @@ namespace Zelous
                 mWorldMap = new WorldMap();
                 mWorldMap.Init(20, 10, tileSets);
 
-                mWorldMapView.Reset(mWorldMap.TileLayers);
+                mWorldMapView.Reset(mWorldMap.TileLayers); // Bind mWorldMapView to the data (layers) in mWorldMap
             }
         }
 
@@ -425,10 +433,14 @@ namespace Zelous
             return false;
         }
 
-        private void UpdateUndoRedoToolStripItems()
+        //@TODO: make this private again!
+        public void UpdateUndoRedoToolStripItems()
         {
             undoToolStripMenuItem.Enabled = mCommandManager.NumUndoCommands > 0;
             redoToolStripMenuItem.Enabled = mCommandManager.NumRedoCommands > 0;
+
+            undoToolStripMenuItem.Text = undoToolStripMenuItem.Enabled? "&Undo " + mCommandManager.GetLastUndoCommand().GetDescription() : "&Undo";
+            redoToolStripMenuItem.Text = redoToolStripMenuItem.Enabled? "&Redo " + mCommandManager.GetLastRedoCommand().GetDescription() : "&Redo";
         }
 
         ///////////////////////////////////////////////////////////////////////

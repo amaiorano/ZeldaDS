@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Zelous
 {
-    class MathEx
+    public static class MathEx
     {
         public static Point Add(Point lhs, Point rhs)
         {
@@ -56,6 +56,11 @@ namespace Zelous
                 return max;
 
             return value;
+        }
+
+        public static int Area(this Size size)
+        {
+            return size.Width * size.Height;
         }
     }
 }
