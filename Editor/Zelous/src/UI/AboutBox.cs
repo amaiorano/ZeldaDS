@@ -19,13 +19,19 @@ namespace Zelous
             this.labelCompanyName.Text = AssemblyCompany;
 
             string description =
-@"Shortcut Keys:
+@"== Shortcut Keys ==
 
 Hold Alt / Control   - Temporarily activates alternate (sub) tool if one exists
 V                    - Toggle visibility of current layer (affects selection)
 Alt + <Number>       - Toggle visibility for layer number
 <Number>             - Select Tile Set tab for layer number
 Ctrl [+ Shift] + Tab - Switch to next/previous Tile Set tab
+
+
+== Mouse Keys ==
+
+Left Click           - Performs action for currently selected tool
+Right Click          - Edit event on world map
 ";
             
             this.textBoxDescription.Font = CreateFixedWidthFont();

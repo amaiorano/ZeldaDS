@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <SaveDataRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="Root">
     <mSaveDataObjects>
         <anyType xmlns:q1="MainFormSettings"
@@ -23,6 +23,7 @@
             </q1:mSize>
             <q1:mSplitterDistance>300</q1:mSplitterDistance>
             <q1:mTabPageIconIndices>
+                <q1:int>1</q1:int>
                 <q1:int>1</q1:int>
                 <q1:int>1</q1:int>
                 <q1:int>1</q1:int>
@@ -68,6 +69,14 @@
             <q6:mScrollBarY>0</q6:mScrollBarY>
             <q6:mCheckBoxScreenGrid>false</q6:mCheckBoxScreenGrid>
             <q6:mCheckBoxTileGrid>false</q6:mCheckBoxTileGrid>
+        </anyType>
+        <anyType xmlns:q7="TileMapViewSettings"
+            xsi:type="q7:Settings">
+            <q7:mScale>1</q7:mScale>
+            <q7:mScrollBarX>0</q7:mScrollBarX>
+            <q7:mScrollBarY>0</q7:mScrollBarY>
+            <q7:mCheckBoxScreenGrid>false</q7:mCheckBoxScreenGrid>
+            <q7:mCheckBoxTileGrid>false</q7:mCheckBoxTileGrid>
         </anyType>
     </mSaveDataObjects>
 </SaveDataRoot>
