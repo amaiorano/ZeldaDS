@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ArrayOfGameEvent xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+    <!-- This file contains Zelda DS events. Zelous supports generic events     -->
+    <!-- where each event is data-driven via this xml file.                     -->
+
+    <!-- ********************************************************************** -->
+    <GameEvent TypeId="1" FriendlyName="Warp Event">
+        <Elem Name="MapName" FriendlyName="Map Name">
+            <Value xsi:type="xsd:string"></Value>
+        </Elem>
+        <Elem Name="TileX" FriendlyName="Tile X">
+            <Value xsi:type="xsd:int">0</Value>
+        </Elem>
+        <Elem Name="TileY" FriendlyName="Tile Y">
+            <Value xsi:type="xsd:int">0</Value>
+        </Elem>
+    </GameEvent>
+
+</ArrayOfGameEvent>
