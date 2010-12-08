@@ -10,6 +10,8 @@
 #include <limits>
 #include <string.h>
 
+#include "GameEvent.h"
+
 namespace
 {
 	void RotateColors(std::vector<uint16>& paletteIndices)
@@ -81,6 +83,12 @@ void WorldMap::Shutdown()
 	mAnimControls.clear();
 
 	mColorRotElems.clear();
+
+	for (GameEventList::iterator iter = mGameEvents.begin(); iter != mGameEvents.end(); ++iter)
+	{
+		delete (*iter);
+	}
+	mGameEvents.clear();
 }
 
 void WorldMap::LoadMap(const char* mapFile)
@@ -95,7 +103,7 @@ void WorldMap::LoadMap(const char* mapFile)
 	// Header
 	{
 		const char* FILE_TAG = "WMAP";
-		const uint32 FILE_VER = 1;
+		const uint32 FILE_VER = 2;
 
 		char fileTag[5] = {0};
 		bfs.ReadElems(fileTag, 4);
@@ -138,6 +146,64 @@ void WorldMap::LoadMap(const char* mapFile)
 		(void)marker;
 		ASSERT(marker == 0xFFFF);
 	}
+
+	// Game events
+	const uint16 numEvents = bfs.ReadInt<uint16>();
+	for (uint16 i = 0; i < numEvents; ++i)
+	{
+		Vector2I tilePos;
+		tilePos.x = bfs.ReadInt<uint16>();
+		tilePos.y = bfs.ReadInt<uint16>();
+
+		const uint16 eventId = bfs.ReadInt<uint16>();
+		const uint16 eventVer = bfs.ReadInt<uint16>();
+		const uint16 numEventElems = bfs.ReadInt<uint16>();
+
+		(void)eventVer;
+		(void)numEventElems;
+
+		// Set data layer bit
+		ASSERT_FORMATTED(!mDataLayer(tilePos.x, tilePos.y).HasEvent, ("More than one event at (%d,%d)!", tilePos.x, tilePos.y));
+		mDataLayer(tilePos.x, tilePos.y).HasEvent = 1;
+
+		GameEvent* pGameEvent = NULL;
+
+		switch (static_cast<GameEventType::Type>(eventId))
+		{
+		case GameEventType::Warp:
+			{
+				ASSERT(eventVer == 1);
+				ASSERT(numEventElems == 3);
+
+				//@TODO: Write helpers to read strings, ints, whatever
+
+				char mapName[256] = {0};
+				char type = bfs.ReadInt<char>();
+				const uint16 stringSize = bfs.ReadInt<uint16>();
+				bfs.ReadElems(mapName, stringSize);
+
+				Vector2I targetTilePos;
+				type = bfs.ReadInt<char>();
+				targetTilePos.x = bfs.ReadInt<uint16>();
+				type = bfs.ReadInt<char>();
+				targetTilePos.y = bfs.ReadInt<uint16>();
+
+				pGameEvent = new WarpGameEvent(tilePos, mapName, targetTilePos);
+			}
+			break;
+
+		default:
+			FAIL();
+			break;
+		}
+
+		ASSERT(pGameEvent != NULL);
+		mGameEvents.push_back(pGameEvent);
+	}
+
+	uint16 marker = bfs.ReadInt<uint16>();
+	(void)marker;
+	ASSERT(marker == 0xFFFF);
 
 	FindPlayerSpawnData();
 
@@ -268,6 +334,25 @@ bool WorldMap::GetTileBoundingBoxIfCollision(const Vector2I& worldPos, BoundingB
 	return true;
 }
 
+GameEvent* WorldMap::GetGameEventIfExists(const Vector2I& worldPos) const
+{
+	const Vector2I tilePos = WorldPosToTile(worldPos);
+	if ( mDataLayer(tilePos.x, tilePos.y).HasEvent == 0 )
+		return NULL;
+
+	// Find the event (@TODO: Consider optimizing linear search)
+	for (GameEventList::const_iterator iter = mGameEvents.begin(); iter != mGameEvents.end(); ++iter)
+	{
+		if ((*iter)->mTilePos == tilePos)
+		{
+			return *iter;
+		}
+	}
+	
+	FAIL_FORMATTED(("Expected to find an event at tile pos (%d,%d)", tilePos.x, tilePos.y));
+	return NULL;
+}
+
 uint16 WorldMap::GetTileIndex(uint16 layer, const Vector2I& worldTilePos)
 {
 	return mTileLayers[layer].mTileMap(worldTilePos.x, worldTilePos.y);
@@ -324,8 +409,6 @@ void WorldMap::FindPlayerSpawnData()
 				mDataLayer(tileX, tileY).SpawnActorType = GameActor::None;
 
 				mPlayerSpawnData.mPos.Reset(TileToWorldPos(tileX, tileY));
-				mPlayerSpawnData.mScreen.Reset(tileX / GameNumScreenMetaTilesX, tileY / GameNumScreenMetaTilesY);
-
 				return;
 			}
 		}

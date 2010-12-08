@@ -453,6 +453,14 @@
 							>
 						</File>
 					</Filter>
+					<Filter
+						Name="GameEvent"
+						>
+						<File
+							RelativePath=".\ZeldaDS\arm9\source\gslib\Game\GameEvent.h"
+							>
+						</File>
+					</Filter>
 				</Filter>
 				<Filter
 					Name="Core"

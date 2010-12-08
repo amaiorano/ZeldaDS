@@ -53,7 +53,7 @@
 
 #define FAIL()							_AssertMsg(false, "FAIL")
 #define FAIL_MSG(msg)					_AssertMsg(false, "FAIL: " msg)
-#define FAIL_FORMATTED(exp, format)		_AssertFormatted(false, format)
+#define FAIL_FORMATTED(format)			_AssertFormatted(false, format)
 
 #if ASSERTS_ENABLED
 	#define VERIFY(exp) ASSERT(exp)

@@ -31,6 +31,7 @@ namespace GameTileLayer
 
 class BoundingBox;
 class BackgroundLayer;
+class GameEvent;
 
 // WorldMap contains an array of TileLayer, which contains a TileMap and a TileSet.
 // TileMap is a 2D array of tile indices to render. TileSet contains the actual
@@ -101,10 +102,13 @@ public:
 	void LoadMap(const char* mapFile);
 
 	// Useful helper to convert a tile position to a world position, and vice versa
+	//@TODO: Remove 'Pos' from names
 	static Vector2I TileToWorldPos(uint16 tileX, uint16 tileY) { return Vector2I(tileX * GameMetaTileSizeX, tileY * GameMetaTileSizeY); }
 	static Vector2I TileToWorldPos(const Vector2I& tilePos) { return Vector2I(tilePos.x * GameMetaTileSizeX, tilePos.y * GameMetaTileSizeY); }
+	static Vector2I TileToScreen(const Vector2I& tilePos) { return Vector2I(tilePos.x / GameNumScreenMetaTilesX, tilePos.y / GameNumScreenMetaTilesY); }
 	static Vector2I WorldPosToTile(uint16 posX, uint16 posY) { return Vector2I(posX / GameMetaTileSizeX, posY / GameMetaTileSizeY); }
 	static Vector2I WorldPosToTile(const Vector2I& worldPos) { return Vector2I(worldPos.x / GameMetaTileSizeX, worldPos.y / GameMetaTileSizeY); }
+	static Vector2I WorldPosToScreen(const Vector2I& worldPos) { return TileToScreen(WorldPosToTile(worldPos)); }
 
 	// Adds a shared clock for animated tiles and returns its index (pass index to EnableAnimTile())
 	uint16 AddAnimTileSharedClock(int numFrames, AnimTimeType unitsPerFrame, AnimCycle::Type animCycle);
@@ -126,7 +130,9 @@ public:
 	void DrawScreenTiles(const Vector2I& srcScreen, const Vector2I& tgtScreen, DrawScreenTilesMode::Type mode = DrawScreenTilesMode::All);
 
 	// Returns true and sets bbox if a collision tile is set at input world pos
-	bool GetTileBoundingBoxIfCollision(const Vector2I& worldPos, BoundingBox& bbox);
+	bool GetTileBoundingBoxIfCollision(const Vector2I& worldPos, BoundingBox& bbox); //@TODO: Make const
+
+	GameEvent* GetGameEventIfExists(const Vector2I& worldPos) const;
 
 	uint16 GetTileIndex(uint16 layer, const Vector2I& worldTilePos);
 	BackgroundLayer& GetBgLayer(GameTileLayer::Type layer);
@@ -134,7 +140,6 @@ public:
 	// Returns the player spawn data for the currently loaded map
 	struct PlayerSpawnData
 	{
-		Vector2I mScreen;
 		Vector2I mPos;
 	};
 	const PlayerSpawnData& GetPlayerSpawnData() const { return mPlayerSpawnData; }
@@ -190,17 +195,21 @@ private:
 	//
 	// 2 bits: collision
 	// 6 bits: spawner actor type
-	// 1 bit : is door (warp info in separate list, hashed by 1D tile index)
+	// 1 bit : has associated event
 	// etc.
 	struct DataLayerEntry
 	{
 		uint16 Collision : 2;
 		uint16 SpawnActorType : 6;
-		uint16 Unused : 8;
+		uint16 HasEvent : 1;
+		uint16 Unused : 7;
 	};
 	CT_ASSERT( sizeof(DataLayerEntry) == sizeof(uint16) );
 
 	Array2d<DataLayerEntry, uint16> mDataLayer;
+
+	typedef std::vector<GameEvent*> GameEventList;
+	GameEventList mGameEvents;
 };
 
 #endif // WORLD_MAP_H

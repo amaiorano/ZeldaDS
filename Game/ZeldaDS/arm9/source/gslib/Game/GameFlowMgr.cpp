@@ -31,6 +31,12 @@ struct GameFlowSharedStateData : SharedStateData
 {
 	std::string mCurrWorldMap;
 	std::string mTargetWorldMap;
+	Vector2I mTargetWorldPos;
+
+	GameFlowSharedStateData()
+		: mTargetWorldPos(InitZero)
+	{
+	}
 };
 
 typedef StateT<GameFlowSharedStateData, GameFlowMgr> GameFlowState;
@@ -69,7 +75,7 @@ struct GameFlowStates
 			GraphicsEngine::SetSubBgFontColor( RGB8(255, 255, 255) );
 			
 			//GraphicsEngine::GetBgLayer(0).ActivateTextLayer();
-			//printf("Testing text on bg layer 0!\n\");
+			//printf("Testing text on bg layer 0!\n");
 
 			AudioEngine::LoadBank("Audio/soundbank.bin");
 
@@ -116,6 +122,7 @@ struct GameFlowStates
 			worldMap.Init(20, 10); //@TODO: LoadMap() should read dimensions, so remove this eventually
 			worldMap.LoadMap(Data().mTargetWorldMap.c_str());
 			Data().mCurrWorldMap = Data().mTargetWorldMap;
+			Data().mTargetWorldMap.clear();
 
 			SceneGraph::Instance().SetWorldMap(worldMap);
 
@@ -128,15 +135,22 @@ struct GameFlowStates
 			AudioEngine::SetMusicVolume(1.0f);
 			AudioEngine::PlayMusic(MOD_OVERWORLD3);
 
-			const WorldMap::PlayerSpawnData& playerSpawnData = worldMap.GetPlayerSpawnData();
-
-			ScrollingMgr::Instance().Reset(playerSpawnData.mScreen);
+			// Use map's spawn position or a specified pos?
+			Vector2I targetWorldPos = Data().mTargetWorldPos;
+			if (Data().mTargetWorldPos == UseMapSpawnPosition)
+			{
+				const WorldMap::PlayerSpawnData& playerSpawnData = worldMap.GetPlayerSpawnData();
+				targetWorldPos = playerSpawnData.mPos;
+			}
 
 			//@TODO: Need to load player save data
 			Player* pPlayer = new Player();
-			Vector2I initPos(playerSpawnData.mPos);
-			pPlayer->Init(initPos);
+			
+			pPlayer->Init(targetWorldPos);
 			SceneGraph::Instance().AddNode(pPlayer);
+
+			const Vector2I& startScreen = WorldMap::WorldPosToScreen(targetWorldPos);
+			ScrollingMgr::Instance().Reset(startScreen);
 
 			// After a few map reloads, we should be getting a 0 byte delta...
 			//HEAP_REPORT_DELTA_SIZE();
@@ -187,7 +201,7 @@ struct GameFlowStates
 				}
 			}
 
-			if (Data().mTargetWorldMap != Data().mCurrWorldMap)
+			if ( !Data().mTargetWorldMap.empty() )
 			{
 				return SiblingTransition<LeavingMap>();
 			}
@@ -362,7 +376,8 @@ void GameFlowMgr::Update(GameTimeType deltaTime)
 	mStateMachine.Update(deltaTime);
 }
 
-void GameFlowMgr::SetTargetWorldMap(const char* worldMapFilePath)
+void GameFlowMgr::SetTargetWorldMap(const char* worldMapFilePath, const Vector2I& initialPos)
 {
 	mpSharedStateData->mTargetWorldMap = worldMapFilePath;
+	mpSharedStateData->mTargetWorldPos = initialPos;
 }

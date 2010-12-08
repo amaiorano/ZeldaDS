@@ -44,7 +44,7 @@ void BinaryFileStream::Open(const char* filePath, const char* mode, Endian::Type
 	Close();
 
 	mpFile = fopen(filePath, mode);
-	ASSERT(mpFile);
+	ASSERT_FORMATTED(mpFile, ("Failed to open: %s", filePath));
 
 	// Get size of file
 	fseek(mpFile, 0, SEEK_END);

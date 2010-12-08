@@ -14,6 +14,7 @@
 #include "MovementModel.h"
 #include "WorldMapTile.h"
 #include "GameFlowMgr.h"
+#include "GameEvent.h"
 
 // Player HSM
 
@@ -25,6 +26,7 @@ struct PlayerSharedStateData : CharacterSharedStateData
 		: mpSword(NULL)
 		, mpBoomerang(NULL)
 		, mScrollDir(ScrollDir::None)
+		, mpWarpGameEvent(NULL)
 	{
 	}
 
@@ -32,6 +34,7 @@ struct PlayerSharedStateData : CharacterSharedStateData
 	Sword* mpSword;
 	Boomerang* mpBoomerang;
 	ScrollDir::Type mScrollDir;
+	WarpGameEvent* mpWarpGameEvent;
 };
 
 typedef StateT<PlayerSharedStateData, Player, CharacterState> PlayerState;
@@ -107,11 +110,20 @@ struct PlayerStates
 				return SiblingTransition<Alive_Scrolling>();
 			}
 
-			//@HACK: When player is at a hard-coded position, leave the map
-			const Vector2I& warpPos = WorldMap::TileToWorldPos(2, 0);
-			if (Owner().GetPosition() == warpPos)
+			if (GameEvent* pGameEvent = WorldMap::Instance().GetGameEventIfExists(Owner().GetPosition()))
 			{
-				return SiblingTransition<Alive_Warping>();
+				//@TODO: This sucks... use some kind of RTTI to improve this
+				if (pGameEvent->mType == GameEventType::Warp)
+				{
+					WarpGameEvent* pWarpGameEvent = static_cast<WarpGameEvent*>(pGameEvent);
+					if (Owner().GetPosition() == WorldMap::TileToWorldPos(pWarpGameEvent->mTilePos))
+					{
+						//@TODO: This would be much easier with constructor args
+						//printf("Warp to %s at (%d, %d)\n", pWarpGameEvent->mTargetWorldMap.c_str(), pWarpGameEvent->mTargetTilePos.x, pWarpGameEvent->mTargetTilePos.y);
+						Data().mpWarpGameEvent = pWarpGameEvent;
+						return SiblingTransition<Alive_Warping>();
+					}
+				}
 			}
 
 			return InnerEntryTransition<Alive_Locomotion>();
@@ -167,9 +179,19 @@ struct PlayerStates
 
 	struct Alive_Warping : PlayerState
 	{
+		virtual void OnEnter()
+		{
+			ASSERT(Data().mpWarpGameEvent);
+		}
+
+		virtual void OnExit()
+		{
+			Data().mpWarpGameEvent = NULL;
+		}
+
 		virtual Transition EvaluateTransitions()
 		{
-			return InnerTransition<Alive_Warping_Stairs>();
+			return InnerEntryTransition<Alive_Warping_Stairs>();
 		}
 	};
 
@@ -230,8 +252,8 @@ struct PlayerStates
 	{
 		virtual void OnEnter()
 		{
-			//@TODO: Read this value from the WorldMap
-			GameFlowMgr::Instance().SetTargetWorldMap("Maps/TestMap2.map");
+			// This will cause the GameFlowMgr to load the new map, destroying the Player in the process
+			GameFlowMgr::Instance().SetTargetWorldMap(Data().mpWarpGameEvent->mTargetWorldMap.c_str(), WorldMap::TileToWorldPos(Data().mpWarpGameEvent->mTargetTilePos));
 		}
 	};
 

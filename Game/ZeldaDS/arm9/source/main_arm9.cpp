@@ -45,10 +45,10 @@ int main(void)
 	ExceptionHandler::EnableDefaultHandler();
 	GraphicsEngine::Init(GameMetaTileSizeX, GameMetaTileSizeY);
 	FileSystem::Init();
-	
+
 	GameFlowMgr& gameFlowMgr = GameFlowMgr::Instance();
 	gameFlowMgr.Init();
-	gameFlowMgr.SetTargetWorldMap("Maps/TestMap.map"); // Initial map
+	gameFlowMgr.SetTargetWorldMap("Maps/TestMap.map", UseMapSpawnPosition); // Initial map
 
 	bool pausedLastFrame = false;
 
