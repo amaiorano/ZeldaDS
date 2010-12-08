@@ -20,20 +20,22 @@ namespace Zelous
         public const int GameMetaTileSizeY = 16;
         public const int GameNumScreenMetaTilesX = (HwScreenSizeX / GameMetaTileSizeX);
         public const int GameNumScreenMetaTilesY = (HwScreenSizeY / GameMetaTileSizeY);
+
+        public static int EventLayerIndex = 4; //@TODO: Should we have an enum with all of these?
     }
 
     //@TODO: Move to BitOps.cs
     public class BitOps
     {
         // Returns an int with numBits 1s set
+        // ex: GetNumBits(5) returns 11111b == 0x1F == 31
         public static int GenNumBits(int numBits)
         {
             return (1 << numBits) - 1;
         }
     }
 
-    // These classes match the same classes in the game code
-
+    // A grouped set of tiles, 1 per layer
     public class TileSet
     {
         private string mFilePath;
@@ -128,6 +130,7 @@ namespace Zelous
         }    
     }
 
+    // A single layer of tiles, which includes a TileSet and a 2d array of Tiles
     public class TileLayer
     {
         private Tile[,] mTileMap;
@@ -148,6 +151,7 @@ namespace Zelous
         }
     };
 
+    // The world map, which is a collection of TileLayers
     public class WorldMap
     {
         public const int NumLayers = 5;
@@ -171,7 +175,10 @@ namespace Zelous
 
         public TileLayer[] TileLayers { get { return mTileLayers; } }
 
+        //@TODO: Rename - "serialization" is now confusing because of XML serialization via the SerializationMgr (Save/LoadGameMap?)
+        //@TODO: Move this code out into a WorldMapSerializer class (or a partial class)
         //@TODO: Return success status
+        //@TODO: Save to a temp file, then replace target file if successful (to avoid losing old map data if we fail during save)
         public void Serialize(SerializationType serializationType, string fileName)
         {
             // Note: When saving, we always save the latest version, but loading must be backwards
@@ -185,10 +192,12 @@ namespace Zelous
             //=================================================================
             // 0        | initial (no versioning)
             // 1        | versioning (tag+version), character spawners
+            // 2        | events
 
             const string MapTag = "WMAP";
-            const UInt32 MapVer = 1;
-            const int NumGameLayers = 3; // Doesn't match number of layers in editor
+            const UInt32 MapVer = 2;
+            const UInt16 NumGameLayers = 3; // Doesn't match number of layers in editor
+            const UInt16 ValidationMarker = 0xFFFF;
 
             //@TODO: Seralize number of screens X/Y (game should support variable sized maps)
 
@@ -242,8 +251,40 @@ namespace Zelous
                         }
                     }
 
-                    w.Write((UInt16)0xFFFF); // Data validation marker
+                    w.Write((UInt16)ValidationMarker);
                 }
+
+                
+                // Event data
+
+                // Collect all events
+                Dictionary<Point, GameEvent> gameEvents = new Dictionary<Point, GameEvent>();
+
+                TileLayer eventLayer = TileLayers[GameConstants.EventLayerIndex];
+                for (int y = 0; y < mNumTilesY; ++y)
+                {
+                    for (int x = 0; x < mNumTilesX; ++x)
+                    {
+                        if (eventLayer.TileMap[x, y].Index > 0)
+                        {
+                            GameEvent gameEvent = eventLayer.TileMap[x, y].Metadata as GameEvent;
+                            Debug.Assert(gameEvent != null);
+
+                            gameEvents[new Point(x, y)] = gameEvent;
+                        }
+                    }
+                }
+
+                // Write event data
+                w.Write((UInt16)gameEvents.Count);
+                foreach (KeyValuePair<Point, GameEvent> kvp in gameEvents)
+                {
+                    // Format: x(16) y(16) (event data)
+                    w.Write((UInt16)kvp.Key.X);
+                    w.Write((UInt16)kvp.Key.Y);
+                    SaveGameEvent(w, kvp.Value);
+                }
+                w.Write((UInt16)ValidationMarker);
 
                 w.Close();
                 fs.Close();
@@ -304,12 +345,111 @@ namespace Zelous
                     }
 
                     UInt16 marker = r.ReadUInt16();
-                    Debug.Assert(marker == 0xFFFF);
+                    Debug.Assert(marker == ValidationMarker);
+                }
+
+                // Load events
+                TileLayer eventLayer = TileLayers[GameConstants.EventLayerIndex];
+                if (fileVer >= 2)
+                {
+                    UInt16 numEvents = r.ReadUInt16();
+
+                    for (int i = 0; i < numEvents; ++i)
+                    {
+                        Point tilePos = new Point();
+                        tilePos.X = r.ReadUInt16();
+                        tilePos.Y = r.ReadUInt16();
+                        GameEvent gameEvent = LoadGameEvent(r);
+
+                        eventLayer.TileMap[tilePos.X, tilePos.Y].Index = gameEvent.TypeId;
+                        eventLayer.TileMap[tilePos.X, tilePos.Y].Metadata = gameEvent;
+                    }
+
+                    UInt16 marker = r.ReadUInt16();
+                    Debug.Assert(marker == ValidationMarker);
                 }
 
                 r.Close();
                 fs.Close();
             }
+        }
+
+        void SaveGameEvent(BinaryWriter w, GameEvent gameEvent)
+        {
+            // Format: id(16) version(16) numElems(16) elems*
+            w.Write((UInt16)gameEvent.TypeId);
+            w.Write((UInt16)gameEvent.Version);
+            w.Write((UInt16)gameEvent.Elements.Count);
+
+            foreach (GameEventElement elem in gameEvent.Elements)
+            {
+                if (elem.Value.GetType() == typeof(string))
+                {
+                    w.Write((char)'s');
+
+                    string s = (string)elem.Value;
+                    w.Write((UInt16)s.Length);
+                    w.Write((char[])s.ToCharArray());
+                }
+                else if (elem.Value.GetType() == typeof(int))
+                {
+                    w.Write((char)'u');
+                    w.Write((UInt16)((int)elem.Value));
+                }
+                else
+                {
+                    Debug.Fail("Unexpected value type");
+                }
+            }
+        }
+
+        GameEvent LoadGameEvent(BinaryReader r)
+        {
+            // For game events elements, we only store the data type and value, but not the name;
+            // therefore, we can always load events as long as the order is matched. This means we
+            // automatically support loading older events (version is older than current), as long
+            // as old elements remain untouched, and new ones are added after the old ones.
+            // We may want to provide a hook that allows game event specific code to load older
+            // versions.
+
+            UInt16 typeId = r.ReadUInt16();
+            UInt16 version = r.ReadUInt16();
+
+            // We always create the latest version of GameEvent, then update its elements
+            // from the map file.
+            GameEventFactory factory = MainForm.Instance.GameEventFactory;
+            GameEvent gameEvent = factory.CreateNewGameEventFromPrototype(typeId);
+
+            //@TODO: if (gameEvent.Version > version) call handler
+
+            UInt16 numElems = r.ReadUInt16();
+
+            List<GameEventElement> elements = gameEvent.GetElementsCopy(); // Copy
+            for (int i = 0; i < numElems; ++i)
+            {
+                char elemType = r.ReadChar();
+                
+                object elemValue = null;
+                switch (elemType)
+                {
+                    case 's':
+                        UInt16 len = r.ReadUInt16();
+                        elemValue = new string(r.ReadChars(len));
+                        break;
+
+                    case 'u':
+                        elemValue = (int)r.ReadUInt16(); // Cast to supported GameEventElement type
+                        break;
+                }
+
+                //@TODO: Throw an exception, catch outside of Serialize()
+                Debug.Assert( elements[i].Value.GetType() == elemValue.GetType() ); // Does this work?
+
+                elements[i] = elements[i].SetValue(elemValue); // Update
+            }
+
+            gameEvent = gameEvent.SetElements(elements); // Update
+            return gameEvent;
         }
     };
 }

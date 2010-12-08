@@ -68,9 +68,10 @@ namespace Zelous
             FriendlyName = "UNSET";
         }
 
-        public GameEvent(int typeId, string friendlyName, List<GameEventElement> elements)
+        public GameEvent(int typeId, int version, string friendlyName, List<GameEventElement> elements)
         {
             TypeId = typeId;
+            Version = version;
             FriendlyName = friendlyName;
             mElements = elements;
         }
@@ -99,12 +100,20 @@ namespace Zelous
         // Returns a new GameEvent with the input elements
         public GameEvent SetElements(List<GameEventElement> elements)
         {
-            return new GameEvent(TypeId, FriendlyName, elements);
+            return new GameEvent(TypeId, Version, FriendlyName, elements);
+        }
+
+        public List<GameEventElement> GetElementsCopy()
+        {
+            return new List<GameEventElement>(mElements);
         }
 
         // Unique type identifier (used to map to data-driven event description (file) and to tile index)
         [XmlIgnore]
         public int TypeId { get; private set; }
+
+        [XmlIgnore]
+        public int Version { get; private set; }
 
         [XmlIgnore]
         public string FriendlyName { get; private set; }
@@ -115,6 +124,9 @@ namespace Zelous
         // Properties for XML serialization
         [XmlAttribute(AttributeName = "TypeId")]
         public int __ForXml_TypeId { get { return TypeId; } set { TypeId = value; } }
+
+        [XmlAttribute(AttributeName = "Version")]
+        public int __ForXml_Version { get { return Version; } set { Version = value; } }
 
         [XmlAttribute(AttributeName="FriendlyName")]
         public string __ForXml_FriendlyName { get { return FriendlyName; } set { FriendlyName = value; } }

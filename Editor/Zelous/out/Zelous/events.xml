@@ -5,7 +5,7 @@
     <!-- where each event is data-driven via this xml file.                     -->
 
     <!-- ********************************************************************** -->
-    <GameEvent TypeId="1" FriendlyName="Warp Event">
+    <GameEvent TypeId="1" Version="1" FriendlyName="Warp Event">
         <Elem Name="MapName" FriendlyName="Map Name">
             <Value xsi:type="xsd:string"></Value>
         </Elem>

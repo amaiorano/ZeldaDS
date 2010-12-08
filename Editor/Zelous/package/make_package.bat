@@ -4,6 +4,7 @@ rem This script creates a Zelous package which can be distributed to users to bu
 rem requiring the typical developer setup.
 
 setlocal
+pushd %~dp0
 
 set ZELOUS_ROOT=%NDSGAMEROOT%\Editor\Zelous
 set GAME_ROOT=%NDSGAMEROOT%\Game\ZeldaDS
@@ -11,6 +12,8 @@ set TOOLS_ROOT=%NDSGAMEROOT%\Tools
 
 set PACKAGE_PATH=%ZELOUS_ROOT%\package
 
+set DEL_FILES_CMD=rm -f
+set DEL_FOLDER_CMD=rm -rf
 set COPY_CMD=robocopy
 set COPY_OPTS=/A-:R
 set COPY_RECURSE_OPTS=/E
@@ -19,6 +22,13 @@ set MAKE_WRITABLE_CMD=chmod +w
 
 
 :START
+
+echo.
+echo *** Cleaning
+%DEL_FILES_CMD% Zelous.zip
+%DEL_FOLDER_CMD% Zelous
+
+if "%1"=="clean" goto :END
 
 echo.
 echo *** Setting up msdev environment
@@ -67,4 +77,4 @@ echo.
 echo *** Error encountered (ERRORLEVEL is %ERRORLEVEL%), bailing...
 
 :END
-pause
+popd

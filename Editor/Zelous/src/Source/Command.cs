@@ -71,7 +71,7 @@ namespace Zelous
             //@TODO: Would be nice to have some kind of iterator to iterate over the tiles in a TileMap
             
             // Get the brush's event layer index (if any)
-            int brushEventLayerIndex = new List<TileMapView.Brush.LayerData>(mDoBrush.Layers).FindIndex(layer => layer.LayerIndex == EditGameEventCommand.EventLayerIndex);
+            int brushEventLayerIndex = new List<TileMapView.Brush.LayerData>(mDoBrush.Layers).FindIndex(layer => layer.LayerIndex == GameConstants.EventLayerIndex);
             if (brushEventLayerIndex != -1)
             {
                 for (int tileX = 0; tileX < mDoBrush.NumTiles.Width; ++tileX)
@@ -117,8 +117,6 @@ namespace Zelous
 
     public class EditGameEventCommand : Command
     {
-        public static int EventLayerIndex = 4; //@HACK: Should pass this in
-
         TileMapView mTargetTileMapView;
         Point mTargetTilePos;
 
@@ -134,7 +132,7 @@ namespace Zelous
             mTargetTilePos = targetTilePos;
 
             // Bind lambda function to tile's metadata reference (via closure). Tile is a value type, so this is as close as I can get to having a 'ref'
-            mAssignToTileMetadata = t => mTargetTileMapView.TileLayers[EventLayerIndex].TileMap[mTargetTilePos.X, mTargetTilePos.Y].Metadata = t;
+            mAssignToTileMetadata = t => mTargetTileMapView.TileLayers[GameConstants.EventLayerIndex].TileMap[mTargetTilePos.X, mTargetTilePos.Y].Metadata = t;
         }
 
         public override string GetDescription()
@@ -144,9 +142,9 @@ namespace Zelous
 
         public override bool Do()
         {
-            if (mTargetTileMapView.ContainsLayer(EventLayerIndex))
+            if (mTargetTileMapView.ContainsLayer(GameConstants.EventLayerIndex))
             {
-                return EditEvent(mTargetTileMapView.TileLayers[EventLayerIndex].TileMap[mTargetTilePos.X, mTargetTilePos.Y]);
+                return EditEvent(mTargetTileMapView.TileLayers[GameConstants.EventLayerIndex].TileMap[mTargetTilePos.X, mTargetTilePos.Y]);
             }
 
             return false;
