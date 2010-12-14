@@ -2,11 +2,15 @@
 #define HSM_STATE_H
 
 #include "HsmClientTypes.h"
-#include <vector>
 
 struct Transition;
 struct State;
 class StateMachine;
+
+namespace HsmInternal
+{
+	void InitState(State* pState, StateMachine& stateMachine);
+}
 
 // Base class for visitor functors
 struct StateVisitor
@@ -21,6 +25,12 @@ struct SharedStateData
 	virtual ~SharedStateData() {}
 };
 
+// Base class for state args: derive a (copy-constructable) type named "Args" from StateArgs within child State,
+// and define: void OnEnter(const Args& args)
+struct StateArgs : HSM_INTRUSVE_PTR_CLIENT
+{
+	virtual ~StateArgs() { }
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 // State Attributes
@@ -76,11 +86,6 @@ struct ConcreteAttributeResetter : public AttributeResetter
 	T mOrigValue;
 };
 
-namespace HsmInternal
-{
-	inline void InitState(State* pState, StateMachine* pOwnerStateMachine);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // State
 ///////////////////////////////////////////////////////////////////////////////
@@ -117,9 +122,14 @@ struct State
 	template <typename ChildState>
 	inline bool IsInState();
 
+	// Default type named "Args" - derived States that actually want StateArgs must hide this name with a struct named "Args".
+	// Internally, this is used to determine whether the derived State expects args or not.
+	typedef StateArgs Args;
+
 	// Client can implement these
 	// Note: GetStateMachine() is valid in OnEnter(), but not in a state constructor
-	void OnEnter() { } // Doesn't need to be virtual - called directly on child state
+	void OnEnter() { } // Not virtual - called direclty on most derived state
+	// void OnEnter(const Args& args); // We purposely do not define this version of OnEnter - must be defined in child class if StateArgs are desired
 	virtual void OnExit() { }
 	virtual Transition EvaluateTransitions(); // Called from outer to inner until settled on a state (no more transitions returned)
 	virtual void PerformStateActions(HsmTimeType deltaTime) { }; // Called from outer to inner once settled on a state (after StateMachine::EvaluateStateTransitions())
@@ -147,7 +157,7 @@ struct State
 	}
 
 private:
-	friend inline void HsmInternal::InitState(State* pState, StateMachine* pOwnerStateMachine);
+	friend void HsmInternal::InitState(State* pState, StateMachine& stateMachine);
 	StateMachine* mpOwnerStateMachine;
 
 	void ResetAttributes()
@@ -191,39 +201,6 @@ struct StateT : public BaseStateType
 	{
 		return static_cast<SharedStateDataChild&>(GetStateMachine().GetSharedStateData());
 	}
-};
-
-///////////////////////////////////////////////////////////////////////////////
-// State Creation/Destruction
-///////////////////////////////////////////////////////////////////////////////
-
-namespace HsmInternal
-{
-	inline void InitState(State* pState, StateMachine* pOwnerStateMachine)
-	{
-		pState->mpOwnerStateMachine = pOwnerStateMachine;
-	}
-}
-
-template <typename ChildState>
-State* CreateState(StateMachine* pOwnerStateMachine)
-{
-	ChildState* pState = new ChildState();
-	HSM_ASSERT(pOwnerStateMachine);
-	HsmInternal::InitState(pState, pOwnerStateMachine);
-	pState->OnEnter();
-	return pState;
-}
-
-inline void DestroyState(State* pState)
-{
-	pState->OnExit();
-	delete pState;
-}
-
-
-struct NullState : public State
-{
 };
 
 #endif // HSM_STATE_H

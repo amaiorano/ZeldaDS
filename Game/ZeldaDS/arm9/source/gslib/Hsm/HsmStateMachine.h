@@ -3,7 +3,6 @@
 
 /*
 TODO:
-- State construction args
 - Memory managment (client-provided Alloc/Free for memory into which we in-place new our objects)
 - State* State::GetImmediateInnerState() (faster than using GetState() within states for certain idioms)
 
@@ -16,6 +15,7 @@ DONE:
 	- This works easily because all Transitions are statically allocated, so there's no memory management
 	  to worry about. If we want to alloc/free transitions, this will become more complex (shared_ptr)
 - Move internal stuff to an Internal namespace
+- State construction args
 
 NOTES:
 - Using OnEnter/OnExit instead of constructor/destructor for States so that clients don't have to
@@ -61,9 +61,7 @@ public:
 	template <typename ChildState>
 	void SetInitialState()
 	{
-		HSM_ASSERT( mStateStack.empty() );
-		State* pInitialState = GetStateFactory<ChildState>().CreateState(this);
-		PushInitialState(pInitialState);
+		CreateAndPushInitialState(SiblingTransition<ChildState>());
 	}
 
 	// Update function (call once per frame)
@@ -110,7 +108,7 @@ private:
 
 	State* GetStateAtDepth(size_t depth);
 
-	void PushInitialState(State* pState);
+	void CreateAndPushInitialState(const Transition& initialTransition);
 
 	// Pops states from most inner up to and including depth
 	void PopStatesToDepth(size_t depth);
@@ -127,7 +125,6 @@ private:
 
 	int mDebugLevel;
 };
-
 
 // Inline State member function implementations - implemented here because they depend on certain types
 // to be defined (StateMachine, Transitions, etc.)

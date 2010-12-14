@@ -585,6 +585,10 @@
 						RelativePath=".\ZeldaDS\arm9\source\gslib\Util\Array2d.h"
 						>
 					</File>
+					<File
+						RelativePath=".\ZeldaDS\arm9\source\gslib\Util\intrusive_ptr.h"
+						>
+					</File>
 				</Filter>
 			</Filter>
 		</Filter>

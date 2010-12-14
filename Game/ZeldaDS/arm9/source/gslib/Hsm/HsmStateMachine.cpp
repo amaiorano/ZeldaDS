@@ -18,6 +18,37 @@
 	#define HSM_LOG_TRANSITION(minLevel, depth, transType, pState)
 #endif
 
+namespace HsmInternal
+{
+	// Friend function of State class so we can set private values on it
+	void InitState(State* pState, StateMachine& stateMachine)
+	{
+		pState->mpOwnerStateMachine = &stateMachine;
+	}
+
+	State* CreateState(const Transition& transition, StateMachine& stateMachine)
+	{
+		State* pState = transition.GetStateFactory().AllocState();
+		HsmInternal::InitState(pState, stateMachine);
+		return pState;
+	}
+
+	void InvokeStateOnEnter(State* pState, const Transition& transition)
+	{
+		transition.GetStateFactory().InvokeStateOnEnter(pState, transition.GetStateArgs());
+	}
+
+	void DestroyState(State* pState)
+	{
+		delete pState;
+	}
+
+	void InvokeStateOnExit(State* pState)
+	{
+		pState->OnExit();
+	}	
+}
+
 namespace
 {
 	struct CallPerformStateActionsVisitor : public StateVisitor
@@ -114,11 +145,14 @@ State* StateMachine::GetStateAtDepth(size_t depth)
 	return mStateStack[depth];
 }
 
-void StateMachine::PushInitialState(State* pState)
+void StateMachine::CreateAndPushInitialState(const Transition& initialTransition)
 {
 	HSM_ASSERT(mStateStack.empty());
-	HSM_LOG_TRANSITION(1, 0, "Root", pState);
-	mStateStack.push_back(pState);
+
+	State* pTargetState = HsmInternal::CreateState(initialTransition, *this);
+	HSM_LOG_TRANSITION(1, 0, "Root", pTargetState);
+	mStateStack.push_back(pTargetState);
+	HsmInternal::InvokeStateOnEnter(pTargetState, initialTransition);
 }
 
 // Pops states from most inner up to and including depth
@@ -131,7 +165,8 @@ void StateMachine::PopStatesToDepth(size_t depth)
 	{
 		State* pStateToPop = mStateStack[rDepth];
 		HSM_LOG_TRANSITION(2, rDepth, "Pop", pStateToPop);
-		DestroyState(pStateToPop);
+		HsmInternal::InvokeStateOnExit(pStateToPop);
+		HsmInternal::DestroyState(pStateToPop);
 		mStateStack.pop_back(); //@todo: remove size()-depth elems after loop?
 		--rDepth;
 	}
@@ -170,18 +205,20 @@ bool StateMachine::EvaluateStateTransitionsOnce()
 						// Pop all states under us and push target
 						PopStatesToDepth(depth + 1);
 
-						State* pTargetState = transition.CreateTargetState(this);
+						State* pTargetState = HsmInternal::CreateState(transition, *this);
 						HSM_LOG_TRANSITION(1, depth + 1, "Inner", pTargetState);
 						mStateStack.push_back(pTargetState);
+						HsmInternal::InvokeStateOnEnter(pTargetState, transition);
 						return true;
 					}
 				}
 				else
 				{
 					// No state under us so just push target
-					State* pTargetState = transition.CreateTargetState(this);
+					State* pTargetState = HsmInternal::CreateState(transition, *this);
 					HSM_LOG_TRANSITION(1, depth + 1, "Inner", pTargetState);
 					mStateStack.push_back(pTargetState);
+					HsmInternal::InvokeStateOnEnter(pTargetState, transition);
 					return true;
 				}
 			}
@@ -192,9 +229,10 @@ bool StateMachine::EvaluateStateTransitionsOnce()
 				// If current state has no inner (is currently the innermost), then push the entry state
 				if ( !GetStateAtDepth(depth + 1) )
 				{
-					State* pTargetState = transition.CreateTargetState(this);
+					State* pTargetState = HsmInternal::CreateState(transition, *this);
 					HSM_LOG_TRANSITION(1, depth + 1, "Entry", pTargetState);
 					mStateStack.push_back(pTargetState);
+					HsmInternal::InvokeStateOnEnter(pTargetState, transition);
 					return true;
 				}
 			}
@@ -204,9 +242,10 @@ bool StateMachine::EvaluateStateTransitionsOnce()
 			{
 				PopStatesToDepth(depth);
 
-				State* pTargetState = transition.CreateTargetState(this);
+				State* pTargetState = HsmInternal::CreateState(transition, *this);
 				HSM_LOG_TRANSITION(1, depth, "Sibling", pTargetState);
 				mStateStack.push_back(pTargetState);
+				HsmInternal::InvokeStateOnEnter(pTargetState, transition);
 				return true;
 			}
 			break;

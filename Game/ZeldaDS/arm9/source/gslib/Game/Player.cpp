@@ -23,18 +23,13 @@ struct PlayerSharedStateData : CharacterSharedStateData
 	typedef CharacterSharedStateData Base;
 
 	PlayerSharedStateData()
-		: mpSword(NULL)
-		, mpBoomerang(NULL)
+		: mpBoomerang(NULL)
 		, mScrollDir(ScrollDir::None)
-		, mpWarpGameEvent(NULL)
 	{
 	}
 
-	// Data...
-	Sword* mpSword;
 	Boomerang* mpBoomerang;
 	ScrollDir::Type mScrollDir;
-	WarpGameEvent* mpWarpGameEvent;
 };
 
 typedef StateT<PlayerSharedStateData, Player, CharacterState> PlayerState;
@@ -102,12 +97,12 @@ struct PlayerStates
 
 		virtual Transition EvaluateTransitions()
 		{
-			ASSERT(Data().mScrollDir == ScrollDir::None);
-
-			if ( !GameHelpers::IsPhysicalInScreenBounds(Owner(), &Data().mScrollDir) )
+			ScrollDir::Type scrollDir = ScrollDir::None;
+			if ( !GameHelpers::IsPhysicalInScreenBounds(Owner(), &scrollDir) )
 			{
-				ASSERT(Data().mScrollDir != ScrollDir::None);
-				return SiblingTransition<Alive_Scrolling>();
+				Alive_Scrolling::Args args;
+				args.mScrollDir = scrollDir;
+				return SiblingTransition<Alive_Scrolling>(args);
 			}
 
 			if (GameEvent* pGameEvent = WorldMap::Instance().GetGameEventIfExists(Owner().GetPosition()))
@@ -118,10 +113,10 @@ struct PlayerStates
 					WarpGameEvent* pWarpGameEvent = static_cast<WarpGameEvent*>(pGameEvent);
 					if (Owner().GetPosition() == WorldMap::TileToWorldPos(pWarpGameEvent->mTilePos))
 					{
-						//@TODO: This would be much easier with constructor args
 						//printf("Warp to %s at (%d, %d)\n", pWarpGameEvent->mTargetWorldMap.c_str(), pWarpGameEvent->mTargetTilePos.x, pWarpGameEvent->mTargetTilePos.y);
-						Data().mpWarpGameEvent = pWarpGameEvent;
-						return SiblingTransition<Alive_Warping>();
+						Alive_Warping::Args args;
+						args.mpWarpGameEvent = pWarpGameEvent;
+						return SiblingTransition<Alive_Warping>(args);
 					}
 				}
 			}
@@ -150,20 +145,20 @@ struct PlayerStates
 		{
 		}
 
-		virtual void OnEnter()
+		struct Args : StateArgs
 		{
-			ASSERT(Data().mScrollDir != ScrollDir::None);
+			ScrollDir::Type mScrollDir;
+		};
+
+		virtual void OnEnter(const Args& args)
+		{
+			ASSERT(args.mScrollDir != ScrollDir::None);
 			ASSERT(!mScrollingMgr.IsScrolling());
 
-			mScrollingMgr.StartScrolling(Data().mScrollDir);
+			mScrollingMgr.StartScrolling(args.mScrollDir);
 
 			// Just play movement anim in current dir, but don't actually allow player movement
 			PlayAnim(BaseAnim::Move);
-		}
-
-		virtual void OnExit()
-		{
-			Data().mScrollDir = ScrollDir::None;
 		}
 
 		virtual Transition EvaluateTransitions()
@@ -179,14 +174,21 @@ struct PlayerStates
 
 	struct Alive_Warping : PlayerState
 	{
-		virtual void OnEnter()
+		struct Args : StateArgs
 		{
-			ASSERT(Data().mpWarpGameEvent);
-		}
+			WarpGameEvent* mpWarpGameEvent;
+		};
 
-		virtual void OnExit()
+		struct Data : Args
 		{
-			Data().mpWarpGameEvent = NULL;
+		};
+
+		Data mData;
+
+		virtual void OnEnter(const Args& args)
+		{
+			ASSERT(args.mpWarpGameEvent);
+			static_cast<Args&>(mData) = args;
 		}
 
 		virtual Transition EvaluateTransitions()
@@ -195,7 +197,18 @@ struct PlayerStates
 		}
 	};
 
-	struct Alive_Warping_Stairs : PlayerState
+	//@TODO: Generalize
+	struct WarpingStateBase : PlayerState
+	{
+		typedef Alive_Warping OuterType;
+		
+		typename OuterType::Data& GetOuterData()
+		{
+			return static_cast<OuterType*>(GetState<Alive_Warping>())->mData;
+		}
+	};
+
+	struct Alive_Warping_Stairs : WarpingStateBase
 	{
 		float mSteps;
 		WorldMapTile* mpWorldMapTile;
@@ -248,12 +261,14 @@ struct PlayerStates
 		}
 	};
 
-	struct Alive_Warping_Done : PlayerState
+	struct Alive_Warping_Done : WarpingStateBase
 	{
 		virtual void OnEnter()
 		{
+			WarpGameEvent* pWarpGameEvent = GetOuterData().mpWarpGameEvent;
+
 			// This will cause the GameFlowMgr to load the new map, destroying the Player in the process
-			GameFlowMgr::Instance().SetTargetWorldMap(Data().mpWarpGameEvent->mTargetWorldMap.c_str(), WorldMap::TileToWorldPos(Data().mpWarpGameEvent->mTargetTilePos));
+			GameFlowMgr::Instance().SetTargetWorldMap(pWarpGameEvent->mTargetWorldMap.c_str(), WorldMap::TileToWorldPos(pWarpGameEvent->mTargetTilePos));
 		}
 	};
 
@@ -263,7 +278,7 @@ struct PlayerStates
 		{
 			const uint32& currKeysPressed = InputManager::GetKeysPressed();
 
-			const bool shouldAttack = (currKeysPressed & KEY_Y) != 0;
+			const bool shouldAttack = (currKeysPressed & KEY_A/*KEY_Y*/) != 0;
 			if (shouldAttack)
 			{
 				return SiblingTransition<Alive_Attack>();
@@ -358,6 +373,11 @@ struct PlayerStates
 
 	struct Alive_Attack : PlayerState
 	{
+		Alive_Attack()
+			: mpSword(0)
+		{
+		}
+
 		virtual void OnEnter()
 		{
 			CreateSword();
@@ -374,21 +394,17 @@ struct PlayerStates
 
 		void CreateSword()
 		{
-			ASSERT(!Data().mpSword);
-			Data().mpSword = new Sword();
-			Data().mpSword->Init(Owner().GetSpriteDir());
-			SceneGraph::Instance().AddNode(Data().mpSword);
-			Owner().AttachChild(Data().mpSword); // Make sword our child
+			mpSword = new Sword();
+			mpSword->Init(Owner().GetSpriteDir());
+			SceneGraph::Instance().AddNode(mpSword);
+			Owner().AttachChild(mpSword); // Make sword our child
 		}
 
 		void DestroySword()
 		{
-			if (Data().mpSword)
-			{
-				Owner().DetachChild(Data().mpSword); // Technically detached for one frame :(
-				SceneGraph::Instance().RemoveNodePostUpdate(Data().mpSword);
-				Data().mpSword = NULL;
-			}
+			ASSERT(mpSword);
+			Owner().DetachChild(mpSword); // Technically detached for one frame :(
+			SceneGraph::Instance().RemoveNodePostUpdate(mpSword);
 		}
 
 		virtual Transition EvaluateTransitions()
@@ -413,8 +429,10 @@ struct PlayerStates
 		void UpdateSwordPos(int16 offset)
 		{
 			const Vector2I& swordLocalPos = GameHelpers::SpriteDirToUnitVector(Owner().GetSpriteDir()) * (offset - 2);
-			Data().mpSword->SetLocalPosition(swordLocalPos);
+			mpSword->SetLocalPosition(swordLocalPos);
 		}
+
+		Sword* mpSword;
 	};
 
 	// For now, just the boomerang

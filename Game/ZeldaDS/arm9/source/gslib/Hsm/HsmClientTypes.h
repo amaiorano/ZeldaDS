@@ -3,6 +3,8 @@
 
 #include "gslib/Core/Core.h"
 #include "gslib/Core/Rtti.h"
+#include "gslib/Util/intrusive_ptr.h"
+#include <vector>
 
 #if CONFIG_DEBUG
 #define HSM_DEBUG
@@ -10,6 +12,8 @@
 
 typedef uint16 HsmTimeType; // Elapsed frames
 #define HSM_STD_VECTOR std::vector
+#define HSM_INTRUSIVE_PTR intrusive_ptr
+#define HSM_INTRUSVE_PTR_CLIENT intrusive_ptr_client
 #define HSM_ASSERT ASSERT
 #define HSM_PRINTF printf
 
