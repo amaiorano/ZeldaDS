@@ -63,6 +63,11 @@ void BinaryFileStream::Close()
 	}
 }
 
+long BinaryFileStream::SizeBytes() const
+{
+	return mSizeBytes;
+}
+
 bool BinaryFileStream::AtEof() const
 {
 	return mAtEof;

@@ -1,6 +1,7 @@
 @echo off
-
 setlocal
+pushd %~dp0
+
 set CONFIG=%2
 
 if "%1"=="build" goto :BUILD
@@ -13,7 +14,7 @@ goto :END
 
 :BUILD
 make CONFIG=%CONFIG%
-goto :END
+goto :POSTBUILD
 
 :CLEAN
 make clean CONFIG=%CONFIG%
@@ -22,5 +23,11 @@ goto :END
 :REBUILD
 make clean CONFIG=%CONFIG%
 make CONFIG=%CONFIG%
+goto :POSTBUILD
+
+:POSTBUILD
+make printsize CONFIG=%CONFIG%
+goto :END
 
 :END
+popd

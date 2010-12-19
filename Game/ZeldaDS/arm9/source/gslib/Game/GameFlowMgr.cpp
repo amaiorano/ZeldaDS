@@ -19,10 +19,8 @@
 #include "gslib/Game/Weapon.h"
 #include "gslib/Game/EnemyFactory.h"
 #include "gslib/Game/GameHelpers.h"
+#include "gslib/Game/GameResources.h"
 
-#include "data/overworld_bg.h"
-#include "data/overworld_fg.h"
-#include "data/characters.h"
 #include "data/soundbank.h"
 
 #include <string>
@@ -55,6 +53,17 @@ struct GameFlowStates
 	{
 		virtual void OnEnter()
 		{
+			// Allocate resource buffers - we keep these allocated for the lifetime of the game
+			for (int i = 0; i < GameResource::NumTypes; ++i)
+			{
+				ResourceMgr::Instance().AllocateResourceBuffer(i, GameResource::SizeBytesPerType[i]);
+			}
+
+			// Load resources - not sure if some of these would change based on current map (characters?)
+			ResourceMgr::Instance().LoadResource(GameResource::Gfx_Items, "Graphics/items.img.bin");
+			ResourceMgr::Instance().LoadResource(GameResource::Gfx_Characters16x16, "Graphics/characters.img.bin");
+			ResourceMgr::Instance().LoadResource(GameResource::Gfx_Characters32x32, "Graphics/characters_32x32.img.bin");
+
 			static SpriteRenderGroup groups[] =
 			{
 				{ GameSpriteRenderGroup::AboveAll, 2 },
@@ -69,7 +78,8 @@ struct GameFlowStates
 			LoadAllGameAnimAssets();
 
 			// Load sprite palette
-			GraphicsEngine::LoadSpritePalette(charactersPal, sizeof(charactersPal));
+			const ResourceData& data = ResourceMgr::Instance().LoadResource(GameResource::Temporary, "Graphics/characters.pal.bin");
+			GraphicsEngine::LoadSpritePalette(data.DataAs<const uint16*>(), data.SizeBytes());
 
 			GraphicsEngine::SetBgFontColor( RGB8(255, 255, 255) );
 			GraphicsEngine::SetSubBgFontColor( RGB8(255, 255, 255) );
@@ -127,10 +137,16 @@ struct GameFlowStates
 			SceneGraph::Instance().SetWorldMap(worldMap);
 
 			// Palettes for both bg2 and bg3 should be the same...
-			GraphicsEngine::LoadBgPalette(overworld_bgPal, sizeof(overworld_bgPal)); //@TODO: look into grit palette sharing
+			ResourceData data = ResourceMgr::Instance().LoadResource(GameResource::Temporary, "Graphics/overworld_bg.pal.bin");
+			GraphicsEngine::LoadBgPalette(data.DataAs<const uint16*>(), data.SizeBytes());
 
-			GraphicsEngine::GetBgLayer(2).LoadTilesImage(reinterpret_cast<const uint8*>(overworld_fgTiles), sizeof(overworld_fgTiles));
-			GraphicsEngine::GetBgLayer(3).LoadTilesImage(reinterpret_cast<const uint8*>(overworld_bgTiles), sizeof(overworld_bgTiles));
+			data = ResourceMgr::Instance().LoadResource(GameResource::Temporary, "Graphics/overworld_fg.img.bin");
+			//data = ResourceMgr::Instance().LoadResource(GameResource::Temporary, "Graphics/dungeon_fg.img.bin");
+			GraphicsEngine::GetBgLayer(2).LoadTilesImage(data.DataAs<const uint16*>(), data.SizeBytes());
+
+			data = ResourceMgr::Instance().LoadResource(GameResource::Temporary, "Graphics/overworld_bg.img.bin");
+			//data = ResourceMgr::Instance().LoadResource(GameResource::Temporary, "Graphics/dungeon_bg.img.bin");
+			GraphicsEngine::GetBgLayer(3).LoadTilesImage(data.DataAs<const uint16*>(), data.SizeBytes());
 
 			AudioEngine::SetMusicVolume(1.0f);
 			AudioEngine::PlayMusic(MOD_OVERWORLD3);

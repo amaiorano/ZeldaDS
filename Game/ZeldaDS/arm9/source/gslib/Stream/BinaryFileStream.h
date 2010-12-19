@@ -28,6 +28,7 @@ public:
 	void Open(const char* filePath, const char* mode, Endian::Type fileEndian = FileDefaultEndian);
 	void Close();
 
+	long SizeBytes() const;
 	bool AtEof() const;
 
 	// Reads and returns sizeof(T) integral, endian swaps if file and platform endianness don't match
@@ -43,7 +44,7 @@ public:
 	template <typename T>
 	void ReadElems(T* pBuffer, int numElems)
 	{
-		ReadBytes(reinterpret_cast<uint8*>(pBuffer), sizeof(T) * numElems, false);
+		ReadBytes((uint8*)pBuffer, sizeof(T) * numElems, false);
 	}
 
 private:

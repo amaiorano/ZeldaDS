@@ -1,9 +1,7 @@
 #include "GameAnims.h"
 #include "gslib/Core/Core.h"
 
-#include "data/characters.h"
-#include "data/characters_32x32.h"
-#include "data/items.h"
+#include "gslib/Game/GameResources.h"
 
 namespace
 {
@@ -22,7 +20,7 @@ namespace
 			return *this;
 		}
 
-		ThisType& InitPoses(uint8* pFrameGfx, uint16 frameSize)
+		ThisType& InitPoses(const uint8* pFrameGfx, uint16 frameSize)
 		{
 			mpAnimAsset->mAnimPoses.Init(pFrameGfx, frameSize);
 			return *this;
@@ -73,7 +71,7 @@ namespace
 	void CreateAndAddAnimAssets4(
 		GameActor::Type gameActor,
 		BaseAnim::Type baseAnim, 
-		uint8* pFrameGfx,
+		const uint8* pFrameGfx,
 		uint16 frameSize,
 		int firstRightFrameIndex,
 		int numFrames,
@@ -97,7 +95,7 @@ namespace
 	void CreateAndAddAnimAssets1(
 		GameActor::Type gameActor,
 		BaseAnim::Type baseAnim, 
-		uint8* pFrameGfx,
+		const uint8* pFrameGfx,
 		uint16 frameSize,
 		int firstFrameIndex,
 		int numFrames,
@@ -127,7 +125,7 @@ void LoadAllGameAnimAssets()
 
 	// 16x16 characters
 	{
-		uint8* pFrameGfx = (uint8*)charactersTiles;
+		const uint8* pFrameGfx = ResourceMgr::Instance().GetResource(GameResource::Gfx_Characters16x16).Data();
 		const int FrameSize = 16 * 16; // 8bpp sprites
 		const int NumTilesPerRow = 14;
 
@@ -190,7 +188,7 @@ void LoadAllGameAnimAssets()
 
 	// 32x32 characters
 	{
-		uint8* pFrameGfx = (uint8*)characters_32x32Tiles;
+		const uint8* pFrameGfx = ResourceMgr::Instance().GetResource(GameResource::Gfx_Characters32x32).Data();
 		const int FrameSize = 32 * 32; // 8bpp sprites
 		const int NumTilesPerRow = 4;
 
@@ -205,7 +203,7 @@ void LoadAllGameAnimAssets()
 
 	// 16x16 items
 	{
-		uint8* pFrameGfx = (uint8*)itemsTiles;
+		const uint8* pFrameGfx = ResourceMgr::Instance().GetResource(GameResource::Gfx_Items).Data();
 		const int FrameSize = 16 * 16; // 8bpp sprites
 
 		// Boomerang

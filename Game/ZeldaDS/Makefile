@@ -74,3 +74,9 @@ clean:
 	$(MAKE) -C arm9 clean
 	$(MAKE) -C arm7 clean
 	rm -f $(TARGET).nds $(TARGET).arm7 $(TARGET).arm9
+
+#---------------------------------------------------------------------------------
+printsize:
+	@echo.
+	@echo Elf size breakdown:
+	$(DEVKITARM)/bin/arm-eabi-size.exe arm9/$(TARGET).arm9.elf arm7/$(TARGET).arm7.elf

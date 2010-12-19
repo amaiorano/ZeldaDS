@@ -1,5 +1,7 @@
 @echo off
 setlocal
+pushd %~dp0
+
 set P4_RECONCILE_CMD=%NDSGAMEROOT%\Tools\bin\p4_reconcile_offline_files.bat
 set DEL_FILES=rm -f
 set DEL_FOLDER=rm -rf
@@ -28,6 +30,7 @@ dir /b /a-d *.user | p4 -x - revert
 dir /b /a-d *.wwdb | p4 -x - revert 
 dir /b /a-d *.ncb | p4 -x - revert
 
+popd
 
 if "%1" neq "nopause" (
 	echo Done!

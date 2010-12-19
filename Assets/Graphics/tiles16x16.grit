@@ -10,3 +10,9 @@
 #metatile (16x16 tiles, so 2x2 8x8s)
 -Mh2
 -Mw2
+
+#File type: binary (default is C?)
+-ftb
+
+#No .h files
+-fh!

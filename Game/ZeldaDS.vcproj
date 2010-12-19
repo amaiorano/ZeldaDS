@@ -25,9 +25,9 @@
 			>
 			<Tool
 				Name="VCNMakeTool"
-				BuildCommandLine="cd $(ProjectName)&#x0D;&#x0A;call build.bat build DEBUG"
-				ReBuildCommandLine="cd $(ProjectName)&#x0D;&#x0A;call build.bat rebuild DEBUG"
-				CleanCommandLine="cd $(ProjectName)&#x0D;&#x0A;call build.bat clean DEBUG&#x0D;&#x0A;"
+				BuildCommandLine="call $(ProjectName)\build.bat build DEBUG"
+				ReBuildCommandLine="call $(ProjectName)\build.bat rebuild DEBUG"
+				CleanCommandLine="call $(ProjectName)\build.bat clean DEBUG&#x0D;&#x0A;"
 				Output="$(ProjectName)\$(ProjectName)_d.nds"
 				PreprocessorDefinitions="WIN32;_DEBUG"
 				IncludeSearchPath=""
@@ -46,9 +46,9 @@
 			>
 			<Tool
 				Name="VCNMakeTool"
-				BuildCommandLine="cd $(ProjectName)&#x0D;&#x0A;call build.bat build"
-				ReBuildCommandLine="cd $(ProjectName)&#x0D;&#x0A;call build.bat rebuild"
-				CleanCommandLine="cd $(ProjectName)&#x0D;&#x0A;call build.bat clean"
+				BuildCommandLine="call $(ProjectName)\build.bat build"
+				ReBuildCommandLine="call $(ProjectName)\build.bat rebuild"
+				CleanCommandLine="call $(ProjectName)\build.bat clean"
 				Output="$(ProjectName)\$(ProjectName).nds"
 				PreprocessorDefinitions="WIN32;NDEBUG"
 				IncludeSearchPath=""
@@ -234,7 +234,19 @@
 						>
 					</File>
 					<File
+						RelativePath=".\ZeldaDS\arm9\source\gslib\Game\GameResources.h"
+						>
+					</File>
+					<File
 						RelativePath=".\ZeldaDS\arm9\source\gslib\Game\Health.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ZeldaDS\arm9\source\gslib\Game\ResourceMgr.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\ZeldaDS\arm9\source\gslib\Game\ResourceMgr.h"
 						>
 					</File>
 					<File

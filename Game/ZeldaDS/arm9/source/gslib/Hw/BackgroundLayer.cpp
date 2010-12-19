@@ -66,7 +66,7 @@ void BackgroundLayer::InitTiled(int bgId, uint8 metaTileSizeX, uint8 metaTileSiz
 	memset(mpTileMap, 0, (HwBgNumTilesX * HwBgNumTilesY * tileIndexSizeBytes)); //@TODO: use dmaCopy?
 }
 
-void BackgroundLayer::LoadTilesImage(const uint8* pImage, uint16 sizeBytes)
+void BackgroundLayer::LoadTilesImage(const uint16* pImage, uint16 sizeBytes)
 {
 	memcpy(bgGetGfxPtr(mBgId), pImage, sizeBytes); //@TODO: use dmaCopy?
 }
