@@ -77,6 +77,5 @@ clean:
 
 #---------------------------------------------------------------------------------
 printsize:
-	@echo.
 	@echo Elf size breakdown:
 	$(DEVKITARM)/bin/arm-eabi-size.exe arm9/$(TARGET).arm9.elf arm7/$(TARGET).arm7.elf
