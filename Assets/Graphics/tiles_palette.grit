@@ -1,8 +1,8 @@
 # No tile map
 -m!
 
-# No palette
--p!
+# No graphics
+-g!
 
 # 8bit
 -gB8
@@ -10,12 +10,13 @@
 # Magenta is transparent color (will swap its palette index with 0th entry)
 -gTFF00FF
 
-# Metatile (16x16 tiles, so 2x2 8x8s)
--Mh2
--Mw2
-
-# File type: binary (default is C?)
+# File type: binary
 -ftb
 
 # No .h files
 -fh!
+
+# Palette options
+-p
+-pu16 #U16 format
+-p0 #No compression
