@@ -100,12 +100,6 @@ namespace Zelous
        }
     }
 
-    public enum SerializationType
-    {
-        Saving,
-        Loading
-    }
-
     // Represents a single Tile
     // It's a struct because we allocate large 2d arrays of these - consider making this a class,
     // as it's a pain that we can't pass references to Tiles around.
@@ -158,28 +152,50 @@ namespace Zelous
         private TileLayer[] mTileLayers = new TileLayer[NumLayers];
         int mNumScreensX, mNumScreensY;
         int mNumTilesX, mNumTilesY;
+        int mTileSetGroupIndex;
 
-        public void Init(int numScreensX, int numScreensY, TileSet[] tileSets)
+        public TileLayer[] TileLayers { get { return mTileLayers; } }
+
+        public void NewMap(int numScreensX, int numScreensY, int tileSetGroupIndex)
         {
+            Size tileSize = new Size(16, 16);
+
             mNumScreensX = numScreensX;
             mNumScreensY = numScreensY;
             mNumTilesX = mNumScreensX * GameConstants.GameNumScreenMetaTilesX;
             mNumTilesY = mNumScreensY * GameConstants.GameNumScreenMetaTilesY;
 
+            mTileSetGroupIndex = tileSetGroupIndex;
+
+            GameTileSetGroup tileSetGroup = MainForm.Instance.GameTileSetGroupMgr.GetGroup(mTileSetGroupIndex);
+
+            string[] tileSetFiles = new string[NumLayers];
+            tileSetFiles[0] = tileSetGroup.BackgroundTiles;
+            tileSetFiles[1] = tileSetGroup.ForegroundTiles;
+            tileSetFiles[2] = "collision_tileset.bmp";
+            tileSetFiles[3] = "editor_characters.bmp";
+            tileSetFiles[4] = "editor_events.bmp";
+            
             for (int i = 0; i < NumLayers; ++i)
             {
+                TileSet tileSet = new TileSet(tileSetFiles[i], tileSize.Width, tileSize.Height);
+
                 mTileLayers[i] = new TileLayer();
-                mTileLayers[i].Init(mNumTilesX, mNumTilesY, tileSets[i]);
+                mTileLayers[i].Init(mNumTilesX, mNumTilesY, tileSet);
             }
         }
 
-        public TileLayer[] TileLayers { get { return mTileLayers; } }
+        // Save/Load constants
+        private const string MapTag = "WMAP";
+        private const UInt32 MapVer = 3;
+        private const UInt16 NumGameLayers = 3; // Doesn't match number of layers in editor
+        private const UInt16 ValidationMarker = 0xFFFF;
 
         //@TODO: Rename - "serialization" is now confusing because of XML serialization via the SerializationMgr (Save/LoadGameMap?)
         //@TODO: Move this code out into a WorldMapSerializer class (or a partial class)
         //@TODO: Return success status
         //@TODO: Save to a temp file, then replace target file if successful (to avoid losing old map data if we fail during save)
-        public void Serialize(SerializationType serializationType, string fileName)
+        public void SaveMap(string fileName)
         {
             // Note: When saving, we always save the latest version, but loading must be backwards
             // compatible with any version so that changes can be made to the map format without
@@ -193,185 +209,196 @@ namespace Zelous
             // 0        | initial (no versioning)
             // 1        | versioning (tag+version), character spawners
             // 2        | events
+            // 3        | tile set group index, num screens
 
-            const string MapTag = "WMAP";
-            const UInt32 MapVer = 2;
-            const UInt16 NumGameLayers = 3; // Doesn't match number of layers in editor
-            const UInt16 ValidationMarker = 0xFFFF;
+            FileStream fs = new FileStream(fileName, FileMode.Create);
+            BinaryWriter w = new BinaryWriter(fs);
 
-            //@TODO: Seralize number of screens X/Y (game should support variable sized maps)
+            // Header
+            w.Write((char[])MapTag.ToCharArray());
+            w.Write((UInt32)MapVer);
 
-            if (serializationType == SerializationType.Saving)
+            // Map data
+            w.Write((UInt16)mTileSetGroupIndex);
+            w.Write((UInt16)mNumScreensX);
+            w.Write((UInt16)mNumScreensY);
+            w.Write((UInt16)NumGameLayers);
+
+            // Write out tile layers
+            for (int layerIdx = 0; layerIdx < NumGameLayers; ++layerIdx)
             {
-                FileStream fs = new FileStream(fileName, FileMode.Create);
-                BinaryWriter w = new BinaryWriter(fs);
+                w.Write((UInt16)mNumTilesX);
+                w.Write((UInt16)mNumTilesY);
 
-                // Header
-                w.Write((char[])MapTag.ToCharArray());
-                w.Write((UInt32)MapVer);
-
-                // Map data
-                w.Write((UInt16)NumGameLayers); // Number of tile layers
-
-                // Write out tile layers
-                for (int layerIdx = 0; layerIdx < NumGameLayers; ++layerIdx)
-                {
-                    w.Write((UInt16)mNumTilesX);
-                    w.Write((UInt16)mNumTilesY);
-
-                    for (int y = 0; y < mNumTilesY; ++y)
-                    {
-                        for (int x = 0; x < mNumTilesX; ++x)
-                        {
-                            if (layerIdx < 2)
-                            {
-                                TileLayer tileLayer = TileLayers[layerIdx];
-                                int tileIndex = tileLayer.TileMap[x, y].Index;
-                                w.Write((UInt16)tileIndex);
-                            }
-                            else if (layerIdx == 2)
-                            {
-                                TileLayer collLayer = TileLayers[layerIdx];
-                                TileLayer charLayer = TileLayers[layerIdx + 1];
-
-                                // Write out data layer (collisions + spawners)
-                                UInt16 collValue = (UInt16)collLayer.TileMap[x, y].Index;
-                                UInt16 charValue = (UInt16)charLayer.TileMap[x, y].Index;
-
-                                collValue <<= 0;
-                                charValue <<= 2;
-                                UInt16 dataLayerEntry = (UInt16)(collValue | charValue);
-
-                                w.Write((UInt16)dataLayerEntry);
-                            }
-                            else
-                            {
-                                Debug.Fail("Invalid layer index");
-                            }                            
-                        }
-                    }
-
-                    w.Write((UInt16)ValidationMarker);
-                }
-
-                
-                // Event data
-
-                // Collect all events
-                Dictionary<Point, GameEvent> gameEvents = new Dictionary<Point, GameEvent>();
-
-                TileLayer eventLayer = TileLayers[GameConstants.EventLayerIndex];
                 for (int y = 0; y < mNumTilesY; ++y)
                 {
                     for (int x = 0; x < mNumTilesX; ++x)
                     {
-                        if (eventLayer.TileMap[x, y].Index > 0)
+                        if (layerIdx < 2)
                         {
-                            GameEvent gameEvent = eventLayer.TileMap[x, y].Metadata as GameEvent;
-                            Debug.Assert(gameEvent != null);
-
-                            gameEvents[new Point(x, y)] = gameEvent;
+                            TileLayer tileLayer = TileLayers[layerIdx];
+                            int tileIndex = tileLayer.TileMap[x, y].Index;
+                            w.Write((UInt16)tileIndex);
                         }
+                        else if (layerIdx == 2)
+                        {
+                            TileLayer collLayer = TileLayers[layerIdx];
+                            TileLayer charLayer = TileLayers[layerIdx + 1];
+
+                            // Write out data layer (collisions + spawners)
+                            UInt16 collValue = (UInt16)collLayer.TileMap[x, y].Index;
+                            UInt16 charValue = (UInt16)charLayer.TileMap[x, y].Index;
+
+                            collValue <<= 0;
+                            charValue <<= 2;
+                            UInt16 dataLayerEntry = (UInt16)(collValue | charValue);
+
+                            w.Write((UInt16)dataLayerEntry);
+                        }
+                        else
+                        {
+                            Debug.Fail("Invalid layer index");
+                        }                            
                     }
                 }
 
-                // Write event data
-                w.Write((UInt16)gameEvents.Count);
-                foreach (KeyValuePair<Point, GameEvent> kvp in gameEvents)
-                {
-                    // Format: x(16) y(16) (event data)
-                    w.Write((UInt16)kvp.Key.X);
-                    w.Write((UInt16)kvp.Key.Y);
-                    SaveGameEvent(w, kvp.Value);
-                }
                 w.Write((UInt16)ValidationMarker);
-
-                w.Close();
-                fs.Close();
             }
-            else // Loading
+
+            
+            // Event data
+
+            // Collect all events
+            Dictionary<Point, GameEvent> gameEvents = new Dictionary<Point, GameEvent>();
+
+            TileLayer eventLayer = TileLayers[GameConstants.EventLayerIndex];
+            for (int y = 0; y < mNumTilesY; ++y)
             {
-                FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read);
-                BinaryReader r = new BinaryReader(fs);
-
-                // Header
-                string fileTag = new string(r.ReadChars(4));
-                UInt32 fileVer = r.ReadUInt32();
-
-                if (fileTag != MapTag)
+                for (int x = 0; x < mNumTilesX; ++x)
                 {
-                    fileVer = 0; // First version had no map tag
-                    fs.Position = 0; // Reset stream position
-                }
-
-                // Map data
-                UInt16 numLayers = r.ReadUInt16();
-                Debug.Assert(numLayers == NumGameLayers);
-
-                for (int layerIdx = 0; layerIdx < NumGameLayers; ++layerIdx)
-                {
-                    UInt16 numTilesX = r.ReadUInt16();
-                    UInt16 numTilesY = r.ReadUInt16();
-                    Debug.Assert(numTilesX == mNumTilesX && numTilesY == mNumTilesY);
-
-                    for (int y = 0; y < numTilesY; ++y)
+                    if (eventLayer.TileMap[x, y].Index > 0)
                     {
-                        for (int x = 0; x < numTilesX; ++x)
-                        {
-                            if (layerIdx < 2)
-                            {
-                                UInt16 tileIndex = r.ReadUInt16();
+                        GameEvent gameEvent = eventLayer.TileMap[x, y].Metadata as GameEvent;
+                        Debug.Assert(gameEvent != null);
 
-                                TileLayer tileLayer = TileLayers[layerIdx];
-                                tileLayer.TileMap[x, y].Index = tileIndex;
-                            }
-                            else if (layerIdx == 2)
-                            {
-                                // Parse out collision + spawner value
-                                UInt16 dataLayerEntry = r.ReadUInt16();
-                                int collValue = (dataLayerEntry >> 0) & BitOps.GenNumBits(2);
-                                int charValue = (dataLayerEntry >> 2) & BitOps.GenNumBits(6);
-
-                                TileLayer collLayer = TileLayers[layerIdx];
-                                TileLayer charLayer = TileLayers[layerIdx + 1];
-                                collLayer.TileMap[x, y].Index = collValue;
-                                charLayer.TileMap[x, y].Index = charValue;
-                            }
-                            else
-                            {
-                                Debug.Fail("Invalid layer index");
-                            }                            
-                        }
+                        gameEvents[new Point(x, y)] = gameEvent;
                     }
-
-                    UInt16 marker = r.ReadUInt16();
-                    Debug.Assert(marker == ValidationMarker);
                 }
-
-                // Load events
-                TileLayer eventLayer = TileLayers[GameConstants.EventLayerIndex];
-                if (fileVer >= 2)
-                {
-                    UInt16 numEvents = r.ReadUInt16();
-
-                    for (int i = 0; i < numEvents; ++i)
-                    {
-                        Point tilePos = new Point();
-                        tilePos.X = r.ReadUInt16();
-                        tilePos.Y = r.ReadUInt16();
-                        GameEvent gameEvent = LoadGameEvent(r);
-
-                        eventLayer.TileMap[tilePos.X, tilePos.Y].Index = gameEvent.TypeId;
-                        eventLayer.TileMap[tilePos.X, tilePos.Y].Metadata = gameEvent;
-                    }
-
-                    UInt16 marker = r.ReadUInt16();
-                    Debug.Assert(marker == ValidationMarker);
-                }
-
-                r.Close();
-                fs.Close();
             }
+
+            // Write event data
+            w.Write((UInt16)gameEvents.Count);
+            foreach (KeyValuePair<Point, GameEvent> kvp in gameEvents)
+            {
+                // Format: x(16) y(16) (event data)
+                w.Write((UInt16)kvp.Key.X);
+                w.Write((UInt16)kvp.Key.Y);
+                SaveGameEvent(w, kvp.Value);
+            }
+            w.Write((UInt16)ValidationMarker);
+
+            w.Close();
+            fs.Close();
+        }
+
+        public void LoadMap(string fileName)
+        {
+            FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read);
+            BinaryReader r = new BinaryReader(fs);
+
+            // Header
+            string fileTag = new string(r.ReadChars(4));
+            UInt32 fileVer = r.ReadUInt32();
+
+            if (fileTag != MapTag)
+            {
+                fileVer = 0; // First version had no map tag
+                fs.Position = 0; // Reset stream position
+            }
+
+            // Map data
+            int tileSetGroupIndex = 0;
+            int numScreensX = 20;
+            int numScreensY = 10;
+
+            if (fileVer >= 3)
+            {
+                tileSetGroupIndex = r.ReadUInt16();
+                Debug.Assert(tileSetGroupIndex >= 0); //&& tileSetGroupIndex < NumTileSetGroups);
+
+                numScreensX = r.ReadUInt16();
+                numScreensY = r.ReadUInt16();
+            }
+
+            // Create a new map with current settings, then populate it
+            NewMap(numScreensX, numScreensY, tileSetGroupIndex);
+
+            UInt16 numLayers = r.ReadUInt16();
+            Debug.Assert(numLayers == NumGameLayers);
+
+            for (int layerIdx = 0; layerIdx < NumGameLayers; ++layerIdx)
+            {
+                UInt16 numTilesX = r.ReadUInt16();
+                UInt16 numTilesY = r.ReadUInt16();
+                Debug.Assert(numTilesX == mNumTilesX && numTilesY == mNumTilesY);
+
+                for (int y = 0; y < numTilesY; ++y)
+                {
+                    for (int x = 0; x < numTilesX; ++x)
+                    {
+                        if (layerIdx < 2)
+                        {
+                            UInt16 tileIndex = r.ReadUInt16();
+
+                            TileLayer tileLayer = TileLayers[layerIdx];
+                            tileLayer.TileMap[x, y].Index = tileIndex;
+                        }
+                        else if (layerIdx == 2)
+                        {
+                            // Parse out collision + spawner value
+                            UInt16 dataLayerEntry = r.ReadUInt16();
+                            int collValue = (dataLayerEntry >> 0) & BitOps.GenNumBits(2);
+                            int charValue = (dataLayerEntry >> 2) & BitOps.GenNumBits(6);
+
+                            TileLayer collLayer = TileLayers[layerIdx];
+                            TileLayer charLayer = TileLayers[layerIdx + 1];
+                            collLayer.TileMap[x, y].Index = collValue;
+                            charLayer.TileMap[x, y].Index = charValue;
+                        }
+                        else
+                        {
+                            Debug.Fail("Invalid layer index");
+                        }                            
+                    }
+                }
+
+                UInt16 marker = r.ReadUInt16();
+                Debug.Assert(marker == ValidationMarker);
+            }
+
+            // Load events
+            TileLayer eventLayer = TileLayers[GameConstants.EventLayerIndex];
+            if (fileVer >= 2)
+            {
+                UInt16 numEvents = r.ReadUInt16();
+
+                for (int i = 0; i < numEvents; ++i)
+                {
+                    Point tilePos = new Point();
+                    tilePos.X = r.ReadUInt16();
+                    tilePos.Y = r.ReadUInt16();
+                    GameEvent gameEvent = LoadGameEvent(r);
+
+                    eventLayer.TileMap[tilePos.X, tilePos.Y].Index = gameEvent.TypeId;
+                    eventLayer.TileMap[tilePos.X, tilePos.Y].Metadata = gameEvent;
+                }
+
+                UInt16 marker = r.ReadUInt16();
+                Debug.Assert(marker == ValidationMarker);
+            }
+
+            r.Close();
+            fs.Close();
         }
 
         void SaveGameEvent(BinaryWriter w, GameEvent gameEvent)

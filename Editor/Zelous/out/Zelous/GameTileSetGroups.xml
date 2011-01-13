@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ArrayOfGameTileSetGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+    <GameTileSetGroup>
+        <Name>Overworld</Name>
+        <BackgroundTiles>overworld_bg.bmp</BackgroundTiles>
+        <ForegroundTiles>overworld_fg.bmp</ForegroundTiles>
+    </GameTileSetGroup>
+    
+    <GameTileSetGroup>
+        <Name>Dungeon</Name>
+        <BackgroundTiles>dungeon_bg.bmp</BackgroundTiles>
+        <ForegroundTiles>dungeon_fg.bmp</ForegroundTiles>
+    </GameTileSetGroup>
+
+</ArrayOfGameTileSetGroup>

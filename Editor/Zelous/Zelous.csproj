@@ -64,6 +64,7 @@
     <Compile Include="src\Source\DynamicDialog.cs" />
     <Compile Include="src\Source\EmbeddedResourceMgr.cs" />
     <Compile Include="src\Source\GameEvent.cs" />
+    <Compile Include="src\Source\GameTileSetGroup.cs" />
     <Compile Include="src\Source\SerializationMgr.cs" />
     <Compile Include="src\Source\Command.cs" />
     <Compile Include="src\Source\CommandManager.cs" />
@@ -107,6 +108,12 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <Compile Include="src\UI\NewMapDlg.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="src\UI\NewMapDlg.Designer.cs">
+      <DependentUpon>NewMapDlg.cs</DependentUpon>
+    </Compile>
     <Compile Include="src\UI\TileMapView.BrushManager.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -122,6 +129,10 @@
     <EmbeddedResource Include="cursors\HandOpen.cur" />
     <EmbeddedResource Include="cursors\HandClosed.cur" />
     <EmbeddedResource Include="cursors\CrossHair.cur" />
+    <EmbeddedResource Include="src\UI\NewMapDlg.resx">
+      <DependentUpon>NewMapDlg.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <Content Include="docs\todo.txt" />
   </ItemGroup>
   <ItemGroup>

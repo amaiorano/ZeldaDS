@@ -31,6 +31,7 @@ namespace Zelous
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.mSplitContainer = new System.Windows.Forms.SplitContainer();
+            this.mTabControlImages = new System.Windows.Forms.ImageList(this.components);
             this.mMenuStrip = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -44,9 +45,7 @@ namespace Zelous
             this.redoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutZelousToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.mTabControlImages = new System.Windows.Forms.ImageList(this.components);
             this.mTabControl = new Zelous.IconToggleTabControl();
-            this.mSplitContainer.Panel1.SuspendLayout();
             this.mSplitContainer.Panel2.SuspendLayout();
             this.mSplitContainer.SuspendLayout();
             this.mMenuStrip.SuspendLayout();
@@ -55,19 +54,23 @@ namespace Zelous
             // mSplitContainer
             // 
             this.mSplitContainer.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.mSplitContainer.Location = new System.Drawing.Point(0, 0);
+            this.mSplitContainer.Location = new System.Drawing.Point(0, 24);
             this.mSplitContainer.Name = "mSplitContainer";
             this.mSplitContainer.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            // 
-            // mSplitContainer.Panel1
-            // 
             // 
             // mSplitContainer.Panel2
             // 
             this.mSplitContainer.Panel2.Controls.Add(this.mTabControl);
-            this.mSplitContainer.Size = new System.Drawing.Size(681, 504);
-            this.mSplitContainer.SplitterDistance = 277;
+            this.mSplitContainer.Size = new System.Drawing.Size(681, 480);
+            this.mSplitContainer.SplitterDistance = 263;
             this.mSplitContainer.TabIndex = 1;
+            // 
+            // mTabControlImages
+            // 
+            this.mTabControlImages.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("mTabControlImages.ImageStream")));
+            this.mTabControlImages.TransparentColor = System.Drawing.Color.Transparent;
+            this.mTabControlImages.Images.SetKeyName(0, "NotVisible.bmp");
+            this.mTabControlImages.Images.SetKeyName(1, "Visible.bmp");
             // 
             // mMenuStrip
             // 
@@ -91,14 +94,14 @@ namespace Zelous
             this.buildAndTestMapToolStripMenuItem,
             this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(35, 20);
             this.fileToolStripMenuItem.Text = "&File";
             // 
             // newToolStripMenuItem
             // 
             this.newToolStripMenuItem.Name = "newToolStripMenuItem";
             this.newToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.N)));
-            this.newToolStripMenuItem.Size = new System.Drawing.Size(222, 22);
+            this.newToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
             this.newToolStripMenuItem.Text = "&New Map";
             this.newToolStripMenuItem.Click += new System.EventHandler(this.newToolStripMenuItem_Click);
             // 
@@ -106,7 +109,7 @@ namespace Zelous
             // 
             this.openMapToolStripMenuItem.Name = "openMapToolStripMenuItem";
             this.openMapToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-            this.openMapToolStripMenuItem.Size = new System.Drawing.Size(222, 22);
+            this.openMapToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
             this.openMapToolStripMenuItem.Text = "&Open Map";
             this.openMapToolStripMenuItem.Click += new System.EventHandler(this.openMapToolStripMenuItem_Click);
             // 
@@ -114,7 +117,7 @@ namespace Zelous
             // 
             this.saveMapToolStripMenuItem.Name = "saveMapToolStripMenuItem";
             this.saveMapToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
-            this.saveMapToolStripMenuItem.Size = new System.Drawing.Size(222, 22);
+            this.saveMapToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
             this.saveMapToolStripMenuItem.Text = "&Save Map";
             this.saveMapToolStripMenuItem.Click += new System.EventHandler(this.saveMapToolStripMenuItem_Click);
             // 
@@ -123,7 +126,7 @@ namespace Zelous
             this.saveMapAsToolStripMenuItem.Name = "saveMapAsToolStripMenuItem";
             this.saveMapAsToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift)
                         | System.Windows.Forms.Keys.S)));
-            this.saveMapAsToolStripMenuItem.Size = new System.Drawing.Size(222, 22);
+            this.saveMapAsToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
             this.saveMapAsToolStripMenuItem.Text = "Save Map &As...";
             this.saveMapAsToolStripMenuItem.Click += new System.EventHandler(this.saveMapAsToolStripMenuItem_Click);
             // 
@@ -131,7 +134,7 @@ namespace Zelous
             // 
             this.buildAndTestMapToolStripMenuItem.Name = "buildAndTestMapToolStripMenuItem";
             this.buildAndTestMapToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F5;
-            this.buildAndTestMapToolStripMenuItem.Size = new System.Drawing.Size(222, 22);
+            this.buildAndTestMapToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
             this.buildAndTestMapToolStripMenuItem.Text = "Save, Build && Run Map";
             this.buildAndTestMapToolStripMenuItem.Click += new System.EventHandler(this.buildAndTestMapToolStripMenuItem_Click);
             // 
@@ -139,7 +142,7 @@ namespace Zelous
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
             this.exitToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F4)));
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(222, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
             this.exitToolStripMenuItem.Text = "E&xit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
@@ -149,7 +152,7 @@ namespace Zelous
             this.undoToolStripMenuItem,
             this.redoToolStripMenuItem});
             this.editToolStripMenuItem.Name = "editToolStripMenuItem";
-            this.editToolStripMenuItem.Size = new System.Drawing.Size(39, 20);
+            this.editToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.editToolStripMenuItem.Text = "&Edit";
             // 
             // undoToolStripMenuItem
@@ -157,7 +160,7 @@ namespace Zelous
             this.undoToolStripMenuItem.Enabled = false;
             this.undoToolStripMenuItem.Name = "undoToolStripMenuItem";
             this.undoToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Z)));
-            this.undoToolStripMenuItem.Size = new System.Drawing.Size(144, 22);
+            this.undoToolStripMenuItem.Size = new System.Drawing.Size(137, 22);
             this.undoToolStripMenuItem.Text = "&Undo";
             this.undoToolStripMenuItem.Click += new System.EventHandler(this.undoToolStripMenuItem_Click);
             // 
@@ -166,7 +169,7 @@ namespace Zelous
             this.redoToolStripMenuItem.Enabled = false;
             this.redoToolStripMenuItem.Name = "redoToolStripMenuItem";
             this.redoToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Y)));
-            this.redoToolStripMenuItem.Size = new System.Drawing.Size(144, 22);
+            this.redoToolStripMenuItem.Size = new System.Drawing.Size(137, 22);
             this.redoToolStripMenuItem.Text = "&Redo";
             this.redoToolStripMenuItem.Click += new System.EventHandler(this.redoToolStripMenuItem_Click);
             // 
@@ -175,22 +178,15 @@ namespace Zelous
             this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.aboutZelousToolStripMenuItem});
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
-            this.helpToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
+            this.helpToolStripMenuItem.Size = new System.Drawing.Size(40, 20);
             this.helpToolStripMenuItem.Text = "&Help";
             // 
             // aboutZelousToolStripMenuItem
             // 
             this.aboutZelousToolStripMenuItem.Name = "aboutZelousToolStripMenuItem";
-            this.aboutZelousToolStripMenuItem.Size = new System.Drawing.Size(145, 22);
+            this.aboutZelousToolStripMenuItem.Size = new System.Drawing.Size(137, 22);
             this.aboutZelousToolStripMenuItem.Text = "About Zelous";
             this.aboutZelousToolStripMenuItem.Click += new System.EventHandler(this.aboutZelousToolStripMenuItem_Click);
-            // 
-            // mTabControlImages
-            // 
-            this.mTabControlImages.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("mTabControlImages.ImageStream")));
-            this.mTabControlImages.TransparentColor = System.Drawing.Color.Transparent;
-            this.mTabControlImages.Images.SetKeyName(0, "NotVisible.bmp");
-            this.mTabControlImages.Images.SetKeyName(1, "Visible.bmp");
             // 
             // mTabControl
             // 
@@ -199,7 +195,7 @@ namespace Zelous
             this.mTabControl.Location = new System.Drawing.Point(0, 0);
             this.mTabControl.Name = "mTabControl";
             this.mTabControl.SelectedIndex = 0;
-            this.mTabControl.Size = new System.Drawing.Size(681, 223);
+            this.mTabControl.Size = new System.Drawing.Size(681, 213);
             this.mTabControl.TabIndex = 0;
             // 
             // MainForm
@@ -216,13 +212,12 @@ namespace Zelous
             this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.MainForm_KeyUp);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.MainForm_KeyDown);
-            this.mSplitContainer.Panel1.ResumeLayout(false);
-            this.mSplitContainer.Panel1.PerformLayout();
             this.mSplitContainer.Panel2.ResumeLayout(false);
             this.mSplitContainer.ResumeLayout(false);
             this.mMenuStrip.ResumeLayout(false);
             this.mMenuStrip.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 

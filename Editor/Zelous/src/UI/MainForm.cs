@@ -9,6 +9,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Diagnostics;
 using System.IO;
+using System.Xml;
 using System.Xml.Serialization;
 
 namespace Zelous
@@ -27,6 +28,7 @@ namespace Zelous
 
         private readonly CommandManager mCommandManager = new CommandManager();
         private readonly GameEventFactory mGameEventFactory = new GameEventFactory();
+        private readonly GameTileSetGroupMgr mGameTileSetGroupMgr = new GameTileSetGroupMgr();
 
         public struct ShellCommandArgs
         {
@@ -48,8 +50,9 @@ namespace Zelous
         private SerializationMgr mAppSettingsMgr = new SerializationMgr();
 
         // Properties
-        public GameEventFactory GameEventFactory { get { return mGameEventFactory; } }
         public CommandManager CommandManager { get { return mCommandManager; } }
+        public GameEventFactory GameEventFactory { get { return mGameEventFactory; } }
+        public GameTileSetGroupMgr GameTileSetGroupMgr { get { return mGameTileSetGroupMgr; } }
 
 
         ///////////////////////////////////////////////////////////////////////
@@ -130,8 +133,6 @@ namespace Zelous
 
             AppSettingsMgr.RegisterSerializable(this, typeof(Settings));
 
-            GameEventHelpers.LoadGameEventFactoryFromXml("events.xml", mGameEventFactory);
-
             InitializeComponent(); // Initialize designer-controlled (static) components
             InitializeDynamicComponents(); // Initialize dynamically allocated components
 
@@ -144,8 +145,12 @@ namespace Zelous
             mCommandManager.OnCommand += new CommandManager.CommandEventHandler(OnCommandManagerCommand);
             mTabControl.OnIconToggled += new IconToggleTabControl.IconToggledEventHandler(mTabControl_OnIconToggled);
 
+            // Load game-specific data
+            GameEventHelpers.LoadGameEventFactoryFromXml("GameEvents.xml", mGameEventFactory);
+            mGameTileSetGroupMgr.LoadGameTileSetsFromXml("GameTileSetGroups.xml");
+
             // Always start with a "new map", which initializes all controls
-            NewMap();
+            NewMap(false);
         }
 
         public void InitializeDynamicComponents()
@@ -256,26 +261,14 @@ namespace Zelous
         // Eventually this function will take args telling it what tile sets we need to load (overworld, underworld, etc.)
         private void ResetTileMapViews()
         {
-            Size tileSize = new Size(16, 16);
-            string[] tileSetFiles = new string[] { "overworld_bg.bmp", "overworld_fg.bmp", "collision_tileset.bmp", "editor_characters.bmp", "editor_events.bmp" };
-
-            Debug.Assert(tileSetFiles.Length == mTileSetViews.Length);
-
-            // Create TileSets and reset tile set views with them
-            TileSet[] tileSets = new TileSet[mTileSetViews.Length];
-            for (int i = 0; i < tileSets.Length; ++i)
+            for (int i = 0; i < mTileSetViews.Length; ++i)
+            foreach (TileMapView view in mTileSetViews)
             {
-                tileSets[i] = new TileSet(tileSetFiles[i], tileSize.Width, tileSize.Height);
-                ResetTileSetView(mTileSetViews[i], tileSets[i]);
+                // Bind view to the tileset it represents
+                ResetTileSetView(mTileSetViews[i], mWorldMap.TileLayers[i].TileSet);
             }
 
-            // Reset world map view
-            {
-                mWorldMap = new WorldMap();
-                mWorldMap.Init(20, 10, tileSets);
-
-                mWorldMapView.Reset(mWorldMap.TileLayers); // Bind mWorldMapView to the data (layers) in mWorldMap
-            }
+            mWorldMapView.Reset(mWorldMap.TileLayers); // Bind mWorldMapView to the data (layers) in mWorldMap
         }
 
         private void OnCommandManagerCommand(CommandManager sender, CommandAction action, Command command)
@@ -309,20 +302,13 @@ namespace Zelous
         private void OnModifiedStateChanged(bool isModified)
         {
             UpdateTitle(); // Update title to show asterisk if modified
-
-            // Disable "New Map" menu option if current map is new and not modified
-            bool isNewMap = !isModified && mCurrMapFile.Length == 0;
-            newToolStripMenuItem.Enabled = !isNewMap;
         }
 
         private void UpdateTitle()
         {
             string title = Application.ProductName + " (v" + Application.ProductVersion + ")";
 
-            if (mCurrMapFile.Length > 0)
-            {
-                title += " - " + mCurrMapFile;
-            }
+            title += " - " + (mCurrMapFile.Length > 0? mCurrMapFile : "Untitled");
 
             if (mCommandManager.IsModified())
             {
@@ -356,12 +342,32 @@ namespace Zelous
             return true;
         }
 
-        public void NewMap()
+        public void NewMap(bool interactive)
         {
-            //@TODO: Ask user what type of map (overworld, underworld) to determine what tilesets we need,
-            // how large the map should be (in screens), etc.
+            int numScreensX = 20;
+            int numScreensY = 10;
+            int tileSetGroupIndex = 0;
 
-            ResetTileMapViews();
+            if (interactive)
+            {
+                NewMapDlg newMapDlg = new NewMapDlg();
+                DialogResult result = newMapDlg.ShowDialog(this);
+
+                if (result == DialogResult.Cancel)
+                {
+                    return;
+                }
+
+                numScreensX = newMapDlg.NumScreensX;
+                numScreensY = newMapDlg.NumScreensY;
+                tileSetGroupIndex = newMapDlg.TileSetGroupIndex;
+            }
+
+            mWorldMap = new WorldMap();
+            mWorldMap.NewMap(numScreensX, numScreensY, tileSetGroupIndex);
+            
+            ResetTileMapViews();            
+            mWorldMapView.RedrawTileMap();
             
             SetCurrMap("");
 
@@ -375,9 +381,10 @@ namespace Zelous
         {
             //@TODO: Check if file exists, if it doesn't we should return false. Calling code should handle this.
 
-            ResetTileMapViews();
+            mWorldMap = new WorldMap();
+            mWorldMap.LoadMap(fileName);
 
-            mWorldMap.Serialize(SerializationType.Loading, fileName);
+            ResetTileMapViews();
             mWorldMapView.RedrawTileMap();
 
             SetCurrMap(fileName);
@@ -388,14 +395,14 @@ namespace Zelous
             GC.Collect(); // Good time to clean up any references left behind
         }
 
-        private void SaveCurrMap()
+        private void SaveCurrMap(bool forceSave)
         {
             Debug.Assert(mCurrMapFile.Length > 0);
 
             // No need to save unless we're modified
-            if (mCommandManager.IsModified())
+            if (forceSave || mCommandManager.IsModified())
             {
-                mWorldMap.Serialize(SerializationType.Saving, mCurrMapFile);
+                mWorldMap.SaveMap(mCurrMapFile);
                 mCommandManager.OnSaveMap();
             }
             else
@@ -410,7 +417,7 @@ namespace Zelous
         {
             if (!forceSaveAs && mCurrMapFile.Length > 0)
             {
-                SaveCurrMap();
+                SaveCurrMap(false);
                 return true;
             }
             else
@@ -418,13 +425,14 @@ namespace Zelous
                 using (SaveFileDialog fileDlg = new SaveFileDialog())
                 {
                     fileDlg.Filter = "map files (*.map)|*.map";
+                    fileDlg.FileName = mCurrMapFile;
                     //fileDlg.InitialDirectory = Environment.CurrentDirectory;
                     DialogResult dlgRes = fileDlg.ShowDialog(this);
 
                     if (dlgRes == DialogResult.OK)
                     {
                         SetCurrMap(fileDlg.FileName);
-                        SaveCurrMap();
+                        SaveCurrMap(true); // Force save, even if file is not modified
                         return true;
                     }
                 }
@@ -543,7 +551,7 @@ namespace Zelous
                 return;
             }
 
-            NewMap();
+            NewMap(true);
         }
 
         // Save
@@ -583,7 +591,10 @@ namespace Zelous
         private void buildAndTestMapToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (!AttemptSaveCurrMap(false))
+            {
                 return;
+            }
+
             ProcessHelpers.RunCommand(mBuildGameShellCommandArgs.mCmd, mBuildGameShellCommandArgs.mArgs);
             ProcessHelpers.RunCommand(mRunGameShellCommandArgs.mCmd, mRunGameShellCommandArgs.mArgs);
         }
