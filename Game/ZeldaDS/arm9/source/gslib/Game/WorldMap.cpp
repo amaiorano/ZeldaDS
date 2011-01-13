@@ -51,44 +51,15 @@ WorldMap::WorldMap()
 	, mNumScreensY(0)
 	, mNumTilesX(0)
 	, mNumTilesY(0)
+	, mTileSetGroupIndex(0)
 {
 	// Would have preferred a compile-time assert, but max() is a function
 	ASSERT_MSG(TileSet::MaxNumTiles < std::numeric_limits<TileIndexType>::max(), "TileIndexType not large enough to index tiles in TileSet");
 }
 
-void WorldMap::Init(uint16 numScreensX, uint16 numScreensY)
+WorldMap::~WorldMap()
 {
-	mNumScreensX = numScreensX;
-	mNumScreensY = numScreensY;
-	mNumTilesX = mNumScreensX * GameNumScreenMetaTilesX;
-	mNumTilesY = mNumScreensY * GameNumScreenMetaTilesY;
-
-	for (uint16 layer=0; layer < NumLayers; ++layer)
-	{
-		mTileLayers[layer].Init(mNumTilesX, mNumTilesY);
-	}
-
-	mDataLayer.Reset(mNumTilesX, mNumTilesY);
-}
-
-void WorldMap::Shutdown()
-{
-	ASSERT(mAnimAssets.size() == mAnimControls.size());
-	for (std::size_t i = 0; i < mAnimAssets.size(); ++i)
-	{
-		delete mAnimAssets[i];
-		delete mAnimControls[i];
-	}
-	mAnimAssets.clear();
-	mAnimControls.clear();
-
-	mColorRotElems.clear();
-
-	for (GameEventList::iterator iter = mGameEvents.begin(); iter != mGameEvents.end(); ++iter)
-	{
-		delete (*iter);
-	}
-	mGameEvents.clear();
+	UnloadMap();
 }
 
 void WorldMap::LoadMap(const char* mapFile)
@@ -103,7 +74,7 @@ void WorldMap::LoadMap(const char* mapFile)
 	// Header
 	{
 		const char* FILE_TAG = "WMAP";
-		const uint32 FILE_VER = 2;
+		const uint32 FILE_VER = 3;
 
 		char fileTag[5] = {0};
 		bfs.ReadElems(fileTag, 4);
@@ -120,6 +91,25 @@ void WorldMap::LoadMap(const char* mapFile)
 	}
 
 	// Map data
+	mTileSetGroupIndex = bfs.ReadInt<uint16>();
+	ASSERT(mTileSetGroupIndex >= 0 /*&& mTileSetGroupIndex < NumTileSetGroups*/);
+
+	mNumScreensX = bfs.ReadInt<uint16>();
+	mNumScreensY = bfs.ReadInt<uint16>();
+
+	// Init layer data to populate
+	{
+		mNumTilesX = mNumScreensX * GameNumScreenMetaTilesX;
+		mNumTilesY = mNumScreensY * GameNumScreenMetaTilesY;
+
+		for (uint16 layer=0; layer < NumLayers; ++layer)
+		{
+			mTileLayers[layer].Init(mNumTilesX, mNumTilesY);
+		}
+
+		mDataLayer.Reset(mNumTilesX, mNumTilesY);
+	}
+
 	const uint16 numLayers = bfs.ReadInt<uint16>();	
 	ASSERT(numLayers == NumLayers + 1); // Tile layers + data layer
 	
@@ -207,8 +197,9 @@ void WorldMap::LoadMap(const char* mapFile)
 
 	FindPlayerSpawnData();
 
-	//@TODO: Read anim tile info from file
+	if ( mTileSetGroupIndex == 0 ) // TEMP HACK!
 	{
+		//@TODO: Read anim tile info from file
 		const int TilesPerRow = 16;
 
 		// Ocean shore tiles
@@ -221,13 +212,33 @@ void WorldMap::LoadMap(const char* mapFile)
 		// Waterfall
 		sharedClockIndex = AddAnimTileSharedClock(4, 10, AnimCycle::Loop);
 		EnableAnimTile(0, 2 * TilesPerRow + 9, sharedClockIndex);
-	}
 
-	//@TODO: Read color rotation info from file
-	{
-		uint16 paletteIndices[] = {10, 11, 13, 14};
-		EnableColorRotation(paletteIndices, NUM_ARRAY_ELEMS(paletteIndices), SEC_TO_FRAMES(0.2f));
+		//@TODO: Read color rotation info from file
+		{
+			uint16 paletteIndices[] = {10, 11, 13, 14};
+			EnableColorRotation(paletteIndices, NUM_ARRAY_ELEMS(paletteIndices), SEC_TO_FRAMES(0.2f));
+		}
 	}
+}
+
+void WorldMap::UnloadMap()
+{
+	ASSERT(mAnimAssets.size() == mAnimControls.size());
+	for (std::size_t i = 0; i < mAnimAssets.size(); ++i)
+	{
+		delete mAnimAssets[i];
+		delete mAnimControls[i];
+	}
+	mAnimAssets.clear();
+	mAnimControls.clear();
+
+	mColorRotElems.clear();
+
+	for (GameEventList::iterator iter = mGameEvents.begin(); iter != mGameEvents.end(); ++iter)
+	{
+		delete (*iter);
+	}
+	mGameEvents.clear();
 }
 
 uint16 WorldMap::AddAnimTileSharedClock(int numFrames, AnimTimeType unitsPerFrame, AnimCycle::Type animCycle)

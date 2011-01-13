@@ -35,6 +35,7 @@ public:
 	~ResourceMgr();
 
 	void AllocateResourceBuffer(ResourceId resourceId, uint32 sizeBytes);
+	void FreeAllResourceBuffers();
 
 	const ResourceData& LoadResource(ResourceId resourceId, const char* filename);
 	//void UnloadResource(ResourceId resourceId);

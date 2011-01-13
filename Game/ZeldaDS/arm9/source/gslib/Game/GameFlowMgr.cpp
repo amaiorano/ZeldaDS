@@ -60,9 +60,16 @@ struct GameFlowStates
 			}
 
 			// Load resources - not sure if some of these would change based on current map (characters?)
-			ResourceMgr::Instance().LoadResource(GameResource::Gfx_Items, "Graphics/items.img.bin");
-			ResourceMgr::Instance().LoadResource(GameResource::Gfx_Characters16x16, "Graphics/characters.img.bin");
-			ResourceMgr::Instance().LoadResource(GameResource::Gfx_Characters32x32, "Graphics/characters_32x32.img.bin");
+			ResourceMgr::Instance().LoadResource(GameResource::Gfx_Items, "Graphics/items.img");
+			ResourceMgr::Instance().LoadResource(GameResource::Gfx_Characters16x16, "Graphics/characters.img");
+			ResourceMgr::Instance().LoadResource(GameResource::Gfx_Characters32x32, "Graphics/characters_32x32.img");
+
+			// Load sprite palette
+			ResourceData data = ResourceMgr::Instance().LoadResource(GameResource::Temporary, "Graphics/sprite_palette.pal");
+			GraphicsEngine::LoadSpritePalette(data.DataAs<const uint16*>(), data.SizeBytes());
+
+			GraphicsEngine::SetBgFontColor( RGB8(255, 255, 255) );
+			GraphicsEngine::SetSubBgFontColor( RGB8(255, 255, 255) );
 
 			static SpriteRenderGroup groups[] =
 			{
@@ -77,13 +84,7 @@ struct GameFlowStates
 
 			LoadAllGameAnimAssets();
 
-			// Load sprite palette
-			const ResourceData& data = ResourceMgr::Instance().LoadResource(GameResource::Temporary, "Graphics/characters.pal.bin");
-			GraphicsEngine::LoadSpritePalette(data.DataAs<const uint16*>(), data.SizeBytes());
-
-			GraphicsEngine::SetBgFontColor( RGB8(255, 255, 255) );
-			GraphicsEngine::SetSubBgFontColor( RGB8(255, 255, 255) );
-			
+	
 			//GraphicsEngine::GetBgLayer(0).ActivateTextLayer();
 			//printf("Testing text on bg layer 0!\n");
 
@@ -103,6 +104,10 @@ struct GameFlowStates
 		uint16 mNumElapsedFrames;
 
 		EnableRendering() : mNumElapsedFrames(0)
+		{
+		}
+
+		virtual void OnEnter()
 		{
 			// Before enabling backgrounds, start faded out
 			GraphicsEngine::FadeScreen(FadeScreenDir::Out, 0);
@@ -129,24 +134,38 @@ struct GameFlowStates
 		{
 			WorldMap& worldMap = WorldMap::Instance();
 			ASSERT(!Data().mTargetWorldMap.empty());
-			worldMap.Init(20, 10); //@TODO: LoadMap() should read dimensions, so remove this eventually
 			worldMap.LoadMap(Data().mTargetWorldMap.c_str());
 			Data().mCurrWorldMap = Data().mTargetWorldMap;
 			Data().mTargetWorldMap.clear();
 
 			SceneGraph::Instance().SetWorldMap(worldMap);
 
-			// Palettes for both bg2 and bg3 should be the same...
-			ResourceData data = ResourceMgr::Instance().LoadResource(GameResource::Temporary, "Graphics/overworld_bg.pal.bin");
+			ResourceData data;
+
+			data = ResourceMgr::Instance().LoadResource(GameResource::Temporary, "Graphics/tile_palette.pal");
 			GraphicsEngine::LoadBgPalette(data.DataAs<const uint16*>(), data.SizeBytes());
 
-			data = ResourceMgr::Instance().LoadResource(GameResource::Temporary, "Graphics/overworld_fg.img.bin");
-			//data = ResourceMgr::Instance().LoadResource(GameResource::Temporary, "Graphics/dungeon_fg.img.bin");
-			GraphicsEngine::GetBgLayer(2).LoadTilesImage(data.DataAs<const uint16*>(), data.SizeBytes());
+			// Mapping corresponds to GameTileSetGroups.xml (Zelous)
+			switch (worldMap.GetTileSetGroupIndex())
+			{
+			case 0: // Overworld
+				data = ResourceMgr::Instance().LoadResource(GameResource::Temporary, "Graphics/overworld_fg.img");
+				GraphicsEngine::GetBgLayer(2).LoadTilesImage(data.DataAs<const uint16*>(), data.SizeBytes());
 
-			data = ResourceMgr::Instance().LoadResource(GameResource::Temporary, "Graphics/overworld_bg.img.bin");
-			//data = ResourceMgr::Instance().LoadResource(GameResource::Temporary, "Graphics/dungeon_bg.img.bin");
-			GraphicsEngine::GetBgLayer(3).LoadTilesImage(data.DataAs<const uint16*>(), data.SizeBytes());
+				data = ResourceMgr::Instance().LoadResource(GameResource::Temporary, "Graphics/overworld_bg.img");
+				GraphicsEngine::GetBgLayer(3).LoadTilesImage(data.DataAs<const uint16*>(), data.SizeBytes());
+
+				break;
+
+			case 1: // Dungeon
+				data = ResourceMgr::Instance().LoadResource(GameResource::Temporary, "Graphics/dungeon_fg.img");
+				GraphicsEngine::GetBgLayer(2).LoadTilesImage(data.DataAs<const uint16*>(), data.SizeBytes());
+
+				data = ResourceMgr::Instance().LoadResource(GameResource::Temporary, "Graphics/dungeon_bg.img");
+				GraphicsEngine::GetBgLayer(3).LoadTilesImage(data.DataAs<const uint16*>(), data.SizeBytes());
+
+				break;
+			}
 
 			AudioEngine::SetMusicVolume(1.0f);
 			AudioEngine::PlayMusic(MOD_OVERWORLD3);
@@ -360,7 +379,7 @@ struct GameFlowStates
 		virtual void OnEnter()
 		{
 			AudioEngine::StopMusic();
-			WorldMap::Instance().Shutdown();
+			WorldMap::Instance().UnloadMap();
 		}
 
 		virtual Transition EvaluateTransitions()

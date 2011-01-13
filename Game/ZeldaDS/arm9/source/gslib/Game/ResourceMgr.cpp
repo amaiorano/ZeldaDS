@@ -7,6 +7,7 @@ ResourceMgr::ResourceMgr()
 
 ResourceMgr::~ResourceMgr()
 {
+	FreeAllResourceBuffers();
 }
 
 void ResourceMgr::AllocateResourceBuffer(ResourceId resourceId, uint32 sizeBytes)
@@ -19,6 +20,18 @@ void ResourceMgr::AllocateResourceBuffer(ResourceId resourceId, uint32 sizeBytes
 	resourceBuffer.mDataSizeBytes = 0;
 	
 	ASSERT(resourceBuffer.IsAllocated());
+}
+
+void ResourceMgr::FreeAllResourceBuffers()
+{
+	for (uint16 i = 0; i < NUM_ARRAY_ELEMS(mResourceMap); ++i)
+	{
+		ResourceBuffer& resourceBuffer = mResourceMap[i];
+
+		delete [] resourceBuffer.mpData;
+		resourceBuffer.mBufferSizeBytes = 0;
+		resourceBuffer.mDataSizeBytes = 0;
+	}
 }
 
 const ResourceData& ResourceMgr::LoadResource(ResourceId resourceId, const char* filename)

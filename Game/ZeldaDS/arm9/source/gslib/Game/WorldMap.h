@@ -96,10 +96,10 @@ namespace DrawScreenTilesMode
 class WorldMap : public Singleton<WorldMap>
 {
 public:
-	void Init(uint16 numScreensX, uint16 numScreensY);
-	void Shutdown();
+	~WorldMap();
 
 	void LoadMap(const char* mapFile);
+	void UnloadMap();
 
 	// Useful helper to convert a tile position to a world position, and vice versa
 	//@TODO: Remove 'Pos' from names
@@ -125,6 +125,7 @@ public:
 	uint16 GetNumScreensY() const	{ return mNumScreensY; }
 	uint16 GetNumTilesX() const		{ return mNumTilesX; }
 	uint16 GetNumTilesY() const		{ return mNumTilesY; }
+	uint16 GetTileSetGroupIndex() const { return mTileSetGroupIndex; }
 
 	// Copy a screen's tiles from the map to a screen quadrant on the target bg layers
 	void DrawScreenTiles(const Vector2I& srcScreen, const Vector2I& tgtScreen, DrawScreenTilesMode::Type mode = DrawScreenTilesMode::All);
@@ -166,6 +167,8 @@ private:
 	uint16 mNumTilesX, mNumTilesY;
 
 	static const int NumLayers = GameTileLayer::NumTypes;
+
+	uint16 mTileSetGroupIndex;
 
 	// Shared anim controls for animated tiles
 	std::vector<class AnimAsset*> mAnimAssets;
