@@ -34,7 +34,7 @@ public:
 	void AddEventListener(IScrollingEventListener* pListener);
 	void RemoveEventListener(IScrollingEventListener* pListener);
 
-	const Vector2I& GetCurrScreen() { return mCurrScreen; }
+	const Vector2I& GetCurrScreen() const { return mCurrScreen; }
 	//@NOTE: Not exposing SetCurrScreen() as it should be set via Init() to ensure state consistency
 	//void SetCurrScreen(const Vector2I& newScreen) { mCurrScreen = newScreen; }
 

@@ -499,7 +499,8 @@ struct PlayerStates
 // Player class implementation
 
 Player::Player()
-	: mLastDamagePushVector(InitZero)
+	: mpSharedStateData(0)
+	, mLastDamagePushVector(InitZero)
 {
 }
 

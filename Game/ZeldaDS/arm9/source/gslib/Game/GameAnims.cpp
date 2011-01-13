@@ -11,6 +11,8 @@ namespace
 	public:
 		typedef AnimAssetBuilder ThisType;
 
+		AnimAssetBuilder() : mpAnimAsset(0) { }
+
 		ThisType& CreateAndAdd(AnimAssetKey key)
 		{
 			//@TODO: This allocation is never deleted! We're ok for now since we only

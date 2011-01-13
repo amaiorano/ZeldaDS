@@ -8,6 +8,5 @@ AnimPoseType GetGameItemPose(GameItem::Type gameItem, SpriteDir::Type dir)
 
 	const uint16 tileIndex = (int)gameItem + (int)dir;
 	const uint16 frameSize = 16*16;
-	AnimPoseType pose = { (uint8*)pItemTiles + (frameSize * tileIndex), frameSize };
-	return pose;
+	return AnimPoseType((uint8*)pItemTiles + (frameSize * tileIndex), frameSize);
 }

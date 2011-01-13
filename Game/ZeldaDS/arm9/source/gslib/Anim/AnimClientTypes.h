@@ -12,6 +12,11 @@ typedef uint32 AnimAssetKey;
 
 struct AnimPoseType
 {
+	AnimPoseType(const uint8* pFrameGfx = 0, uint16 frameSize = 0)
+		: pFrameGfx(pFrameGfx), frameSize(frameSize)
+	{		
+	}
+
 	const uint8* pFrameGfx;
 	uint16 frameSize;
 };
@@ -20,6 +25,8 @@ struct AnimPoseType
 class AnimPoses // Required class
 {
 public:
+	AnimPoses() : mpFrameGfx(0) { }
+
 	void Init(const uint8* pFrameGfx, uint16 frameSize)
 	{
 		mpFrameGfx = pFrameGfx;

@@ -173,11 +173,11 @@ namespace AudioEngine
 		mmSetModuleVolume(volume);
 	}
 
-	void PlaySound(SoundId SoundId)
+	void PlaySound(SoundId soundId)
 	{
-		LazyLoadSound(SoundId);
-		SoundData& data = gSoundDataList[SoundId];
-		data.ResetParams(SoundId); // Reset to default values
+		LazyLoadSound(soundId);
+		SoundData& data = gSoundDataList[soundId];
+		data.ResetParams(soundId); // Reset to default values
 		data.mParams.handle = mmEffectEx(&data.mParams); // Strangely, mmSoundEx doesn't store handle into input
 	}
 
