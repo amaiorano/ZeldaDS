@@ -185,7 +185,7 @@ namespace GraphicsEngine
 			//printf("tileMapBytes : %d\n", tileMapBytes);
 			//printf("numTileMap2kBlocks : %d\n", numTileMap2kBlocks);
 
-			// We running in mode 5 with 512x512 backgrounds with 2 byte tile indices
+			// We run in mode 5 with 512x512 backgrounds with 2 byte tile indices
 			// That means the tile maps are (512x512)/(8x8)*2 = 8k per background (4 tile map slots each)
 			//ASSERT(numTileMap2kBlocks == 4);
 		}

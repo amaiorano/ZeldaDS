@@ -1,3 +1,223 @@
+0.9.9 -> 0.9.10 (r4623-r4908)
+
+In this version, we have focused on trying to clean up some complexities in the user experience and emulator internals. Pretty unglamorous stuff, but some games are newly compatible.
+
+General/Core:
+ enh: break savestate back-compatibility
+ bug: improve save size autodetection for some games
+ bug: cpu: fix many basic jit cpu bugs
+ bug: 3d: tweak softrasterizer edge marking
+ bug: 3d: fix stale 4x4 texture palettes
+ bug: fix some GPU sprite blending scenarios
+ bug: fix bios HLE BitUnPack, UnCompHuffman
+ enh: modular slot-1 device system, emulate GC bus more faithfully
+ enh: support NAND slot-1 device
+ enh: auto-detect appropriate slot-1 and slot-2 device
+ enh: many revisions to firmware boot process for more authenticity. iQue and FlashME versions function, .dfc rewritten.
+ enh: support streaming NDS file from disk (like an ISO, to avoid long initial load time)
+ enh: run .dsv directly on disk, to save long flushing times. should speed backup operations.
+ enh: spu synch mode and method on commandline
+ 
+Windows:
+ bug: fixes to advanscene DB import
+ bug: save opengl display method filter option
+ bug: general bugfixes to various screen layout modes
+ enh: add option to stop non-integer scaling during fullscreen or maximize
+ enh: improvements to save import dialog
+ enh: improved memory viewer tool
+ enh: operate better when run, against our advice, from a zipfile
+ enh: add slot-1 Nitro Filesystem viewer tool
+
+Cocoa:
+ bug: fix slot1-R4 path saving
+ bug: fix bug with mic samples < 16khz
+ bug: fix bugs and enhancements in multi display windows
+ bug: fix handling of some joystick analog inputs
+ enh: save display windows configuration and emulation speed on app exit
+
+0.9.8 -> 0.9.9 (r4228-r4623)
+
+Yes, it's been a while since the last release, but we haven't been completely idle. There's a brand new jit cpu core which yields some impressive speedups! 
+
+General/Core:
+ !!!: add optional arm cpu jit (functioning on x86 and x64 hosts only)
+ bug: we're not going to list 70% of the emulation fixes, as is traditional.
+ bug: savestate reliability fixes related to halt states, gxstat, firmware
+ bug: lua: fix readbyterange, gdscreenshot functions
+ bug: commandline slot-1 handling straightened out
+ enh: fixes and additions to resize filter options
+
+Graphics:
+ enh: opengl 3d driver compatibility improvements
+ bug: fix giant regression from 0.9.7 that left garbage from previous frames on the screen in some games
+ bug: 3d: fix some single poly pixels
+ bug: 3d: fix some polygon and texture coloring bugs on big-endian systems
+
+Windows:
+ bug: fix some full screen stretching bugs
+ enh: add xaudio2 output driver
+ enh: add opengl display method (as opposed to directdraw), with controllable bilinear filter
+ enh: upgrade archive handling system, lzma2 supported
+ enh: reorganize main menu quite a bit
+ enh: add rotation hotkeys, and hotkey to control mouse cursor visibility
+ enh: memory viewer improvements and fixes
+ enh: improve interface for rom eject to prevent accidents and improve usefulness (hide in slot-1 config screen)
+ 
+Cocoa:
+ bug: fix missing display when running on OS X v10.8 Mountain Lion
+ bug: fix possible sound crash when using Dual SPU Synch/Asynch
+ bug: fix File menu items being disabled after the file migration sheet is used
+ bug: fix window resizing issues
+ bug: fix text rendering in About box
+ enh: show the icon and name of the loaded ROM
+ enh: add Support Request and Bug Report forms to the Help menu
+ enh: add more detailed info to the About box
+ enh: add OpenGL as a 3D rendering option
+ enh: add support for MSAA when using OpenGL as the 3D rendering engine
+ enh: add V-Sync option
+ enh: add Display Orientation, Display Order, and Display Separation options for Combo Display mode
+ enh: add HQ4xS filter
+ enh: completely revamp the user interface for Input Preferences
+ enh: many emulator commands may now be mapped
+ enh: add ability to map an input to user-defined touch screen coordinates
+ enh: add support for saving and applying input profiles
+ enh: add support for using an audio file for the microphone input
+ enh: add sine wave tone generator for microphone input
+ enh: add support for multiple display windows (File > New Display Window)
+ enh: add support for SLOT-1 devices (Emulation > Show SLOT-1 Manager)
+ enh: overall performance and stability improvements
+ enh: miscellaneous user interface improvements
+
+0.9.7 -> 0.9.8 (r3812-r4228)
+
+Yes, it's been a while since the last release, but we haven't been completely idle. There's a brand new top shelf Cocoa frontend to make life far more pleasant for OSX users, and a host of compatibility fixes.
+
+General/Core:
+ bug: fix more IPC FIFO errors
+ bug: import more save files correctly
+ bug: don't autopatch already-patched roms
+ bug: fix bugs in piano and guitar grip
+ bug: fix ARM7's VRAMSTAT register
+ bug: fix memory leaks on compact flash emulation
+ bug: fix reading of rom from low header area
+ bug: spu: fix some poppy interpolation audio quality issues
+ bug: improve timing of dma operations by running through normal mem cycle accounting; fixes an annoying number of games and graphical glitches
+ bug: fix opcode MRC and fake bios CRC16
+ enh: jitter some related register and irq events to simulate pipeline effects and stimulate some race conditions to other outcomes
+ enh: fake (deterministic) some tiny jitter from human's hand holding stylus; some games were accidentally depending on this
+ enh: support nocash-style prints from arm
+ enh: add lua apis for accessing vram
+ enh: platforms other than windows receive threading optimizations
+ enh: provide diagnostics when system powers off (useful for homebrewers returning from main())
+ enh: clarify handling of different console types within the family (ds,dslite,debug)
+ enh: vfat support for slot-1 devices
+ enh: emulate temperature register
+ enh: add paddle emulation
+
+Graphics:
+ bug: fix occasional crash from uninitialized blending table
+ bug: fix some 2d alpha blending cases resulting in white screens
+ bug: fix VRAM_I B_OBJ mirroring and fix sprites rendering across the end of vram
+ bug: fix rotoscaled sprites wrapping around screen
+ bug: dont fix rotscaled bitmap sprites with alpha==0
+ bug: opengl: fix degradation of toon rendering during loadstate
+ bug: opengl: alpha blending fixes
+ bug: many refinements to opengl renderer
+ bug: opengl: support rear-plane/ClearImage emulation (fixes many graphics)
+ bug: rasterizer: fix some rare alpha blending cases
+ bug: fix bug in environment mapping introduced after 0.9.6
+ bug: fix totally glitched out 3d graphics with several improvements involving matrix stack
+ bug: fix memory overflows in epx filter
+ bug: prevent backdrop from blending with ???
+ enh: opengl: better depth buffering emulation
+ enh: better support for line segment "polys" by detection and special rendering logic
+ enh: opengl: support quad primitives directly
+ enh: add hq4x filter
+ 
+Windows:
+ bug: fix a long-standing loadstate crash
+ bug: fix lag frame accounting
+ bug: fix glitches in cheat entry menu
+ bug: stop compact flash emulation from accidentally scanning c:\ sometimes
+ enh: add support for game database for improved save type detection
+ enh: hotkey for limit framerate toggle
+ enh: remove stop and reset toolbar buttons which were accidentally getting used
+ enh: additional complexification to desmume's behaviour run from a console prompt. whether it's better is uncertain.
+ enh: add support for cheats databases
+ enh: improvements to ram search tool
+ enh: preliminary support for varying stylus pressure
+ enh: add [Display] Show Console=1 to ini file
+ enh: more graceful cheat parsing and add some hotkeys
+ enh: add 5x window size
+ enh: add big endian and 20.12 toggle to memview and ramwatch
+ enh: improve FPS throttle feedback and granularity
+ enh: add lua menu API
+ enh: hud font switching
+ enh: add optional file association for .nds to path config dialog
+
+Cocoa:
+ enh: Big update to cocoa frontend. Pretty much entirely new. (rogerman)
+
+Linux:
+ bug: gtk: glitches in rom and recent rom loading
+ bug: glade: normalize savestate slot to hotkey mapping
+ enh: support soundtouch for use by metaspu
+ enh: gtk: add SPU mode selection (Tobias Jakobi)
+ enh: cli: better fps limiting (Thomas Jones)
+ 
+Wx: 
+  bug: some small fixes here and there (Jan Bücken)
+  enh: lot of code cleanup (Jan Bücken) 
+
+0.9.6 -> 0.9.7 (r3493-r3812)
+
+General/Core:
+ bug: fix a ton of old, broken cpu opcodes and CP15 logic
+ bug: return Z1 and Z2 from TSC (fixes some touch logic)
+ bug: gba slot save type detection improved
+ bug: handle unusual rom headers more correctly
+ bug: dont confuse motion pack commands with save memory commands
+ bug: make cheat system a little less flaky and add AR 1.54 support
+ bug: fix nondeterministic backup memory behaviour while rerecording
+ bug: correct emulation of register accesses of wrong size and during powerdown
+ bug: rewrite --cflash-path emulation
+ bug: rewrite IPC/GX FIFO, IRQ flag generation, and wait-for-IRQ logics
+ bug: rewrite RTC calendar handling; now supports years > 2038
+ enh: auto-DLDI patching for homebrew
+ enh: --gbaslot-rom=self mounts self.nds in slot2
+ enh: more realistic exception handling
+ enh: piano controller emulation
+ enh: modular slot-1 system for exact emulation of homebrew cards
+ 
+Graphics:
+ bug: edge marking colors were wrong
+ bug: handle some "invalid" vram configurations correctly
+ bug: convert half of geometry engine to fixed point
+ bug: fix sprite blend+fadein/fadeout
+ bug: improve rasterizer shadows
+ bug: fix main memory display DMA
+ bug: fix some raster fx timing bugs
+ enh: add a hack for improving some non-stencil shadows
+ 
+Windows:
+ bug: misc fixes and improvements to gpu viewer tools
+ bug: sub screen layer display toggling fixed
+ bug: fixes and improvements to ram watch, ram search, cheats list
+ bug: fix start-paused commandline
+ bug: fix memory leaks when sound disabled
+ bug: improve load average calculators and add arm7 load average
+ enh: background input support
+ enh: add vsync option
+ enh: support more knobs on joysticks
+ enh: import cheats from R4 database
+ enh: add xinput rumble for 360 pads
+
+Linux/OSX:
+ bug: crash less in recent roms list
+ enh: Add horizontal screen layout and swap screen ability to gtk frontend (noodlebox)
+ enh: Big improvement to joystick support, support complex configurations and multiple devices (noodlebox)
+ 
+
 0.9.5 -> 0.9.6 (r3075-r3493)
 
 Users of gtk, cli and gtk-glade frontends please note that now we

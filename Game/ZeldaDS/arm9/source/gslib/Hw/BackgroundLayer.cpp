@@ -5,23 +5,6 @@
 #include <nds/arm9/console.h>
 #include <string.h>
 
-// Represent a 16bit tile map entry (for text and extended rotation backgrounds)
-typedef union __TileMapEntry16 // We use a C-style declaration so we can make this type volatile
-{
-	struct
-	{
-		uint16 metaTileIndex : 10;
-		uint16 hFlip : 1;
-		uint16 vFlip : 1;
-		uint16 palette : 4;
-
-	} __attribute__ ((packed));
-
-	uint16 value;
-} volatile TileMapEntry16;
-
-//CASSERT(sizeof(TileMapEntry16)==sizeof(uint16));
-
 namespace
 {
 	PrintConsole* gpCurrConsole = 0;
@@ -71,23 +54,23 @@ void BackgroundLayer::LoadTilesImage(const uint16* pImage, uint16 sizeBytes)
 	memcpy(bgGetGfxPtr(mBgId), pImage, sizeBytes); //@TODO: use dmaCopy?
 }
 
-static void DrawHwTile(TileMapEntry16* pTileMap, uint16 hwTileMapX, uint16 hwTileMapY, uint16 hwTileIndex)
+static void DrawHwTile(volatile TileMapEntry16* pTileMap, uint16 hwTileMapX, uint16 hwTileMapY, uint16 hwTileIndex)
 {
-	pTileMap[hwTileMapY * HwBgNumTilesX + hwTileMapX].metaTileIndex = hwTileIndex;
+	pTileMap[hwTileMapY * HwBgNumTilesX + hwTileMapX].index = hwTileIndex;
 }
 
-static void DrawHwTileTextBg(TileMapEntry16* pTileMap, uint16 hwTileMapX, uint16 hwTileMapY, uint16 hwTileIndex)
+static void DrawHwTileTextBg(volatile TileMapEntry16* pTileMap, uint16 hwTileMapX, uint16 hwTileMapY, uint16 hwTileIndex)
 {
 	const uint16 quadrant = (hwTileMapY / HwTextBgQuadrantNumTilesY) * HwTextBgNumQuadrantsX + (hwTileMapX / HwTextBgQuadrantNumTilesX);
 	const uint16 offset = quadrant * (HwTextBgQuadrantNumTilesX * HwTextBgQuadrantNumTilesY);
 
-	pTileMap[hwTileMapY * HwTextBgQuadrantNumTilesX + hwTileMapX + offset].metaTileIndex = hwTileIndex;
+	pTileMap[hwTileMapY * HwTextBgQuadrantNumTilesX + hwTileMapX + offset].index = hwTileIndex;
 }
 
 // All coordinates are in meta-tile space
 void BackgroundLayer::DrawTile(uint16 metaTileIndex, uint16 metaTileMapX, uint16 metaTileMapY)
 {
-	TileMapEntry16* pTileMap = reinterpret_cast<TileMapEntry16*>(mpTileMap); //@TODO: Support 2 types of indices?
+	volatile TileMapEntry16* pTileMap = reinterpret_cast<volatile TileMapEntry16*>(mpTileMap); //@TODO: Support 2 types of indices?
 
 	const uint16 hwTileMapX = metaTileMapX * mNumHwTilesPerMetaTileX;
 	const uint16 hwTileMapY = metaTileMapY * mNumHwTilesPerMetaTileY;

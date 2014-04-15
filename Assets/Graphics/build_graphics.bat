@@ -1,3 +1,7 @@
+rem This script builds the graphics data needed for ZeldaDS. After running it,
+rem copy the files in the output directory to Game/ZeldaDS/nitrofiles/Graphics/
+rem and also to Editor/Zelous/data
+
 setlocal
 pushd %~dp0
 

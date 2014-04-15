@@ -215,7 +215,6 @@ void PhysicsSimulator::IntegrateAndApplyCollisions(GameTimeType deltaTime)
 		}
 
 		const Vector2I camPos = camera.GetPosition();
-		Vector2I currTilePos = camera.GetPosition();
 		BoundingBox bbox;
 
 		for (uint16 numTilesY = 0; numTilesY < GameNumScreenMetaTilesY; ++numTilesY)

@@ -168,7 +168,7 @@ void WorldMap::LoadMap(const char* mapFile)
 				//@TODO: Write helpers to read strings, ints, whatever
 
 				char mapName[256] = {0};
-				char type = bfs.ReadInt<char>();
+				char type = bfs.ReadInt<char>(); (void)type;
 				const uint16 stringSize = bfs.ReadInt<uint16>();
 				bfs.ReadElems(mapName, stringSize);
 

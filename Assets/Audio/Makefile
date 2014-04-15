@@ -9,9 +9,10 @@ export AUDIOFILES	+=	$(notdir $(wildcard *.it))
 
 soundbank.bin : $(AUDIOFILES)
 	@echo creating sound bank...
-	@mmutil $^ -d -osoundbank.bin -hsoundbank.h
+	@mkdir output
+	@mmutil $^ -d -ooutput/soundbank.bin -houtput/soundbank.h
 	###@mmutil $^ -d -osoundbank.bin
 
 clean:
 	@echo clean ...
-	@rm -fr soundbank.*
+	@rm -rf output

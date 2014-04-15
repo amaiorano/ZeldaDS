@@ -6,11 +6,11 @@
 	>
 	<UserMacro
 		Name="NDSEMUPATH"
-		Value="$(NDSGAMEROOT)\Tools\desmume\desmume_dev.exe"
+		Value="$(NDSGAMEROOT)\Tools\desmume\desmume_0.9.10_dev.exe"
 	/>
 	<UserMacro
 		Name="NDSEMUARGS"
-		Value="--gbaslot-rom=$(TargetPath) $(TargetPath)"
+		Value="$(TargetPath)"
 	/>
 	<UserMacro
 		Name="NDSEMUARGS_FORNEWEMU"

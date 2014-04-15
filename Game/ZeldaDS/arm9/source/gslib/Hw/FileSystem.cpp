@@ -9,7 +9,7 @@ namespace FileSystem
 {
 	void Init()
 	{
-		if ( !nitroFSInit() )
+		if ( !nitroFSInit(NULL) )
 		{
 			printf(
 				"Failed to init file system. You might need to DLDI patch this rom, or "

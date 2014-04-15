@@ -10,8 +10,8 @@ $(error "Please set DEVKITARM in your environment. export DEVKITARM=<path to>dev
 endif
 
 GAME_TITLE     := ZeldaDS
-GAME_SUBTITLE1 := Antonio Maiorano (daroou)
-GAME_SUBTITLE2 := www.firebell.org/guardiansoft
+GAME_SUBTITLE1 := Antonio Maiorano (amaiorano@gmail.com)
+GAME_SUBTITLE2 := amaiorano.com
 #TODO: Make an icon...
 GAME_ICON      := $(DEVKITPRO)/libnds/icon.bmp
 
@@ -78,4 +78,4 @@ clean:
 #---------------------------------------------------------------------------------
 printsize:
 	@echo Elf size breakdown:
-	$(DEVKITARM)/bin/arm-eabi-size.exe arm9/$(TARGET).arm9.elf arm7/$(TARGET).arm7.elf
+	$(DEVKITARM)/bin/arm-none-eabi-size.exe arm9/$(TARGET).arm9.elf arm7/$(TARGET).arm7.elf
