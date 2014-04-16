@@ -1,5 +1,6 @@
 #include "Sword.h"
 #include "gslib/Hw/Sprite.h"
+#include "gslib/Core/Rtti.h"
 #include "GameItems.h"
 #include "Enemy.h"
 

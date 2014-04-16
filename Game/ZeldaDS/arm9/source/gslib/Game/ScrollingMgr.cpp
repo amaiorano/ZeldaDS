@@ -4,17 +4,14 @@
 #include "gslib/Hw/GraphicsEngine.h"
 #include "gslib/Hw/BackgroundLayer.h"
 
-struct ScrollingSharedStateData : SharedStateData
-{
-};
-
-typedef StateT<ScrollingSharedStateData, ScrollingMgr> ScrollingState;
+using namespace hsm;
+typedef StateWithOwner<ScrollingMgr> ScrollingState;
 
 struct ScrollingStates
 {
 	struct Root : ScrollingState
 	{
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{
 			return InnerEntryTransition<NotScrolling>();
 		}
@@ -22,7 +19,7 @@ struct ScrollingStates
 
 	struct NotScrolling : ScrollingState
 	{
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{
 			if (Owner().mScrollDir != ScrollDir::None)
 			{
@@ -54,7 +51,7 @@ struct ScrollingStates
 			Owner().mScrollOffset.Reset(InitZero);
 		}
 
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{
 			if (IsInState<Scrolling_Done>())
 			{
@@ -131,7 +128,7 @@ struct ScrollingStates
 			}
 		}
 
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{
 			return SiblingTransition<Scrolling_Scroll>();
 		}
@@ -146,7 +143,7 @@ struct ScrollingStates
 			mIsDoneScrolling = false;
 		}
 
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{
 			if (mIsDoneScrolling)
 			{
@@ -156,7 +153,7 @@ struct ScrollingStates
 		}
 		
 
-		virtual void PerformStateActions(HsmTimeType deltaTime)
+		virtual void Update(GameTimeType deltaTime)
 		{
 			Scrolling* pScrollingState = GetState<Scrolling>();
 			const uint16 scrollDelta = 4 * deltaTime;
@@ -235,7 +232,7 @@ struct ScrollingStates
 			pScrollingState->UpdateScrollState();
 		}
 
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{
 			return SiblingTransition<Scrolling_Done>();
 		}
@@ -252,8 +249,7 @@ struct ScrollingStates
 };
 
 ScrollingMgr::ScrollingMgr()
-	: mpSharedStateData(0)
-	, mCurrScreen(InitZero)
+	: mCurrScreen(InitZero)
 	, mScrollOffset(InitZero)
 	, mScrollDir(ScrollDir::None)
 {
@@ -261,10 +257,7 @@ ScrollingMgr::ScrollingMgr()
 
 void ScrollingMgr::Init()
 {
-	//mStateMachine.SetDebugLevel(1);
-	mStateMachine.SetOwner(this);
-	mStateMachine.SetSharedStateData(new ScrollingSharedStateData());
-	mStateMachine.SetInitialState<ScrollingStates::Root>();
+	mStateMachine.Initialize<ScrollingStates::Root>(this, "ScrollingMgr");
 }
 
 void ScrollingMgr::Shutdown()
@@ -287,7 +280,8 @@ void ScrollingMgr::Reset(const Vector2I& startScreen)
 
 void ScrollingMgr::Update(GameTimeType deltaTime)
 {
-	mStateMachine.Update(deltaTime);
+	mStateMachine.ProcessStateTransitions();
+	mStateMachine.UpdateStates(deltaTime);
 }
 
 void ScrollingMgr::AddEventListener(IScrollingEventListener* pListener)

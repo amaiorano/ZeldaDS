@@ -1,4 +1,5 @@
 #include "Boomerang.h"
+#include "gslib/Core/Rtti.h"
 #include "gslib/Hw/Constants.h"
 #include "gslib/Hw/GraphicsEngine.h"
 #include "gslib/Hw/Sprite.h"

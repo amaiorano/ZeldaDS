@@ -12,6 +12,12 @@ bld/
 [Bb]in/
 [Oo]bj/
 
+# DS homebrew specific
+build_[dr]
+*.elf
+*.arm[79]
+*.nds
+
 # Visual C++ cache files
 ipch/
 *.aps
@@ -27,3 +33,5 @@ ipch/
 
 # Other
 *.wwdb
+
+desmume.ini

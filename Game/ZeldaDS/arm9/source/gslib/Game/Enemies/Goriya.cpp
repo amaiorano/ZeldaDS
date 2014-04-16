@@ -13,13 +13,13 @@ struct GoriyaSharedStateData : EnemySharedStateData
 	Boomerang* mpBoomerang;
 };
 
-typedef StateT<GoriyaSharedStateData, Goriya, EnemyState> GoriyaState;
+typedef StateWithOwnerAndData<Goriya, GoriyaSharedStateData, EnemyState> GoriyaState;
 
 struct GoriyaStates
 {
 	struct Main : GoriyaState
 	{
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{
 			return InnerEntryTransition<Move>();
 		}
@@ -29,8 +29,8 @@ struct GoriyaStates
 	{
 		typedef EnemySharedStates::RandomMovement<GoriyaState> Base;
 
-		HsmTimeType mElapsedTime;
-		HsmTimeType mTimeToAttack;
+		GameTimeType mElapsedTime;
+		GameTimeType mTimeToAttack;
 
 		Move()
 		{
@@ -45,7 +45,7 @@ struct GoriyaStates
 			mTimeToAttack = MathEx::Rand(SEC_TO_FRAMES(2), SEC_TO_FRAMES(4));
 		}
 
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{
 			if (mElapsedTime > mTimeToAttack)
 			{
@@ -54,9 +54,9 @@ struct GoriyaStates
 			return NoTransition();
 		}
 
-		virtual void PerformStateActions(HsmTimeType deltaTime)
+		virtual void Update(GameTimeType deltaTime)
 		{
-			Base::PerformStateActions(deltaTime);
+			Base::Update(deltaTime);
 			mElapsedTime += deltaTime;
 		}
 	};
@@ -74,7 +74,7 @@ struct GoriyaStates
 			PlayAnim(BaseAnim::Attack);
 		}
 
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{
 			if (Data().mpBoomerang->HasReturned())
 			{

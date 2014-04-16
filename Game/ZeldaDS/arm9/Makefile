@@ -34,14 +34,17 @@ endif
 
 # Since make is called for different folders, we check if the current folder has a "source" folder,
 # and if so, we grab it and all its subfolders
+# HACK: We discard paths with "samples" in them. This is to avoid building samples in external libs (hsm)
 ifneq ("$(wildcard source)", "")
-	RECURSIVE_SOURCES_DIRS	:= $(shell $(DEVKITPRO)/msys/bin/find source -type d)
+	RECURSIVE_SOURCES_DIRS	:= $(shell $(DEVKITPRO)/msys/bin/find source -type d |grep -v "samples")
 endif	
 
 
 BUILD		:=	$(BUILD_DIR)
 SOURCES		:=	$(RECURSIVE_SOURCES_DIRS)
-INCLUDES	:=	include source
+INCLUDES	:=	include \
+				source \
+				source/external/hsm/include
 DATA		:=	bin
 
 

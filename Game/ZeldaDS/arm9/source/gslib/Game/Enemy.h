@@ -32,7 +32,7 @@ public:
 	virtual void OnCollision(const CollisionInfo& collisionInfo);
 
 protected:
-	virtual Transition GetRootTransition() = 0;
+	virtual hsm::Transition GetRootTransition() = 0;
 
 	EnemySharedStateData* mpSharedStateData;
 	

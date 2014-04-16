@@ -1,6 +1,7 @@
 #include "Enemy.h"
 #include "gslib/Hw/Constants.h"
 #include "gslib/Math/MathEx.h"
+#include "gslib/Core/Rtti.h"
 #include "CharacterState.h"
 #include "GameHelpers.h"
 #include "Player.h"
@@ -17,8 +18,7 @@ Enemy::Enemy()
 void Enemy::InitStateMachine()
 {
 	Base::InitStateMachine();
-	mStateMachine.SetInitialState<EnemyStates::Root>();
-	mpSharedStateData = static_cast<EnemySharedStateData*>(&mStateMachine.GetSharedStateData());
+	mStateMachine.Initialize<EnemyStates::Root>(this, "Enemy");	
 }
 
 SharedStateData* Enemy::CreateSharedStateData()

@@ -11,7 +11,7 @@ struct RopeStates
 
 	struct Main : EnemyState
 	{
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{
 			return InnerEntryTransition<Move>();
 		}
@@ -26,7 +26,7 @@ struct RopeStates
 		{
 		}
 
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{
 			if (mShouldStrike)
 			{
@@ -35,9 +35,9 @@ struct RopeStates
 			return NoTransition();
 		}
 
-		virtual void PerformStateActions(HsmTimeType deltaTime)
+		virtual void Update(GameTimeType deltaTime)
 		{
-			Base::PerformStateActions(deltaTime); // Move
+			Base::Update(deltaTime); // Move
 
 			// Due to 8x8 grid movement, we may not be facing our desired direction, so we only
 			// strike when we're on the grid line
@@ -84,7 +84,7 @@ struct RopeStates
 
 	struct Attack : EnemyState
 	{
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{
 			// If we hit anything (player or world), stop attacking
 			if (Owner().mLastFrameCollision.mIsSet 
@@ -111,7 +111,7 @@ struct RopeStates
 			PlayAnim(BaseAnim::Idle);
 		}
 
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{			
 			if (mElapsedTime > SEC_TO_FRAMES(0.3f))
 			{
@@ -121,7 +121,7 @@ struct RopeStates
 			return NoTransition();
 		}
 
-		virtual void PerformStateActions(HsmTimeType deltaTime)
+		virtual void Update(GameTimeType deltaTime)
 		{
 			mElapsedTime += deltaTime;
 		}
@@ -134,7 +134,7 @@ struct RopeStates
 			PlayAnim(BaseAnim::Attack);
 		}
 
-		virtual void PerformStateActions(HsmTimeType deltaTime)
+		virtual void Update(GameTimeType deltaTime)
 		{
 			const int16 moveSpeed = 2; // pixels/frame
 			const Vector2I& dirVec = GameHelpers::SpriteDirToUnitVector(Owner().GetSpriteDir());

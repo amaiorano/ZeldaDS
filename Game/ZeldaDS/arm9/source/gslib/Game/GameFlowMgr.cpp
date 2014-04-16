@@ -25,6 +25,8 @@
 
 #include <string>
 
+using namespace hsm;
+
 struct GameFlowSharedStateData : SharedStateData
 {
 	std::string mCurrWorldMap;
@@ -37,13 +39,13 @@ struct GameFlowSharedStateData : SharedStateData
 	}
 };
 
-typedef StateT<GameFlowSharedStateData, GameFlowMgr> GameFlowState;
+typedef StateWithOwnerAndData<GameFlowMgr, GameFlowSharedStateData> GameFlowState;
 
 struct GameFlowStates
 {
 	struct Root : GameFlowState
 	{
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{
 			return InnerEntryTransition<InitGame>();
 		}
@@ -93,7 +95,7 @@ struct GameFlowStates
 			ScrollingMgr::Instance().Init();
 		}
 		
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{
 			return SiblingTransition<EnableRendering>();
 		}
@@ -113,7 +115,7 @@ struct GameFlowStates
 			GraphicsEngine::FadeScreen(FadeScreenDir::Out, 0);
 		}
 
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{
 			// Wait one frame for the faded out black screen to render once
 			// before showing the backgrounds (sucks that we have to do this)
@@ -192,7 +194,7 @@ struct GameFlowStates
 			//HEAP_CHECK_SIZE();
 		}
 
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{
 			return SiblingTransition<PlayingMap>();
 		}
@@ -221,7 +223,7 @@ struct GameFlowStates
 			RemoveAllNodesImmediately();
 		}
 
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{
 			//@TODO TEMP HACK: L+R toggle map loading between 2 test maps
 			if ((InputManager::GetKeysHeld() & (KEY_L|KEY_R)) == (KEY_L|KEY_R))
@@ -243,7 +245,7 @@ struct GameFlowStates
 			return NoTransition();
 		}
 
-		virtual void PerformStateActions(HsmTimeType deltaTime)
+		virtual void Update(GameTimeType deltaTime)
 		{
 			// Spawn enemies before sim + render
 			if (mSpawnEnemiesNextFrame)
@@ -359,7 +361,7 @@ struct GameFlowStates
 			AudioEngine::SetMusicVolume(1.0f);
 		}
 
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{
 			if ( !GraphicsEngine::IsFadingScreen() )
 			{
@@ -368,7 +370,7 @@ struct GameFlowStates
 			return NoTransition();
 		}
 
-		virtual void PerformStateActions(HsmTimeType deltaTime)
+		virtual void Update(GameTimeType deltaTime)
 		{
 			AudioEngine::SetMusicVolume( GraphicsEngine::GetFadeRatio() );
 		}
@@ -382,7 +384,7 @@ struct GameFlowStates
 			WorldMap::Instance().UnloadMap();
 		}
 
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{
 			return SiblingTransition<LoadMap>();
 		}
@@ -392,27 +394,24 @@ struct GameFlowStates
 
 
 GameFlowMgr::GameFlowMgr()
-	: mpSharedStateData(0)
+	: mpGameFlowStateData(0)
 {
 }
 
 void GameFlowMgr::Init()
 {
-	mpSharedStateData = new GameFlowSharedStateData();
-
-	//mStateMachine.SetDebugLevel(1);
-	mStateMachine.SetOwner(this);
-	mStateMachine.SetSharedStateData(mpSharedStateData);
-	mStateMachine.SetInitialState<GameFlowStates::Root>();
+	mpSharedStateData = mpGameFlowStateData = new GameFlowSharedStateData();
+	mStateMachine.Initialize<GameFlowStates::Root>(this, "GameFlowMgr");
 }
 
 void GameFlowMgr::Update(GameTimeType deltaTime)
 {
-	mStateMachine.Update(deltaTime);
+	mStateMachine.ProcessStateTransitions();
+	mStateMachine.UpdateStates(deltaTime);
 }
 
 void GameFlowMgr::SetTargetWorldMap(const char* worldMapFilePath, const Vector2I& initialPos)
 {
-	mpSharedStateData->mTargetWorldMap = worldMapFilePath;
-	mpSharedStateData->mTargetWorldPos = initialPos;
+	mpGameFlowStateData->mTargetWorldMap = worldMapFilePath;
+	mpGameFlowStateData->mTargetWorldPos = initialPos;
 }

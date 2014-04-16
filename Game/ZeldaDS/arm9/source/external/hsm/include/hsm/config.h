@@ -18,6 +18,8 @@
 #include <cstdio>
 #include <cstring>
 
+#include <nds/ndstypes.h>
+
 #if _DEBUG
 #define HSM_DEBUG
 #endif
@@ -37,10 +39,10 @@
 #define HSM_DELETE delete
 #define HSM_DEBUG_NAME_MAXLEN 128
 
-#define HSM_STATE_UPDATE_ARGS void
-#define HSM_STATE_UPDATE_ARGS_FORWARD
-//#define HSM_STATE_UPDATE_ARGS float deltaTime
-//#define HSM_STATE_UPDATE_ARGS_FORWARD deltaTime
+//#define HSM_STATE_UPDATE_ARGS void
+//#define HSM_STATE_UPDATE_ARGS_FORWARD
+#define HSM_STATE_UPDATE_ARGS uint16 deltaTime /* Should match GameTimeType */
+#define HSM_STATE_UPDATE_ARGS_FORWARD deltaTime
 
 typedef bool hsm_bool;
 #define hsm_true true

@@ -5,7 +5,7 @@ struct GenericEnemyStates
 {
 	struct Main : EnemyState
 	{
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{
 			return InnerEntryTransition<Move>();
 		}

@@ -16,11 +16,11 @@ struct EnemySharedStateData : CharacterSharedStateData
 	{
 	}
 
-	Attribute<bool> mAttribCanDamage; // Can we damage player?
+	StateValue<bool> mAttribCanDamage; // Can we damage player?
 };
 
 // Base class for enemy states
-typedef StateT<EnemySharedStateData, Enemy, CharacterState> EnemyState;
+typedef StateWithOwnerAndData<Enemy, EnemySharedStateData, CharacterState> EnemyState;
 
 // Shared states for all enemies
 struct EnemySharedStates
@@ -73,7 +73,7 @@ struct EnemySharedStates
 			mDesiredDir = Owner().GetSpriteDir();
 		}
 
-		virtual void PerformStateActions(HsmTimeType deltaTime)
+		virtual void Update(GameTimeType deltaTime)
 		{
 			// Shitty way to slow down motion while using int vectors
 			if (mMoveUpdateDelay > 0)
@@ -126,7 +126,7 @@ struct EnemyStates
 {
 	struct Root : EnemyState
 	{
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{
 			if (Owner().mHealth.IsDead())
 			{
@@ -139,7 +139,7 @@ struct EnemyStates
 
 	struct Alive : EnemyState
 	{
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{
 			return InnerEntryTransition<Alive_Spawn>();
 		}
@@ -152,7 +152,7 @@ struct EnemyStates
 			PlayGlobalAnim(BaseAnim::Spawn);
 		}
 
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{
 			if (IsAnimFinished())
 			{
@@ -168,11 +168,11 @@ struct EnemyStates
 	{
 		virtual void OnEnter()
 		{
-			SetAttribute(Data().mAttribCanDamage, true);
-			SetAttribute(Data().mAttribCanTakeDamage, true);
+			SetStateValue(Data().mAttribCanDamage) = true;
+			SetStateValue(Data().mAttribCanTakeDamage) = true;
 		}
 
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{
 			return InnerEntryTransition<Alive_Main_Locomotion>();
 		}
@@ -180,7 +180,7 @@ struct EnemyStates
 
 	struct Alive_Main_Locomotion : EnemyState
 	{
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{
 			if (Owner().mDamageInfo.IsSet())
 			{
@@ -200,7 +200,7 @@ struct EnemyStates
 
 	struct Alive_Main_Stunned : EnemyState
 	{
-		HsmTimeType mElapsedTime;
+		GameTimeType mElapsedTime;
 
 		virtual void OnEnter()
 		{
@@ -211,7 +211,7 @@ struct EnemyStates
 			PlayAnim(BaseAnim::Idle);
 		}
 
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{
 			// Not crazy about this, probably should have single outer state
 			// that transitions us to Hurt
@@ -229,7 +229,7 @@ struct EnemyStates
 			return NoTransition();
 		}
 
-		virtual void PerformStateActions(HsmTimeType deltaTime)
+		virtual void Update(GameTimeType deltaTime)
 		{
 			mElapsedTime += deltaTime;
 
@@ -262,7 +262,7 @@ struct EnemyStates
 			dmgInfo.Reset();
 		}
 
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{
 			return SiblingTransition<Alive_Main_Locomotion>();
 		}
@@ -276,7 +276,7 @@ struct EnemyStates
 			//@TODO: Tell someone we're dead
 		}
 
-		virtual void PerformStateActions(HsmTimeType deltaTime)
+		virtual void Update(GameTimeType deltaTime)
 		{
 			if (IsAnimFinished())
 			{

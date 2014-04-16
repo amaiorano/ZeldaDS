@@ -1,24 +1,28 @@
 #include "Character.h"
 #include "CharacterState.h"
 #include "GameHelpers.h"
+#include "gslib/Core/Rtti.h"
+
+Character::Character()
+	: mpCharacterStateData(NULL)
+{
+}
 
 void Character::Init(const Vector2I& initPos)
 {
 	mInitPos = initPos;
 	
 	InitStateMachine();
-	mpSharedStateData = static_cast<CharacterSharedStateData*>(&mStateMachine.GetSharedStateData());
-	ASSERT(mpSharedStateData); // If invalid, child class didn't init state machine properly
+
+	// Child class must initialize state machine
+	ASSERT(mStateMachine.IsInitialized());
 }
 
 void Character::InitStateMachine()
 {
-	//mStateMachine.SetDebugLevel(1);
-	mStateMachine.SetOwner(this);
-	mStateMachine.SetSharedStateData(CreateSharedStateData());
-	mpSharedStateData = static_cast<CharacterSharedStateData*>(&mStateMachine.GetSharedStateData());
-
-	// No initial state set - child must set one...
+	mpSharedStateData = CreateSharedStateData();
+	ASSERT(mpSharedStateData);
+	mpCharacterStateData = DynamicCast<CharacterSharedStateData*>(mpSharedStateData);
 }
 
 SharedStateData* Character::CreateSharedStateData()
@@ -36,16 +40,6 @@ void Character::OnAddToScene()
 	SetSpriteDir(SpriteDir::Down); // Set initial direction
 }
 
-struct CallPostAnimUpdateVisitor : public StateVisitor
-{
-	virtual bool OnVisit(State* pState, void* pUserData = NULL)
-	{
-		HsmTimeType& deltaTime = *static_cast<HsmTimeType*>(pUserData);
-		static_cast<CharacterState*>(pState)->PostAnimUpdate( deltaTime );
-		return true;
-	}
-} gCallPostAnimUpdateVisitor;
-
 void Character::Update(GameTimeType deltaTime)
 {
 	if (deltaTime > 0) // Total cop out, we don't handle deltaTime == 0 very well
@@ -53,17 +47,25 @@ void Character::Update(GameTimeType deltaTime)
 		// Character's must set their velocity every frame to move
 		SetVelocity(InitZero);
 
-		mStateMachine.Update(deltaTime);
+		mStateMachine.ProcessStateTransitions();
+		mStateMachine.UpdateStates(deltaTime);
+
 		mHealth.Update(deltaTime);
 	}
 
 	Base::Update(deltaTime); // Updates anim and render state
-	mStateMachine.VisitStatesOuterToInner(gCallPostAnimUpdateVisitor, &deltaTime);
+
+	OuterToInnerIterator iter = mStateMachine.BeginOuterToInner();
+	OuterToInnerIterator end = mStateMachine.EndOuterToInner();
+	for ( ; iter != end; ++iter)
+	{
+		static_cast<CharacterState*>(*iter)->PostAnimUpdate( deltaTime );
+	}
 }
 
 void Character::OnDamage(const DamageInfo& damageInfo)
 {
-	if (!mpSharedStateData->mAttribCanTakeDamage)
+	if (!mpCharacterStateData->mAttribCanTakeDamage)
 		return;
 
 	if (mHealth.IsInvincible())

@@ -13,7 +13,7 @@ public:
 
 protected:
 	virtual void GetGameObjectInfo(GameObjectInfo& gameObjectInfo);
-	virtual Transition GetRootTransition();
+	virtual hsm::Transition GetRootTransition();
 
 private:
 	GameActor::Type mGameActor; //@LAME: Once again, caching a variable we already store in a base data member

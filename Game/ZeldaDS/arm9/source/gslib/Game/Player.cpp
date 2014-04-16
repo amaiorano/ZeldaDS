@@ -32,7 +32,7 @@ struct PlayerSharedStateData : CharacterSharedStateData
 	ScrollDir::Type mScrollDir;
 };
 
-typedef StateT<PlayerSharedStateData, Player, CharacterState> PlayerState;
+typedef StateWithOwnerAndData<Player, PlayerSharedStateData, CharacterState> PlayerState;
 
 struct PlayerStates
 {
@@ -43,7 +43,7 @@ struct PlayerStates
 
 	struct Root : PlayerState
 	{
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{
 			if (Owner().mHealth.IsDead())
 			{
@@ -56,7 +56,7 @@ struct PlayerStates
 
 	struct Alive : PlayerState
 	{
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{
 			return InnerEntryTransition<Alive_Spawn>();
 		}
@@ -69,7 +69,7 @@ struct PlayerStates
 			PlayGlobalAnim(BaseAnim::Spawn);
 		}
 
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{
 			if (IsAnimFinished())
 			{
@@ -82,11 +82,11 @@ struct PlayerStates
 
 	struct Alive_Normal : PlayerState
 	{
-		HsmTimeType mElapsedDamageTime;
+		GameTimeType mElapsedDamageTime;
 
 		virtual void OnEnter()
 		{
-			SetAttribute(Data().mAttribCanTakeDamage, true);
+			SetStateValue(Data().mAttribCanTakeDamage) = true;
 		}
 
 		virtual void OnExit()
@@ -95,7 +95,7 @@ struct PlayerStates
 			Owner().mHealth.SetInvincible(false);
 		}
 
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{
 			ScrollDir::Type scrollDir = ScrollDir::None;
 			if ( !GameHelpers::IsPhysicalInScreenBounds(Owner(), &scrollDir) )
@@ -124,7 +124,7 @@ struct PlayerStates
 			return InnerEntryTransition<Alive_Locomotion>();
 		}
 
-		virtual void PerformStateActions(HsmTimeType deltaTime)
+		virtual void Update(GameTimeType deltaTime)
 		{
 			if (Owner().mDamageInfo.IsSet())
 			{
@@ -161,7 +161,7 @@ struct PlayerStates
 			PlayAnim(BaseAnim::Move);
 		}
 
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{
 			if ( !mScrollingMgr.IsScrolling() )
 			{
@@ -191,7 +191,7 @@ struct PlayerStates
 			static_cast<Args&>(mData) = args;
 		}
 
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{
 			return InnerEntryTransition<Alive_Warping_Stairs>();
 		}
@@ -244,7 +244,7 @@ struct PlayerStates
 			//SceneGraph::Instance().RemoveNodePostUpdate(mpWorldMapTile);
 		}
 
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{
 			if (mSteps >= 16.0f)
 			{
@@ -254,7 +254,7 @@ struct PlayerStates
 			return NoTransition();
 		}
 
-		virtual void PerformStateActions(HsmTimeType deltaTime)
+		virtual void Update(GameTimeType deltaTime)
 		{
 			mSteps += 0.25f;
 			Owner().SetPosition(mPlayerStartPos + Vector2I(0.0f, mSteps)); 
@@ -274,7 +274,7 @@ struct PlayerStates
 
 	struct Alive_Locomotion : PlayerState
 	{
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{
 			const uint32& currKeysPressed = InputManager::GetKeysPressed();
 
@@ -294,7 +294,7 @@ struct PlayerStates
 			return InnerEntryTransition<Alive_Locomotion_Idle>();
 		}
 
-		virtual void PerformStateActions(HsmTimeType deltaTime)
+		virtual void Update(GameTimeType deltaTime)
 		{
 			// Whether idling or moving, always update our direction
 			const uint32 currKeysHeld = InputManager::GetKeysHeld();
@@ -313,7 +313,7 @@ struct PlayerStates
 			PlayAnim(BaseAnim::Idle);
 		}
 
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{
 			const uint32 currKeysHeld = InputManager::GetKeysHeld();
 			const bool shouldMove = currKeysHeld & KEYS_DIRECTION;
@@ -337,7 +337,7 @@ struct PlayerStates
 			mLastDir = Owner().GetSpriteDir();
 		}
 
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{
 			const uint32 currKeysHeld = InputManager::GetKeysHeld();
 			const bool shouldMove = currKeysHeld & KEYS_DIRECTION;
@@ -349,7 +349,7 @@ struct PlayerStates
 			return NoTransition();
 		}
 
-		virtual void PerformStateActions(HsmTimeType deltaTime)
+		virtual void Update(GameTimeType deltaTime)
 		{
 			const uint16 moveSpeed = 1; // pixels/frame
 
@@ -407,7 +407,7 @@ struct PlayerStates
 			SceneGraph::Instance().RemoveNodePostUpdate(mpSword);
 		}
 
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{
 			if (IsAnimFinished())
 			{
@@ -417,7 +417,7 @@ struct PlayerStates
 			return NoTransition();
 		}
 
-		virtual void PostAnimUpdate(HsmTimeType deltaTime)
+		virtual void PostAnimUpdate(GameTimeType deltaTime)
 		{
 			if (Owner().GetAnimControl().GetFrameIndex() == 1)
 			{
@@ -466,7 +466,7 @@ struct PlayerStates
 			}
 		}
 
-		virtual Transition EvaluateTransitions()
+		virtual Transition GetTransition()
 		{
 			if (!mItemUsed || IsAnimFinished())
 			{
@@ -484,7 +484,7 @@ struct PlayerStates
 			PlayAnim(BaseAnim::Die);
 		}
 
-		virtual void PerformStateActions(HsmTimeType deltaTime)
+		virtual void Update(GameTimeType deltaTime)
 		{
 			if (IsAnimFinished())
 			{
@@ -507,8 +507,7 @@ Player::Player()
 void Player::InitStateMachine()
 {
 	Base::InitStateMachine();
-	mStateMachine.SetInitialState<PlayerStates::Root>();
-	mpSharedStateData = static_cast<PlayerSharedStateData*>(&mStateMachine.GetSharedStateData());
+	mStateMachine.Initialize<PlayerStates::Root>(this, "Player");
 }
 
 SharedStateData* Player::CreateSharedStateData()

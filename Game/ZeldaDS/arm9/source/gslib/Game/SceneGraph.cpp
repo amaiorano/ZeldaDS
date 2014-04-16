@@ -3,6 +3,7 @@
 #include "Enemy.h"
 #include "Boomerang.h" //@TODO: REPLACE WITH "Weapon.h"
 #include "gslib/Core/Generic.h"
+#include "gslib/Core/Rtti.h"
 #include <algorithm>
 
 void SceneGraph::AddNode(ISceneNode* pNode)

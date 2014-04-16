@@ -87,30 +87,6 @@
 				Name="gslib"
 				>
 				<Filter
-					Name="Hsm"
-					>
-					<File
-						RelativePath=".\ZeldaDS\arm9\source\gslib\Hsm\HsmClientTypes.h"
-						>
-					</File>
-					<File
-						RelativePath=".\ZeldaDS\arm9\source\gslib\Hsm\HsmState.h"
-						>
-					</File>
-					<File
-						RelativePath=".\ZeldaDS\arm9\source\gslib\Hsm\HsmStateMachine.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\ZeldaDS\arm9\source\gslib\Hsm\HsmStateMachine.h"
-						>
-					</File>
-					<File
-						RelativePath=".\ZeldaDS\arm9\source\gslib\Hsm\HsmTransition.h"
-						>
-					</File>
-				</Filter>
-				<Filter
 					Name="Hw"
 					>
 					<File
@@ -598,6 +574,10 @@
 						>
 					</File>
 					<File
+						RelativePath=".\ZeldaDS\arm9\source\gslib\Util\HsmUtil.h"
+						>
+					</File>
+					<File
 						RelativePath=".\ZeldaDS\arm9\source\gslib\Util\intrusive_ptr.h"
 						>
 					</File>
@@ -634,6 +614,42 @@
 				>
 				<File
 					RelativePath=".\ZeldaDS\arm9\Makefile"
+					>
+				</File>
+			</Filter>
+		</Filter>
+		<Filter
+			Name="external"
+			>
+			<Filter
+				Name="hsm"
+				>
+				<File
+					RelativePath=".\ZeldaDS\arm9\source\external\hsm\include\hsm\config.h"
+					>
+				</File>
+				<File
+					RelativePath=".\ZeldaDS\arm9\source\external\hsm\include\hsm\rtti.h"
+					>
+				</File>
+				<File
+					RelativePath=".\ZeldaDS\arm9\source\external\hsm\include\hsm\state.h"
+					>
+				</File>
+				<File
+					RelativePath=".\ZeldaDS\arm9\source\external\hsm\src\statemachine.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\ZeldaDS\arm9\source\external\hsm\include\hsm\statemachine.h"
+					>
+				</File>
+				<File
+					RelativePath=".\ZeldaDS\arm9\source\external\hsm\include\hsm\transition.h"
+					>
+				</File>
+				<File
+					RelativePath=".\ZeldaDS\arm9\source\external\hsm\include\hsm\utils.h"
 					>
 				</File>
 			</Filter>

@@ -1,12 +1,14 @@
 #ifndef CHARACTER_STATE_H
 #define CHARACTER_STATE_H
 
-#include "gslib/Hsm/HsmStateMachine.h"
-#include "gslib/Hsm/HsmState.h"
+#include "gslib/Util/HsmUtil.h"
 #include "gslib/Hw/GraphicsEngine.h"
 #include "gslib/Hw/Sprite.h"
 #include "gslib/Anim/AnimControl.h"
 #include "GameAnims.h"
+
+// This file should only be included by hsm implementation cpps (not headers), so it's okay to do this
+using namespace hsm;
 
 struct CharacterSharedStateData : SharedStateData
 {
@@ -15,12 +17,12 @@ struct CharacterSharedStateData : SharedStateData
 	{
 	}
 
-	Attribute<bool> mAttribCanTakeDamage; // Can we take damage?
+	StateValue<bool> mAttribCanTakeDamage; // Can we take damage?
 };
 
-struct CharacterState : StateT<CharacterSharedStateData, Character>
+struct CharacterState : StateWithOwner<Character>
 {
-	virtual void PostAnimUpdate(HsmTimeType deltaTime) { } 
+	virtual void PostAnimUpdate(GameTimeType deltaTime) { } 
 
 	void PlayAnim(BaseAnim::Type anim)
 	{

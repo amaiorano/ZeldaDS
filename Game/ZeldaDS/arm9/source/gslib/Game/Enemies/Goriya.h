@@ -15,7 +15,7 @@ protected:
 	}
 
 	virtual SharedStateData* CreateSharedStateData();
-	virtual Transition GetRootTransition();
+	virtual hsm::Transition GetRootTransition();
 	virtual void OnDead();
 	virtual void Update(GameTimeType deltaTime);
 };

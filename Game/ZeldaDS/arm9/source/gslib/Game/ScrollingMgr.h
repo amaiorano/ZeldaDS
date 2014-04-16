@@ -3,7 +3,7 @@
 
 #include "gslib/Core/Core.h"
 #include "gslib/Core/Singleton.h"
-#include "gslib/Hsm/HsmStateMachine.h"
+#include "gslib/Util/HsmUtil.h"
 #include "gslib/Math/Vector2.h"
 
 namespace ScrollDir
@@ -50,8 +50,7 @@ private:
 	void CallOnScrollingBegin();
 	void CallOnScrollingEnd();
 
-	StateMachine mStateMachine;
-	SharedStateData* mpSharedStateData; // Alias for convenience
+	hsm::StateMachine mStateMachine;
 
 	friend struct ScrollingStates;
 	// mCurrScreen and mScrollOffset together make up the camera's world position
