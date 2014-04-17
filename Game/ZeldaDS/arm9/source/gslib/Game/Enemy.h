@@ -34,7 +34,7 @@ public:
 protected:
 	virtual hsm::Transition GetRootTransition() = 0;
 
-	EnemySharedStateData* mpSharedStateData;
+	EnemySharedStateData* mpEnemyStateData;
 	
 	struct LastFrameCollision
 	{

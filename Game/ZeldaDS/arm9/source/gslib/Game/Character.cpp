@@ -22,7 +22,7 @@ void Character::InitStateMachine()
 {
 	mpSharedStateData = CreateSharedStateData();
 	ASSERT(mpSharedStateData);
-	mpCharacterStateData = DynamicCast<CharacterSharedStateData*>(mpSharedStateData);
+	mpCharacterStateData = CheckedDynamicCast<CharacterSharedStateData*>(mpSharedStateData);
 }
 
 SharedStateData* Character::CreateSharedStateData()

@@ -11,13 +11,14 @@
 #include "EnemyState.h"
 
 Enemy::Enemy()
-	: mpSharedStateData(0)
+	: mpEnemyStateData(0)
 {
 }
 
 void Enemy::InitStateMachine()
 {
 	Base::InitStateMachine();
+	mpEnemyStateData = CheckedDynamicCast<EnemySharedStateData*>(mpSharedStateData);
 	mStateMachine.Initialize<EnemyStates::Root>(this, "Enemy");	
 }
 
@@ -52,7 +53,7 @@ void Enemy::OnCollision(const CollisionInfo& collisionInfo)
 
 	if ( Player* pPlayer = DynamicCast<Player*>(collisionInfo.mpCollidingWith) )
 	{
-		if (mpSharedStateData->mAttribCanDamage)
+		if (mpEnemyStateData->mAttribCanDamage)
 		{
 			static DamageInfo dmgInfo; //@MT_UNSAFE
 			dmgInfo.mAmount = 1;

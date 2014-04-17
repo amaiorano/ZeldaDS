@@ -24,7 +24,7 @@ public:
 	virtual void Render(GameTimeType deltaTime);
 
 private:
-	struct PlayerSharedStateData* mpSharedStateData;
+	struct PlayerSharedStateData* mpPlayerStateData;
 
 	friend class PlayerStates;
 	Vector2I mLastDamagePushVector;

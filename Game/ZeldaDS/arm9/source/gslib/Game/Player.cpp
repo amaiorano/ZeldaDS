@@ -2,6 +2,7 @@
 #include "gslib/Hw/Constants.h"
 #include "gslib/Hw/InputManager.h"
 #include "gslib/Hw/AudioEngine.h"
+#include "gslib/Core/Rtti.h"
 #include "data/soundbank.h"
 #include "GameItems.h"
 #include "CharacterState.h"
@@ -499,7 +500,7 @@ struct PlayerStates
 // Player class implementation
 
 Player::Player()
-	: mpSharedStateData(0)
+	: mpPlayerStateData(0)
 	, mLastDamagePushVector(InitZero)
 {
 }
@@ -507,6 +508,7 @@ Player::Player()
 void Player::InitStateMachine()
 {
 	Base::InitStateMachine();
+	mpPlayerStateData = CheckedDynamicCast<PlayerSharedStateData*>(mpSharedStateData);
 	mStateMachine.Initialize<PlayerStates::Root>(this, "Player");
 }
 
@@ -529,10 +531,10 @@ void Player::Update(GameTimeType deltaTime)
 	if (deltaTime > 0)
 	{
 		// If boomerang has returned, remove it from the scene
-		if ( mpSharedStateData->mpBoomerang && mpSharedStateData->mpBoomerang->HasReturned() )
+		if ( mpPlayerStateData->mpBoomerang && mpPlayerStateData->mpBoomerang->HasReturned() )
 		{
-			SceneGraph::Instance().RemoveNodePostUpdate(mpSharedStateData->mpBoomerang);
-			mpSharedStateData->mpBoomerang = NULL;
+			SceneGraph::Instance().RemoveNodePostUpdate(mpPlayerStateData->mpBoomerang);
+			mpPlayerStateData->mpBoomerang = NULL;
 		}
 
 		// Knockback (override any player input velocity)
