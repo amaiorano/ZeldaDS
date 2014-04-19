@@ -1,0 +1,206 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{6C9BB541-5FFF-4CCD-8B87-8F68F58AF150}</ProjectGuid>
+    <RootNamespace>ZeldaDS</RootNamespace>
+    <Keyword>MakeFileProj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <OutDir>$(TEMP)</OutDir>
+    <IntDir>$(TEMP)</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <OutDir>$(TEMP)</OutDir>
+    <IntDir>$(TEMP)</IntDir>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="SharedProps.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="SharedProps.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
+    <NMakeBuildCommandLine Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">call $(ProjectName)\build.bat build DEBUG</NMakeBuildCommandLine>
+    <NMakeReBuildCommandLine Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">call $(ProjectName)\build.bat rebuild DEBUG</NMakeReBuildCommandLine>
+    <NMakeCleanCommandLine Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">call $(ProjectName)\build.bat clean DEBUG
+</NMakeCleanCommandLine>
+    <NMakeOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectName)\$(ProjectName)_d.nds</NMakeOutput>
+    <NMakePreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakeIncludeSearchPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <NMakeForcedIncludes Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(NMakeForcedIncludes)</NMakeForcedIncludes>
+    <NMakeAssemblySearchPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(NMakeAssemblySearchPath)</NMakeAssemblySearchPath>
+    <NMakeForcedUsingAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(NMakeForcedUsingAssemblies)</NMakeForcedUsingAssemblies>
+    <NMakeBuildCommandLine Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">call $(ProjectName)\build.bat build</NMakeBuildCommandLine>
+    <NMakeReBuildCommandLine Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">call $(ProjectName)\build.bat rebuild</NMakeReBuildCommandLine>
+    <NMakeCleanCommandLine Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">call $(ProjectName)\build.bat clean</NMakeCleanCommandLine>
+    <NMakeOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectName)\$(ProjectName).nds</NMakeOutput>
+    <NMakePreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakeIncludeSearchPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <NMakeForcedIncludes Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(NMakeForcedIncludes)</NMakeForcedIncludes>
+    <NMakeAssemblySearchPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(NMakeAssemblySearchPath)</NMakeAssemblySearchPath>
+    <NMakeForcedUsingAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(NMakeForcedUsingAssemblies)</NMakeForcedUsingAssemblies>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <BuildLog>
+      <Path>
+      </Path>
+    </BuildLog>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <BuildLog>
+      <Path>
+      </Path>
+    </BuildLog>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="ZeldaDS\arm9\source\main_arm9.cpp" />
+    <ClCompile Include="ZeldaDS\arm7\source\main_arm7.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Hw\AudioEngine.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Hw\BackgroundLayer.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Hw\CpuClock.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Hw\ExceptionHandler.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Hw\FileSystem.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Hw\GraphicsEngine.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Hw\InputManager.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Hw\Sprite.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Hw\SpriteRenderGroupMgr.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\Camera.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\DebugVars.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\GameAnims.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\GameFlowMgr.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\GameHelpers.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\ResourceMgr.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\ScrollingMgr.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\WorldMap.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\WorldMapTile.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\IAnimatedRenderable.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\IPhysical.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\IRenderable.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\ISceneNode.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\Boomerang.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\GameItems.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\Sword.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\Character.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\Enemy.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\EnemyFactory.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\MovementModel.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\Player.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\Enemies\GenericEnemy.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\Enemies\Goriya.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\Enemies\Rope.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\PhysicsSimulator.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\GameObject.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\SceneGraph.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Core\Assert.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Core\Core.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Anim\AnimAssetManager.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Anim\AnimControl.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Anim\AnimTimeline.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Physics\BoundingBox.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Stream\BinaryFileStream.cpp" />
+    <ClCompile Include="ZeldaDS\arm9\source\external\hsm\src\statemachine.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Hw\AudioEngine.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Hw\BackgroundLayer.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Hw\Constants.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Hw\CpuClock.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Hw\ExceptionHandler.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Hw\FileSystem.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Hw\GraphicsEngine.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Hw\InputManager.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Hw\Sprite.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Hw\SpriteRenderGroupMgr.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\Camera.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\DebugVars.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\GameAnims.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\GameFlowMgr.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\GameHelpers.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\GameResources.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\Health.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\ResourceMgr.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\ScrollingMgr.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\WorldMap.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\WorldMapTile.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\IAnimatedRenderable.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\IDamageable.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\IPhysical.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\IPositional.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\IRenderable.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\ISceneNode.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\ITreeNode.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\Boomerang.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\GameItems.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\Sword.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\Weapon.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\Character.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\CharacterState.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\Enemy.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\EnemyFactory.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\EnemyState.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\MovementModel.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\Player.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\Enemies\GenericEnemy.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\Enemies\Goriya.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\Enemies\Rope.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\PhysicsSimulator.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\GameObject.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\SceneGraph.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\GameEvent.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Core\Assert.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Core\Config.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Core\Core.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Core\Generic.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Core\Rtti.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Core\Singleton.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Core\Types.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Anim\AnimAssetManager.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Anim\AnimClientTypes.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Anim\AnimControl.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Anim\AnimTimeline.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Math\Lerper.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Math\MathEx.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Math\Vector2.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Physics\BoundingBox.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Stream\BinaryFileStream.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Util\Array2d.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Util\HsmUtil.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Util\intrusive_ptr.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\external\hsm\include\hsm\config.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\external\hsm\include\hsm\rtti.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\external\hsm\include\hsm\state.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\external\hsm\include\hsm\statemachine.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\external\hsm\include\hsm\transition.h" />
+    <ClInclude Include="ZeldaDS\arm9\source\external\hsm\include\hsm\utils.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ZeldaDS\arm9\source\gslib\Core\CoreAsm.s" />
+    <None Include="ZeldaDS\build.bat" />
+    <None Include="ZeldaDS\Makefile" />
+    <None Include="ZeldaDS\arm7\Makefile" />
+    <None Include="ZeldaDS\arm9\Makefile" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

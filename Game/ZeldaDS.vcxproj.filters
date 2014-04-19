@@ -1,0 +1,454 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source Files\arm9">
+      <UniqueIdentifier>{9c081f03-359e-48db-a21e-4bc68c48335d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\arm7">
+      <UniqueIdentifier>{9c746c43-45d2-404a-a688-7512b0d38b07}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\gslib">
+      <UniqueIdentifier>{6bd13e4e-3639-4c13-a826-96759f713451}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\gslib\Hw">
+      <UniqueIdentifier>{79df1aa7-66a3-42d9-b4a5-a9f72f6c14fa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\gslib\Game">
+      <UniqueIdentifier>{2d8fb0b2-eab7-408c-a26f-a8347c020b12}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\gslib\Game\Interfaces">
+      <UniqueIdentifier>{ead18076-2ece-4500-b41e-72a83e2fe963}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\gslib\Game\Weapons">
+      <UniqueIdentifier>{f4c5ea85-e6ad-43dd-bd1f-c1366582b8b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\gslib\Game\Characters">
+      <UniqueIdentifier>{e91197be-6e65-42db-9d9f-49fb4464fb62}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\gslib\Game\Characters\Enemies">
+      <UniqueIdentifier>{61602918-feb5-45e0-9b44-923a0cc252e4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\gslib\Game\Physics">
+      <UniqueIdentifier>{fff62aa3-0633-4c01-889e-ff6cddb18a63}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\gslib\Game\Scene">
+      <UniqueIdentifier>{b9bf493d-1e64-4e29-8253-28e7de6bb311}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\gslib\Game\GameEvent">
+      <UniqueIdentifier>{9ff165ae-b6eb-4e9e-a0a0-3bb1b7e48242}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\gslib\Core">
+      <UniqueIdentifier>{04dc2fdf-8f24-4507-bade-84ade4ad29d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\gslib\Anim">
+      <UniqueIdentifier>{ebd5a0cb-162a-42e3-b226-c656eb1d1038}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\gslib\Math">
+      <UniqueIdentifier>{974d273a-f384-4b02-ae19-233682668189}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\gslib\Physics">
+      <UniqueIdentifier>{995bc6b4-bfcc-4522-8a01-1fbe19b50e7d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\gslib\Stream">
+      <UniqueIdentifier>{d99041a8-dbd3-451b-ba21-3c82d4007657}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\gslib\Util">
+      <UniqueIdentifier>{12181684-d896-4aa7-8df7-690e059d48e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+    <Filter Include="Build Files">
+      <UniqueIdentifier>{8ecfdb10-dc9e-4b54-adb5-c68afc9c0da0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Build Files\arm7">
+      <UniqueIdentifier>{f2bf703b-100e-4dad-ae2b-4a827f2f2b69}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Build Files\arm9">
+      <UniqueIdentifier>{182b14c4-cd48-4ec2-96fe-f93ef1eb4276}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\external">
+      <UniqueIdentifier>{2a1f7620-cb0b-4ecb-b933-19ce18571d20}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\external\hsm">
+      <UniqueIdentifier>{51bd81b4-b8cd-4b4a-8f5b-c4f88f7c2c34}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ZeldaDS\arm9\source\main_arm9.cpp">
+      <Filter>Source Files\arm9</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm7\source\main_arm7.cpp">
+      <Filter>Source Files\arm7</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Hw\AudioEngine.cpp">
+      <Filter>Source Files\gslib\Hw</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Hw\BackgroundLayer.cpp">
+      <Filter>Source Files\gslib\Hw</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Hw\CpuClock.cpp">
+      <Filter>Source Files\gslib\Hw</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Hw\ExceptionHandler.cpp">
+      <Filter>Source Files\gslib\Hw</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Hw\FileSystem.cpp">
+      <Filter>Source Files\gslib\Hw</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Hw\GraphicsEngine.cpp">
+      <Filter>Source Files\gslib\Hw</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Hw\InputManager.cpp">
+      <Filter>Source Files\gslib\Hw</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Hw\Sprite.cpp">
+      <Filter>Source Files\gslib\Hw</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Hw\SpriteRenderGroupMgr.cpp">
+      <Filter>Source Files\gslib\Hw</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\Camera.cpp">
+      <Filter>Source Files\gslib\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\DebugVars.cpp">
+      <Filter>Source Files\gslib\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\GameAnims.cpp">
+      <Filter>Source Files\gslib\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\GameFlowMgr.cpp">
+      <Filter>Source Files\gslib\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\GameHelpers.cpp">
+      <Filter>Source Files\gslib\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\ResourceMgr.cpp">
+      <Filter>Source Files\gslib\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\ScrollingMgr.cpp">
+      <Filter>Source Files\gslib\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\WorldMap.cpp">
+      <Filter>Source Files\gslib\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\WorldMapTile.cpp">
+      <Filter>Source Files\gslib\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\IAnimatedRenderable.cpp">
+      <Filter>Source Files\gslib\Game\Interfaces</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\IPhysical.cpp">
+      <Filter>Source Files\gslib\Game\Interfaces</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\IRenderable.cpp">
+      <Filter>Source Files\gslib\Game\Interfaces</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\ISceneNode.cpp">
+      <Filter>Source Files\gslib\Game\Interfaces</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\Boomerang.cpp">
+      <Filter>Source Files\gslib\Game\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\GameItems.cpp">
+      <Filter>Source Files\gslib\Game\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\Sword.cpp">
+      <Filter>Source Files\gslib\Game\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\Character.cpp">
+      <Filter>Source Files\gslib\Game\Characters</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\Enemy.cpp">
+      <Filter>Source Files\gslib\Game\Characters</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\EnemyFactory.cpp">
+      <Filter>Source Files\gslib\Game\Characters</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\MovementModel.cpp">
+      <Filter>Source Files\gslib\Game\Characters</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\Player.cpp">
+      <Filter>Source Files\gslib\Game\Characters</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\Enemies\GenericEnemy.cpp">
+      <Filter>Source Files\gslib\Game\Characters\Enemies</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\Enemies\Goriya.cpp">
+      <Filter>Source Files\gslib\Game\Characters\Enemies</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\Enemies\Rope.cpp">
+      <Filter>Source Files\gslib\Game\Characters\Enemies</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\PhysicsSimulator.cpp">
+      <Filter>Source Files\gslib\Game\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\GameObject.cpp">
+      <Filter>Source Files\gslib\Game\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Game\SceneGraph.cpp">
+      <Filter>Source Files\gslib\Game\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Core\Assert.cpp">
+      <Filter>Source Files\gslib\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Core\Core.cpp">
+      <Filter>Source Files\gslib\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Anim\AnimAssetManager.cpp">
+      <Filter>Source Files\gslib\Anim</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Anim\AnimControl.cpp">
+      <Filter>Source Files\gslib\Anim</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Anim\AnimTimeline.cpp">
+      <Filter>Source Files\gslib\Anim</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Physics\BoundingBox.cpp">
+      <Filter>Source Files\gslib\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\gslib\Stream\BinaryFileStream.cpp">
+      <Filter>Source Files\gslib\Stream</Filter>
+    </ClCompile>
+    <ClCompile Include="ZeldaDS\arm9\source\external\hsm\src\statemachine.cpp">
+      <Filter>Source Files\external\hsm</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Hw\AudioEngine.h">
+      <Filter>Source Files\gslib\Hw</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Hw\BackgroundLayer.h">
+      <Filter>Source Files\gslib\Hw</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Hw\Constants.h">
+      <Filter>Source Files\gslib\Hw</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Hw\CpuClock.h">
+      <Filter>Source Files\gslib\Hw</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Hw\ExceptionHandler.h">
+      <Filter>Source Files\gslib\Hw</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Hw\FileSystem.h">
+      <Filter>Source Files\gslib\Hw</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Hw\GraphicsEngine.h">
+      <Filter>Source Files\gslib\Hw</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Hw\InputManager.h">
+      <Filter>Source Files\gslib\Hw</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Hw\Sprite.h">
+      <Filter>Source Files\gslib\Hw</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Hw\SpriteRenderGroupMgr.h">
+      <Filter>Source Files\gslib\Hw</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\Camera.h">
+      <Filter>Source Files\gslib\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\DebugVars.h">
+      <Filter>Source Files\gslib\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\GameAnims.h">
+      <Filter>Source Files\gslib\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\GameFlowMgr.h">
+      <Filter>Source Files\gslib\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\GameHelpers.h">
+      <Filter>Source Files\gslib\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\GameResources.h">
+      <Filter>Source Files\gslib\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\Health.h">
+      <Filter>Source Files\gslib\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\ResourceMgr.h">
+      <Filter>Source Files\gslib\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\ScrollingMgr.h">
+      <Filter>Source Files\gslib\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\WorldMap.h">
+      <Filter>Source Files\gslib\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\WorldMapTile.h">
+      <Filter>Source Files\gslib\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\IAnimatedRenderable.h">
+      <Filter>Source Files\gslib\Game\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\IDamageable.h">
+      <Filter>Source Files\gslib\Game\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\IPhysical.h">
+      <Filter>Source Files\gslib\Game\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\IPositional.h">
+      <Filter>Source Files\gslib\Game\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\IRenderable.h">
+      <Filter>Source Files\gslib\Game\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\ISceneNode.h">
+      <Filter>Source Files\gslib\Game\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\ITreeNode.h">
+      <Filter>Source Files\gslib\Game\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\Boomerang.h">
+      <Filter>Source Files\gslib\Game\Weapons</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\GameItems.h">
+      <Filter>Source Files\gslib\Game\Weapons</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\Sword.h">
+      <Filter>Source Files\gslib\Game\Weapons</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\Weapon.h">
+      <Filter>Source Files\gslib\Game\Weapons</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\Character.h">
+      <Filter>Source Files\gslib\Game\Characters</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\CharacterState.h">
+      <Filter>Source Files\gslib\Game\Characters</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\Enemy.h">
+      <Filter>Source Files\gslib\Game\Characters</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\EnemyFactory.h">
+      <Filter>Source Files\gslib\Game\Characters</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\EnemyState.h">
+      <Filter>Source Files\gslib\Game\Characters</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\MovementModel.h">
+      <Filter>Source Files\gslib\Game\Characters</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\Player.h">
+      <Filter>Source Files\gslib\Game\Characters</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\Enemies\GenericEnemy.h">
+      <Filter>Source Files\gslib\Game\Characters\Enemies</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\Enemies\Goriya.h">
+      <Filter>Source Files\gslib\Game\Characters\Enemies</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\Enemies\Rope.h">
+      <Filter>Source Files\gslib\Game\Characters\Enemies</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\PhysicsSimulator.h">
+      <Filter>Source Files\gslib\Game\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\GameObject.h">
+      <Filter>Source Files\gslib\Game\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\SceneGraph.h">
+      <Filter>Source Files\gslib\Game\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Game\GameEvent.h">
+      <Filter>Source Files\gslib\Game\GameEvent</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Core\Assert.h">
+      <Filter>Source Files\gslib\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Core\Config.h">
+      <Filter>Source Files\gslib\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Core\Core.h">
+      <Filter>Source Files\gslib\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Core\Generic.h">
+      <Filter>Source Files\gslib\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Core\Rtti.h">
+      <Filter>Source Files\gslib\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Core\Singleton.h">
+      <Filter>Source Files\gslib\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Core\Types.h">
+      <Filter>Source Files\gslib\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Anim\AnimAssetManager.h">
+      <Filter>Source Files\gslib\Anim</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Anim\AnimClientTypes.h">
+      <Filter>Source Files\gslib\Anim</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Anim\AnimControl.h">
+      <Filter>Source Files\gslib\Anim</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Anim\AnimTimeline.h">
+      <Filter>Source Files\gslib\Anim</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Math\Lerper.h">
+      <Filter>Source Files\gslib\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Math\MathEx.h">
+      <Filter>Source Files\gslib\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Math\Vector2.h">
+      <Filter>Source Files\gslib\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Physics\BoundingBox.h">
+      <Filter>Source Files\gslib\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Stream\BinaryFileStream.h">
+      <Filter>Source Files\gslib\Stream</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Util\Array2d.h">
+      <Filter>Source Files\gslib\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Util\HsmUtil.h">
+      <Filter>Source Files\gslib\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\gslib\Util\intrusive_ptr.h">
+      <Filter>Source Files\gslib\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\external\hsm\include\hsm\config.h">
+      <Filter>Source Files\external\hsm</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\external\hsm\include\hsm\rtti.h">
+      <Filter>Source Files\external\hsm</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\external\hsm\include\hsm\state.h">
+      <Filter>Source Files\external\hsm</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\external\hsm\include\hsm\statemachine.h">
+      <Filter>Source Files\external\hsm</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\external\hsm\include\hsm\transition.h">
+      <Filter>Source Files\external\hsm</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeldaDS\arm9\source\external\hsm\include\hsm\utils.h">
+      <Filter>Source Files\external\hsm</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ZeldaDS\arm9\source\gslib\Core\CoreAsm.s">
+      <Filter>Source Files\gslib\Core</Filter>
+    </None>
+    <None Include="ZeldaDS\build.bat">
+      <Filter>Build Files</Filter>
+    </None>
+    <None Include="ZeldaDS\Makefile">
+      <Filter>Build Files</Filter>
+    </None>
+    <None Include="ZeldaDS\arm7\Makefile">
+      <Filter>Build Files\arm7</Filter>
+    </None>
+    <None Include="ZeldaDS\arm9\Makefile">
+      <Filter>Build Files\arm9</Filter>
+    </None>
+  </ItemGroup>
+</Project>
