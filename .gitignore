@@ -34,4 +34,5 @@ ipch/
 # Other
 *.wwdb
 
-desmume.ini
+Tools/desmume/desmume.ini
+Tools/desmume/Battery/
