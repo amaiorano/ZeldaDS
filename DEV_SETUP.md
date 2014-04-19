@@ -43,3 +43,12 @@ These steps are for a Windows installation. I suspect it should be easy enough t
 * You should now be able to build the project and debug it (F5).
 
 * NOTE: When building Zelous, there is a post-build step that copies the required data to temporary bin/<config> folder. This allows the editor to be debugged in its default output location correctly. For proper packaging, you can create a Zelous package by running package/make_package.bat
+
+
+## git subtree
+
+* ZeldaDS makes use of git subtree to bring in git modules:
+
+git remote add hsm git@github.com:amaiorano/hsm.git
+git subtree pull --prefix=Game/ZeldaDS/arm9/source/external/hsm hsm master --squash
+git subtree push --prefix=Game/ZeldaDS/arm9/source/external/hsm hsm master
