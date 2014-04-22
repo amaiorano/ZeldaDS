@@ -10,7 +10,7 @@ set ZELOUS_ROOT=%NDSGAMEROOT%/Editor/Zelous
 set GAME_ROOT=%NDSGAMEROOT%/Game/ZeldaDS
 set TOOLS_ROOT=%NDSGAMEROOT%/Tools
 set PACKAGE_PATH=%ZELOUS_ROOT%/package
-set VC_VARS_CMD="C:/Program Files (x86)/Microsoft Visual Studio 9.0/VC/vcvarsall.bat"
+set VC_VARS_CMD="C:/Program Files (x86)/Microsoft Visual Studio 10.0/VC/vcvarsall.bat"
 
 set DEL_FILES_CMD=rm -f
 set DEL_FOLDER_CMD=rm -rf
