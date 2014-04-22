@@ -1,13 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="UserMacros">
-	<DebugSuffix Condition="'$(Configuration)'=='Debug'">_d</DebugSuffix>
-    <DebugSuffix Condition="'$(Configuration)'!='Debug'"></DebugSuffix>
+    <DEBUGSUFFIX Condition="'$(Configuration)'=='Debug'">_d</DEBUGSUFFIX>
+    <DEBUGSUFFIX Condition="'$(Configuration)'!='Debug'"></DEBUGSUFFIX>
     <NDSEMUPATH>$(NDSGAMEROOT)\Tools\desmume\desmume_dev.exe</NDSEMUPATH>
-    <NDSEMUARGS>$(ProjectDir)$(ProjectName)\$(ProjectName)$(DebugSuffix).nds</NDSEMUARGS>
+    <NDSEMUARGS>$(ProjectDir)$(ProjectName)\$(ProjectName)$(DEBUGSUFFIX).nds</NDSEMUARGS>
+    <DEVKITPRODIR>c:\devkitPro\</DEVKITPRODIR>
   </PropertyGroup>
   <PropertyGroup>
     <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
+    <NMakeIncludeSearchPath>$(ProjectDir)ZeldaDS\arm9\source;$(DEVKITPRODIR)libnds\include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
   </PropertyGroup>
   <ItemGroup>
     <BuildMacro Include="NDSEMUPATH">
@@ -15,6 +17,9 @@
     </BuildMacro>
     <BuildMacro Include="NDSEMUARGS">
       <Value>$(NDSEMUARGS)</Value>
+    </BuildMacro>
+    <BuildMacro Include="DEVKITPRODIR">
+      <Value>$(DEVKITPRODIR)</Value>
     </BuildMacro>
   </ItemGroup>
 </Project>
