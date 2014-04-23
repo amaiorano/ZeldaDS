@@ -4,8 +4,8 @@ These steps are for a Windows installation. I suspect it should be easy enough t
 
 ## Prerequisites
 
-* Windows 7
-* Visual Studio 2008
+* Windows 7 and up
+* Visual Studio 2010/2012/2013 (don't convert the projects, stay with 2010 platform toolkit)
 
 ## ZeldaDS (Game)
 
@@ -20,6 +20,7 @@ These steps are for a Windows installation. I suspect it should be easy enough t
 
 * Add an environment variable named NDSGAMEROOT set to the root folder containing ZeldaDS
     * For example: NDSGAMEROOT=C:\Code\ZeldaDS
+    [TODO: Get rid of this dependency and make everything that uses it work with relative paths instead.]
 
 * Open %NDSGAMEROOT%\Game\ZeldaDS.sln in Visual Studio, open project properties, select "All Configurations", then go to Configuration Properties -> Debugging, and set:
     * Command: $(NDSEMUPATH)
