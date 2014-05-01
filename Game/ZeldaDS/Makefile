@@ -19,8 +19,10 @@ GAME_ICON      := $(DEVKITPRO)/libnds/icon.bmp
 NITRODATA	:=	nitrofiles
 _ADDFILES	:=	-d $(CURDIR)/$(NITRODATA)
 
-# As long as this var is set, compiler errors will be formatted for visual studio
-export VCBUILDHELPER_COMMAND := whatever
+# NOTE: Disabling this because it doesn't format output exactly as VS expects to detect errors.
+#       Instead, build.bat handles filtering the output correctly.
+#### As long as this var is set, compiler errors will be formatted for visual studio
+###export VCBUILDHELPER_COMMAND := whatever
 
 include $(DEVKITARM)/ds_rules
 
