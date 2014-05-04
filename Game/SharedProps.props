@@ -9,7 +9,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
-    <NMakeIncludeSearchPath>$(ProjectDir)ZeldaDS\arm9\source;$(DEVKITPRODIR)libnds\include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <NMakeIncludeSearchPath>$(ProjectDir)ZeldaDS\arm9\source;$(ProjectDir)ZeldaDS\arm9\source\external\hsm\include;$(DEVKITPRODIR)libnds\include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
   </PropertyGroup>
   <ItemGroup>
     <BuildMacro Include="NDSEMUPATH">
