@@ -27,19 +27,7 @@
 
 using namespace hsm;
 
-struct GameFlowSharedStateData : SharedStateData
-{
-	std::string mCurrWorldMap;
-	std::string mTargetWorldMap;
-	Vector2I mTargetWorldPos;
-
-	GameFlowSharedStateData()
-		: mTargetWorldPos(InitZero)
-	{
-	}
-};
-
-typedef StateWithOwnerAndData<GameFlowMgr, GameFlowSharedStateData> GameFlowState;
+typedef StateWithOwner<GameFlowMgr> GameFlowState;
 
 struct GameFlowStates
 {
@@ -135,10 +123,10 @@ struct GameFlowStates
 		virtual void OnEnter()
 		{
 			WorldMap& worldMap = WorldMap::Instance();
-			ASSERT(!Data().mTargetWorldMap.empty());
-			worldMap.LoadMap(Data().mTargetWorldMap.c_str());
-			Data().mCurrWorldMap = Data().mTargetWorldMap;
-			Data().mTargetWorldMap.clear();
+			ASSERT(!Owner().mTargetWorldMap.empty());
+			worldMap.LoadMap(Owner().mTargetWorldMap.c_str());
+			Owner().mCurrWorldMap = Owner().mTargetWorldMap;
+			Owner().mTargetWorldMap.clear();
 
 			SceneGraph::Instance().SetWorldMap(worldMap);
 
@@ -173,8 +161,8 @@ struct GameFlowStates
 			AudioEngine::PlayMusic(MOD_OVERWORLD3);
 
 			// Use map's spawn position or a specified pos?
-			Vector2I targetWorldPos = Data().mTargetWorldPos;
-			if (Data().mTargetWorldPos == UseMapSpawnPosition)
+			Vector2I targetWorldPos = Owner().mTargetWorldPos;
+			if (Owner().mTargetWorldPos == UseMapSpawnPosition)
 			{
 				const WorldMap::PlayerSpawnData& playerSpawnData = worldMap.GetPlayerSpawnData();
 				targetWorldPos = playerSpawnData.mPos;
@@ -228,17 +216,17 @@ struct GameFlowStates
 			//@TODO TEMP HACK: L+R toggle map loading between 2 test maps
 			if ((InputManager::GetKeysHeld() & (KEY_L|KEY_R)) == (KEY_L|KEY_R))
 			{
-				if (Data().mCurrWorldMap == "Maps/TestMap.map")
+				if (Owner().mCurrWorldMap == "Maps/TestMap.map")
 				{
-					Data().mTargetWorldMap = "Maps/TestMap2.map";
+					Owner().mTargetWorldMap = "Maps/TestMap2.map";
 				}
 				else
 				{
-					Data().mTargetWorldMap = "Maps/TestMap.map";
+					Owner().mTargetWorldMap = "Maps/TestMap.map";
 				}
 			}
 
-			if ( !Data().mTargetWorldMap.empty() )
+			if ( !Owner().mTargetWorldMap.empty() )
 			{
 				return SiblingTransition<LeavingMap>();
 			}
@@ -394,13 +382,12 @@ struct GameFlowStates
 
 
 GameFlowMgr::GameFlowMgr()
-	: mpGameFlowStateData(0)
+	: mTargetWorldPos(InitZero)
 {
 }
 
 void GameFlowMgr::Init()
 {
-	mpSharedStateData = mpGameFlowStateData = new GameFlowSharedStateData();
 	mStateMachine.Initialize<GameFlowStates::Root>(this, "GameFlowMgr");
 }
 
@@ -412,6 +399,6 @@ void GameFlowMgr::Update(GameTimeType deltaTime)
 
 void GameFlowMgr::SetTargetWorldMap(const char* worldMapFilePath, const Vector2I& initialPos)
 {
-	mpGameFlowStateData->mTargetWorldMap = worldMapFilePath;
-	mpGameFlowStateData->mTargetWorldPos = initialPos;
+	mTargetWorldMap = worldMapFilePath;
+	mTargetWorldPos = initialPos;
 }

@@ -409,9 +409,6 @@
     <ClInclude Include="ZeldaDS\arm9\source\gslib\Util\Array2d.h">
       <Filter>Source Files\gslib\Util</Filter>
     </ClInclude>
-    <ClInclude Include="ZeldaDS\arm9\source\gslib\Util\HsmUtil.h">
-      <Filter>Source Files\gslib\Util</Filter>
-    </ClInclude>
     <ClInclude Include="ZeldaDS\arm9\source\gslib\Util\intrusive_ptr.h">
       <Filter>Source Files\gslib\Util</Filter>
     </ClInclude>

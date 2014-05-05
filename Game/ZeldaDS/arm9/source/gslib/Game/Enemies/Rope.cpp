@@ -4,12 +4,14 @@
 #include "gslib/Game/SceneGraph.h"
 #include "gslib/Hw/Constants.h"
 
+typedef StateWithOwner<Rope, EnemyState> RopeState;
+
 struct RopeStates
 {
 	// Rope moves around randomly, but as soon as it sees the player, it strikes in the players
 	// direction until it collides, at which point it resumes random movement
 
-	struct Main : EnemyState
+	struct Main : RopeState
 	{
 		virtual Transition GetTransition()
 		{
@@ -82,7 +84,7 @@ struct RopeStates
 		}
 	};
 
-	struct Attack : EnemyState
+	struct Attack : RopeState
 	{
 		virtual Transition GetTransition()
 		{
@@ -101,7 +103,7 @@ struct RopeStates
 		}
 	};
 
-	struct Alert : EnemyState
+	struct Alert : RopeState
 	{
 		GameTimeType mElapsedTime;
 
@@ -127,7 +129,7 @@ struct RopeStates
 		}
 	};
 
-	struct Strike : EnemyState
+	struct Strike : RopeState
 	{
 		virtual void OnEnter()
 		{

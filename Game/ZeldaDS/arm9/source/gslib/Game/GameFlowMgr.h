@@ -3,12 +3,12 @@
 
 #include "gslib/Core/Core.h"
 #include "gslib/Core/Singleton.h"
-#include "gslib/Util/HsmUtil.h"
 #include "gslib/Math/Vector2.h"
+#include "hsm/StateMachine.h"
 
 const Vector2I UseMapSpawnPosition(-1, -1);
 
-class GameFlowMgr : public Singleton<GameFlowMgr>, public IHsmOwner
+class GameFlowMgr : public Singleton<GameFlowMgr>
 {
 	friend class Singleton<GameFlowMgr>;
 	GameFlowMgr();
@@ -21,7 +21,10 @@ public:
 
 private:
 	hsm::StateMachine mStateMachine;
-	struct GameFlowSharedStateData* mpGameFlowStateData;
+	friend struct GameFlowStates;
+	std::string mCurrWorldMap;
+	std::string mTargetWorldMap;
+	Vector2I mTargetWorldPos;
 };
 
 #endif // GAME_FLOW_H

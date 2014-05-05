@@ -19,21 +19,7 @@
 
 // Player HSM
 
-struct PlayerSharedStateData : CharacterSharedStateData
-{
-	typedef CharacterSharedStateData Base;
-
-	PlayerSharedStateData()
-		: mpBoomerang(NULL)
-		, mScrollDir(ScrollDir::None)
-	{
-	}
-
-	Boomerang* mpBoomerang;
-	ScrollDir::Type mScrollDir;
-};
-
-typedef StateWithOwnerAndData<Player, PlayerSharedStateData, CharacterState> PlayerState;
+typedef StateWithOwner<Player, CharacterState> PlayerState;
 
 struct PlayerStates
 {
@@ -87,7 +73,7 @@ struct PlayerStates
 
 		virtual void OnEnter()
 		{
-			SetStateValue(Data().mAttribCanTakeDamage) = true;
+			SetStateValue(Owner().mSvCanTakeDamage) = true;
 		}
 
 		virtual void OnExit()
@@ -203,7 +189,7 @@ struct PlayerStates
 	{
 		typedef Alive_Warping OuterType;
 		
-		typename OuterType::Data& GetOuterData()
+		typename OuterType::Data& GetOuterOwner()
 		{
 			return static_cast<OuterType*>(GetState<Alive_Warping>())->mData;
 		}
@@ -266,7 +252,7 @@ struct PlayerStates
 	{
 		virtual void OnEnter()
 		{
-			WarpGameEvent* pWarpGameEvent = GetOuterData().mpWarpGameEvent;
+			WarpGameEvent* pWarpGameEvent = GetOuterOwner().mpWarpGameEvent;
 
 			// This will cause the GameFlowMgr to load the new map, destroying the Player in the process
 			GameFlowMgr::Instance().SetTargetWorldMap(pWarpGameEvent->mTargetWorldMap.c_str(), WorldMap::TileToWorldPos(pWarpGameEvent->mTargetTilePos));
@@ -446,7 +432,7 @@ struct PlayerStates
 		{
 			mItemUsed = false;
 
-			if ( !Data().mpBoomerang )
+			if ( !Owner().mpBoomerang )
 			{
 				Vector2I launchDir = GameHelpers::SpriteDirToUnitVector(Owner().GetSpriteDir());
 
@@ -454,9 +440,9 @@ struct PlayerStates
 				launchDir.x = keysHeld & KEY_LEFT? -1.0f : keysHeld & KEY_RIGHT? 1.0f : launchDir.x;
 				launchDir.y = keysHeld & KEY_UP? -1.0f : keysHeld & KEY_DOWN? 1.0f : launchDir.y;
 
-				Data().mpBoomerang = new Boomerang(true);
-				Data().mpBoomerang->Init(&Owner(), launchDir);
-				SceneGraph::Instance().AddNode(Data().mpBoomerang);
+				Owner().mpBoomerang = new Boomerang(true);
+				Owner().mpBoomerang->Init(&Owner(), launchDir);
+				SceneGraph::Instance().AddNode(Owner().mpBoomerang);
 
 				mItemUsed = true;
 			}
@@ -500,21 +486,16 @@ struct PlayerStates
 // Player class implementation
 
 Player::Player()
-	: mpPlayerStateData(0)
-	, mLastDamagePushVector(InitZero)
+	: mLastDamagePushVector(InitZero)
+	, mpBoomerang(NULL)
+	, mScrollDir(ScrollDir::None)
 {
 }
 
 void Player::InitStateMachine()
 {
 	Base::InitStateMachine();
-	mpPlayerStateData = CheckedDynamicCast<PlayerSharedStateData*>(mpSharedStateData);
 	mStateMachine.Initialize<PlayerStates::Root>(this, "Player");
-}
-
-SharedStateData* Player::CreateSharedStateData()
-{
-	return new PlayerSharedStateData();
 }
 
 void Player::GetGameObjectInfo(GameObjectInfo& gameObjectInfo)
@@ -531,10 +512,10 @@ void Player::Update(GameTimeType deltaTime)
 	if (deltaTime > 0)
 	{
 		// If boomerang has returned, remove it from the scene
-		if ( mpPlayerStateData->mpBoomerang && mpPlayerStateData->mpBoomerang->HasReturned() )
+		if ( mpBoomerang && mpBoomerang->HasReturned() )
 		{
-			SceneGraph::Instance().RemoveNodePostUpdate(mpPlayerStateData->mpBoomerang);
-			mpPlayerStateData->mpBoomerang = NULL;
+			SceneGraph::Instance().RemoveNodePostUpdate(mpBoomerang);
+			mpBoomerang = NULL;
 		}
 
 		// Knockback (override any player input velocity)

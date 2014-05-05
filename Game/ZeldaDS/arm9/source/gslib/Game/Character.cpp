@@ -4,7 +4,6 @@
 #include "gslib/Core/Rtti.h"
 
 Character::Character()
-	: mpCharacterStateData(NULL)
 {
 }
 
@@ -16,18 +15,6 @@ void Character::Init(const Vector2I& initPos)
 
 	// Child class must initialize state machine
 	ASSERT(mStateMachine.IsInitialized());
-}
-
-void Character::InitStateMachine()
-{
-	mpSharedStateData = CreateSharedStateData();
-	ASSERT(mpSharedStateData);
-	mpCharacterStateData = CheckedDynamicCast<CharacterSharedStateData*>(mpSharedStateData);
-}
-
-SharedStateData* Character::CreateSharedStateData()
-{
-	return new CharacterSharedStateData();
 }
 
 void Character::OnAddToScene()
@@ -65,7 +52,7 @@ void Character::Update(GameTimeType deltaTime)
 
 void Character::OnDamage(const DamageInfo& damageInfo)
 {
-	if (!mpCharacterStateData->mAttribCanTakeDamage)
+	if (!mSvCanTakeDamage)
 		return;
 
 	if (mHealth.IsInvincible())

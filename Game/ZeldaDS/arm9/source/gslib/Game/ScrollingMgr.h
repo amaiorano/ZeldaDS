@@ -3,8 +3,8 @@
 
 #include "gslib/Core/Core.h"
 #include "gslib/Core/Singleton.h"
-#include "gslib/Util/HsmUtil.h"
 #include "gslib/Math/Vector2.h"
+#include "hsm/StateMachine.h"
 
 namespace ScrollDir
 {

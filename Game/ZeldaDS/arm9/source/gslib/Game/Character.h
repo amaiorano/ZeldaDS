@@ -4,10 +4,10 @@
 #include "GameObject.h"
 #include "IDamageable.h"
 #include "Health.h"
-#include "gslib/Util/HsmUtil.h"
+#include "hsm/StateMachine.h"
 
 // Base class for game characters (players and enemies)
-class Character : public GameObject, public IDamageable, public IHsmOwner
+class Character : public GameObject, public IDamageable
 {
 public:
 	typedef GameObject Base;
@@ -16,8 +16,7 @@ public:
 	virtual void Init(const Vector2I& initPos);
 		
 protected:
-	virtual void InitStateMachine();
-	virtual SharedStateData* CreateSharedStateData();
+	virtual void InitStateMachine() {}
 
 	virtual void OnDead() { }
 
@@ -31,7 +30,8 @@ public:
 
 protected:
 	hsm::StateMachine mStateMachine;
-	struct CharacterSharedStateData* mpCharacterStateData;
+	hsm::StateValue<bool> mSvCanTakeDamage; // Can we take damage?
+
 	Vector2I mInitPos;
 	DamageInfo mDamageInfo;
 	Health mHealth;

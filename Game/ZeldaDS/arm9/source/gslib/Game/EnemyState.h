@@ -8,19 +8,8 @@
 // Contains base and shared enemy state machine stuff, included by state machine
 // implementations of enemies
 
-// Enemy shared state data
-struct EnemySharedStateData : CharacterSharedStateData
-{
-	EnemySharedStateData()
-		: mAttribCanDamage(false)
-	{
-	}
-
-	StateValue<bool> mAttribCanDamage; // Can we damage player?
-};
-
 // Base class for enemy states
-typedef StateWithOwnerAndData<Enemy, EnemySharedStateData, CharacterState> EnemyState;
+typedef StateWithOwner<Enemy, CharacterState> EnemyState;
 
 // Shared states for all enemies
 struct EnemySharedStates
@@ -168,8 +157,8 @@ struct EnemyStates
 	{
 		virtual void OnEnter()
 		{
-			SetStateValue(Data().mAttribCanDamage) = true;
-			SetStateValue(Data().mAttribCanTakeDamage) = true;
+			SetStateValue(Owner().mSvCanDealDamage) = true;
+			SetStateValue(Owner().mSvCanTakeDamage) = true;
 		}
 
 		virtual Transition GetTransition()

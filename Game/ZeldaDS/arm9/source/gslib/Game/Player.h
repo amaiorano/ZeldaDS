@@ -2,8 +2,9 @@
 #define PLAYER_H
 
 #include "Character.h"
+#include "ScrollingMgr.h"
 
-class SharedStateData;
+class Boomerang;
 
 class Player : public Character
 {
@@ -14,7 +15,6 @@ public:
 
 	// Character interface
 	virtual void InitStateMachine();
-	virtual SharedStateData* CreateSharedStateData();
 	
 	// GameObject interface
 	virtual void GetGameObjectInfo(GameObjectInfo& gameObjectInfo);
@@ -24,10 +24,10 @@ public:
 	virtual void Render(GameTimeType deltaTime);
 
 private:
-	struct PlayerSharedStateData* mpPlayerStateData;
-
-	friend class PlayerStates;
+	friend struct PlayerStates;
 	Vector2I mLastDamagePushVector;
+	Boomerang* mpBoomerang;
+	ScrollDir::Type mScrollDir;
 };
 
 

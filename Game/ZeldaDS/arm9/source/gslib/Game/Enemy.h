@@ -14,7 +14,6 @@ public:
 
 	// Character interface
 	virtual void InitStateMachine();
-	virtual SharedStateData* CreateSharedStateData();
 	virtual void OnDead();
 
 	// GameObject interface
@@ -34,8 +33,6 @@ public:
 protected:
 	virtual hsm::Transition GetRootTransition() = 0;
 
-	EnemySharedStateData* mpEnemyStateData;
-	
 	struct LastFrameCollision
 	{
 		LastFrameCollision() : mIsSet(false) { }
@@ -43,10 +40,8 @@ protected:
 		CollisionInfo mInfo;
 	} mLastFrameCollision;
 
-	friend class EnemyStates;
-	//@TODO: Figure out how to get rid of these friendships
-	friend class GoriyaStates;
-	friend class RopeStates;
+	friend struct EnemyStates;
+	hsm::StateValue<bool> mSvCanDealDamage; // Can we damage player?
 };
 
 #endif // ENEMY_H

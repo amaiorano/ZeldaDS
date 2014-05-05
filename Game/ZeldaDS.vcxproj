@@ -184,7 +184,6 @@
     <ClInclude Include="ZeldaDS\arm9\source\gslib\Physics\BoundingBox.h" />
     <ClInclude Include="ZeldaDS\arm9\source\gslib\Stream\BinaryFileStream.h" />
     <ClInclude Include="ZeldaDS\arm9\source\gslib\Util\Array2d.h" />
-    <ClInclude Include="ZeldaDS\arm9\source\gslib\Util\HsmUtil.h" />
     <ClInclude Include="ZeldaDS\arm9\source\gslib\Util\intrusive_ptr.h" />
     <ClInclude Include="ZeldaDS\arm9\source\external\hsm\include\hsm\config.h" />
     <ClInclude Include="ZeldaDS\arm9\source\external\hsm\include\hsm\rtti.h" />

@@ -15,6 +15,9 @@ protected:
 	}
 
 	virtual hsm::Transition GetRootTransition();
+
+private:
+	friend struct RopeStates;
 };
 
 

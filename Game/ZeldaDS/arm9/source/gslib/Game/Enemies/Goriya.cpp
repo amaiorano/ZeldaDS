@@ -3,17 +3,7 @@
 #include "gslib/Game/SceneGraph.h"
 #include "gslib/Game/Boomerang.h"
 
-struct GoriyaSharedStateData : EnemySharedStateData
-{
-	GoriyaSharedStateData()
-		: mpBoomerang(NULL)
-	{
-	}
-
-	Boomerang* mpBoomerang;
-};
-
-typedef StateWithOwnerAndData<Goriya, GoriyaSharedStateData, EnemyState> GoriyaState;
+typedef StateWithOwner<Goriya, EnemyState> GoriyaState;
 
 struct GoriyaStates
 {
@@ -65,18 +55,18 @@ struct GoriyaStates
 	{
 		virtual void OnEnter()
 		{
-			ASSERT(!Data().mpBoomerang);
+			ASSERT(!Owner().mpBoomerang);
 			const Vector2I& launchDir = GameHelpers::SpriteDirToUnitVector(Owner().GetSpriteDir());
-			Data().mpBoomerang = new Boomerang(false);
-			Data().mpBoomerang->Init(&Owner(), launchDir);
-			SceneGraph::Instance().AddNode(Data().mpBoomerang); // Removed from scene in Update() or when leaving root state
+			Owner().mpBoomerang = new Boomerang(false);
+			Owner().mpBoomerang->Init(&Owner(), launchDir);
+			SceneGraph::Instance().AddNode(Owner().mpBoomerang); // Removed from scene in Update() or when leaving root state
 
 			PlayAnim(BaseAnim::Attack);
 		}
 
 		virtual Transition GetTransition()
 		{
-			if (Data().mpBoomerang->HasReturned())
+			if (Owner().mpBoomerang->HasReturned())
 			{
 				return SiblingTransition<Move>();
 			}
@@ -86,9 +76,9 @@ struct GoriyaStates
 
 }; // struct GoriyaStates
 
-SharedStateData* Goriya::CreateSharedStateData()
+Goriya::Goriya()
+	: mpBoomerang(NULL)
 {
-	return new GoriyaSharedStateData();
 }
 
 Transition Goriya::GetRootTransition()
@@ -98,11 +88,10 @@ Transition Goriya::GetRootTransition()
 
 void Goriya::OnDead()
 {
-	Boomerang*& pBoomerang = static_cast<GoriyaSharedStateData*>(mpSharedStateData)->mpBoomerang;
-	if (pBoomerang)
+	if (mpBoomerang)
 	{
-		SceneGraph::Instance().RemoveNodePostUpdate(pBoomerang);
-		pBoomerang = 0;
+		SceneGraph::Instance().RemoveNodePostUpdate(mpBoomerang);
+		mpBoomerang = 0;
 	}
 
 	Base::OnDead();
@@ -112,10 +101,9 @@ void Goriya::Update(GameTimeType deltaTime)
 {
 	Base::Update(deltaTime);
 
-	Boomerang*& pBoomerang = static_cast<GoriyaSharedStateData*>(mpSharedStateData)->mpBoomerang;
-	if (pBoomerang && pBoomerang->HasReturned())
+	if (mpBoomerang && mpBoomerang->HasReturned())
 	{
-		SceneGraph::Instance().RemoveNodePostUpdate(pBoomerang);
-		pBoomerang = NULL;
+		SceneGraph::Instance().RemoveNodePostUpdate(mpBoomerang);
+		mpBoomerang = NULL;
 	}
 }
