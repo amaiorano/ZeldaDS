@@ -179,6 +179,7 @@
   </Target>
   -->
   <PropertyGroup>
-    <PostBuildEvent>copy $(ProjectDir)data\*.* $(TargetDir)</PostBuildEvent>
+    <PostBuildEvent>copy /Y "$(ProjectDir)data\*.*" "$(TargetDir)"
+</PostBuildEvent>
   </PropertyGroup>
 </Project>

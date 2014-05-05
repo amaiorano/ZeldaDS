@@ -50,6 +50,8 @@ These steps are for a Windows installation. I suspect it should be easy enough t
 
 * ZeldaDS makes use of git subtree to bring in git modules:
 
+```
 git remote add hsm git@github.com:amaiorano/hsm.git
 git subtree pull --prefix=Game/ZeldaDS/arm9/source/external/hsm hsm master --squash
 git subtree push --prefix=Game/ZeldaDS/arm9/source/external/hsm hsm master
+```
