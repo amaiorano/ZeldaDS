@@ -11,6 +11,12 @@ Here's a pretty good video of Zelous, the tile-based editor written in C#:
 [![Zelous](http://img.youtube.com/vi/2h4rwlYDwUs/0.jpg)](http://www.youtube.com/watch?v=2h4rwlYDwUs)
 
 
+## Download
+
+Download both the Nintendo DS rom of the game, as well as the editor, Zelous, from the releases page:
+https://github.com/amaiorano/ZeldaDS/releases
+
+
 ## History
 
 I started working on this project in early 2010 because I wanted to make a game in a more constrained environment than PC. I owned a DS and a flash cart, so I figured it would be fun to make something I could actually play. Also, devkitPro, was (and still is) one of the best homebrew toolkits available, so the barrier to entry was low.
